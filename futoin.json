@@ -1,0 +1,15 @@
+{
+  "name": "futoin-eventstream",
+  "version": "0.0.0",
+  "vcs": "git",
+  "rms": "npm",
+  "rmsRepo": "ignored",
+  "plugins": {
+    "release": "futoin.cid.misc.releasetool"
+  },
+  "actions": {
+    "test": "@cid tool exec grunt -- test",
+    "bare_test": "@cid tool exec node -- node_modules/.bin/mocha test/unittest.js ",
+    "upgrade-deps": "@cid tool exec yarn -- upgrade --latest"
+  }
+}
