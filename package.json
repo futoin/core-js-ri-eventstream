@@ -43,9 +43,9 @@
     "test/**"
   ],
   "dependencies": {
-    "futoin-database": "^1.0.0",
-    "futoin-executor": "^1.4.2",
-    "futoin-invoker": "^1.4.2"
+    "futoin-database": "^1.1.0",
+    "futoin-executor": "^1.4.3",
+    "futoin-invoker": "^1.4.3"
   },
   "optionalDependencies": {}
 }
