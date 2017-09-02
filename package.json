@@ -45,7 +45,8 @@
   "dependencies": {
     "futoin-database": "^1.1.0",
     "futoin-executor": "^1.4.3",
-    "futoin-invoker": "^1.4.3"
+    "futoin-invoker": "^1.4.3",
+    "mixin": "^0.2.0"
   },
   "optionalDependencies": {}
 }

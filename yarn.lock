@@ -1642,6 +1642,10 @@ minimist@~0.0.1:
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.0.10.tgz#de3f98543dbf96082be48ad1a0c7cda836301dcf"
 
+mixin@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/mixin/-/mixin-0.2.0.tgz#fb9db3d31175badb0a199dd4aad66476147b7d93"
+
 mkdirp2@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/mkdirp2/-/mkdirp2-1.0.3.tgz#cc8dd8265f1f06e2d8f5b10b6e52f4e050bed21b"
