@@ -17,7 +17,7 @@ class PushService extends PollService
      * @param {object} options - implementation defined options
      * @returns {PushService} instance
      */
-    static register( as, executor, options )
+    static register( as, executor, options={} )
     {
         const ifacever = 'futoin.evt.poll:' + PushFace.LATEST_VERSION;
         const impl = new this( as, executor, options );

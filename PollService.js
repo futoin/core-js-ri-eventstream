@@ -17,7 +17,7 @@ class PollService extends PingService
      * @param {object} options - implementation defined options
      * @returns {PollService} instance
      */
-    static register( as, executor, options )
+    static register( as, executor, options={} )
     {
         const ifacever = 'futoin.evt.poll:' + PollFace.LATEST_VERSION;
         const impl = new this( as, executor, options );

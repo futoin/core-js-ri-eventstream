@@ -17,7 +17,7 @@ class GenService extends PingService
      * @param {object} options - implementation defined options
      * @returns {GenService} instance
      */
-    static register( as, executor, options )
+    static register( as, executor, options={} )
     {
         const ifacever = 'futoin.evt.gen:' + GenFace.LATEST_VERSION;
         const impl = new this( as, executor, options );

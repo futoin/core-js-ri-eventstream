@@ -33,7 +33,7 @@
     "futoin-asyncsteps": "^1.7.0",
     "futoin-database": "^1.1.2",
     "futoin-executor": "^1.5.0",
-    "futoin-invoker": "^1.5.0",
+    "futoin-invoker": "^1.5.1",
     "grunt": "^1.0.1",
     "grunt-eslint": "^20.1.0",
     "grunt-jsdoc-to-markdown": "^3.0.0",
@@ -52,6 +52,6 @@
     "futoin-asyncsteps": "^1.7.0",
     "futoin-database": "^1.1.2",
     "futoin-executor": "^1.5.0",
-    "futoin-invoker": "^1.5.0"
+    "futoin-invoker": "^1.5.1"
   }
 }
