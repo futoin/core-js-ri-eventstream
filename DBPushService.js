@@ -1,12 +1,14 @@
 'use strict';
 
-const mixin = require( 'mixin' );
+const _defaults = require( 'lodash/defaults' );
 const DBPollService = require( './DBPollService' );
 const PushService = require( './PushService' );
-const { DB_IFACEVER } = require( './common' );
 
-class DBPushService extends mixin(PushService, DBPollService) {
+class DBPushService extends PushService
+{
 
 }
+
+_defaults( DBPushService.prototype, DBPollService.prototype );
 
 module.exports = DBPushService;

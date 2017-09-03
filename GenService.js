@@ -20,7 +20,7 @@ class GenService extends PingService
     static register( as, executor, options )
     {
         const ifacever = 'futoin.evt.gen:' + GenFace.LATEST_VERSION;
-        const impl = new this( options );
+        const impl = new this( as, executor, options );
         const spec_dirs = [ GenFace.spec(), PingFace.spec( GenFace.PING_VERSION ) ];
 
         executor.register( as, ifacever, impl, spec_dirs );

@@ -20,7 +20,7 @@ class PollService extends PingService
     static register( as, executor, options )
     {
         const ifacever = 'futoin.evt.poll:' + PollFace.LATEST_VERSION;
-        const impl = new this( options );
+        const impl = new this( as, executor, options );
         const spec_dirs = [ PollFace.spec(), PingFace.spec( PollFace.PING_VERSION ) ];
 
         executor.register( as, ifacever, impl, spec_dirs );

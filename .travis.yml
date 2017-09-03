@@ -10,7 +10,8 @@ before_install:
 - sudo pip install futoin-cid
 install:
 - nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid prepare
-- sudo bash node_modules/futoin-database/test/db_config.sh
+- sudo bash test/db_config.sh
+- cid tool install flyway
 script:
 - nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid run test
 

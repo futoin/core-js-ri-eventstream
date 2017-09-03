@@ -20,7 +20,7 @@ class PushService extends PollService
     static register( as, executor, options )
     {
         const ifacever = 'futoin.evt.poll:' + PushFace.LATEST_VERSION;
-        const impl = new this( options );
+        const impl = new this( as, executor, options );
         const spec_dirs = [ PushFace.spec(), PingFace.spec( PushFace.PING_VERSION ) ];
 
         executor.register( as, ifacever, impl, spec_dirs );
