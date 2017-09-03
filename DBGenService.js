@@ -29,7 +29,7 @@ class DBGenService extends GenService
             const qb = db.insert( this._evt_table );
             qb.set( 'type', qb.param( 'type' ) )
                 .set( 'data', qb.param( 'data' ) )
-                .set( 'ts', qb.expr( 'NOW()' ) )
+                .set( 'ts', qb.helpers().now() )
                 .getInsertID( 'id' );
             pq = this._add_event_query = qb.prepare();
         }
