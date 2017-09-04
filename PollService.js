@@ -10,6 +10,11 @@ const PollFace = require( './PollFace' );
  */
 class PollService extends PingService
 {
+    get MAX_EVENTS()
+    {
+        return 1000;
+    }
+
     /**
      * Register futoin.evt.poll interface with Executor
      * @param {AsyncSteps} as - steps interface

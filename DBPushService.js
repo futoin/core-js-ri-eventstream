@@ -6,7 +6,10 @@ const PushService = require( './PushService' );
 
 class DBPushService extends PushService
 {
-
+    readyToReceive( as, reqinfo )
+    {
+        void reqinfo;
+    }
 }
 
 _defaults( DBPushService.prototype, DBPollService.prototype );

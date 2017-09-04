@@ -19,10 +19,9 @@ CREATE TABLE EvtQueue (
 CREATE TABLE EvtConsumers (
     id SMALLINT NOT NULL auto_increment PRIMARY KEY,
     last_evt_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    local_uid INT UNSIGNED NOT NULL
-        COMMENT "Local User ID as defined in FTN8",
-    component VARCHAR(16) NOT NULL,
-    UNIQUE KEY uid_component (local_uid, component),
+    reg_time TIMESTAMP NOT NULL,
+    last_time TIMESTAMP NOT NULL,
+    ident VARCHAR(64) NOT NULL UNIQUE,
     INDEX last_evt_id (last_evt_id) USING BTREE
 )
     ENGINE=InnoDB

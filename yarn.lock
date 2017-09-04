@@ -908,15 +908,15 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-futoin-asyncsteps@^1.7.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.7.0.tgz#834805736a0bb6e85b350e7917edcbca6a360b62"
+futoin-asyncsteps@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.7.1.tgz#eb5d80ba0b5581fce7caa022ab02b32ca9947a06"
   dependencies:
     performance-now "^2.1.0"
 
-futoin-database@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/futoin-database/-/futoin-database-1.2.0.tgz#7533db7c325ec475bfb6eca16f2d91138a2da379"
+futoin-database@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/futoin-database/-/futoin-database-1.2.1.tgz#f3315efefc7a740767c38a9ce87a0f0ce65975a0"
   dependencies:
     lodash "^4.17.4"
     moment "^2.18.1"
@@ -926,9 +926,9 @@ futoin-database@^1.2.0:
     pg "^7.3.0"
     sqlite3 "^3.1.9"
 
-futoin-executor@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.5.0.tgz#cfc040e94d7aa068fcda1a2d25bfad844627ac04"
+futoin-executor@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.5.1.tgz#89508c5f08bc4a2a383ac2422709b81675714913"
   dependencies:
     cookies "^0.7.1"
     detect-node "^2.0.3"
@@ -937,9 +937,9 @@ futoin-executor@^1.5.0:
     lodash "^4.17.4"
     performance-now "^2.1.0"
 
-futoin-invoker@^1.5.1:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.5.1.tgz#fab5c4858be673183ac0f3164bfc544145da952b"
+futoin-invoker@^1.5.3:
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.5.3.tgz#58c7e72fd91456560e9e5e67e08ec4470554d55a"
   dependencies:
     agentkeepalive "^3.3.0"
     detect-node "^2.0.3"

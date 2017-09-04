@@ -78,9 +78,26 @@ Event Stream - Generator Face
 **Kind**: global class  
 
 * [GenFace](#GenFace)
-    * [.LATEST_VERSION](#GenFace.LATEST_VERSION)
-    * [.PING_VERSION](#GenFace.PING_VERSION)
-    * [.register(as, ccm, name, endpoint, [credentials], [options])](#GenFace.register)
+    * _instance_
+        * [.addXferEvent(xb, type, data, [table])](#GenFace+addXferEvent)
+    * _static_
+        * [.LATEST_VERSION](#GenFace.LATEST_VERSION)
+        * [.PING_VERSION](#GenFace.PING_VERSION)
+        * [.register(as, ccm, name, endpoint, [credentials], [options])](#GenFace.register)
+
+<a name="GenFace+addXferEvent"></a>
+
+### genFace.addXferEvent(xb, type, data, [table])
+Helper to add event generation into DB transaction
+
+**Kind**: instance method of [<code>GenFace</code>](#GenFace)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| xb | <code>XferBuilder</code> |  | instance of transaction builder |
+| type | <code>string</code> |  | event type |
+| data | <code>\*</code> |  | any data |
+| [table] | <code>string</code> | <code>&quot;EvtQueue&quot;</code> | event queue |
 
 <a name="GenFace.LATEST_VERSION"></a>
 

@@ -1,7 +1,7 @@
 'use strict';
 
 const GenService = require( './GenService' );
-const { DB_IFACEVER } = require( './common' );
+const { DB_IFACEVER, DB_EVTTABLE } = require( './common' );
 
 class DBGenService extends GenService
 {
@@ -11,7 +11,7 @@ class DBGenService extends GenService
         executor.ccm().assertIface( '#db.evt', DB_IFACEVER );
 
         this._add_event_query = null;
-        this._evt_table = options.event_table || 'EvtQueue';
+        this._evt_table = options.event_table || DB_EVTTABLE;
     }
 
     addEvent( as, reqinfo )

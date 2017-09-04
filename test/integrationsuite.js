@@ -5,6 +5,8 @@ const expect = require( 'chai' ).expect;
 const Executor = require('futoin-executor/Executor');
 const GenFace = require('../GenFace');
 const DBGenService = require('../DBGenService');
+const PollFace = require('../PollFace');
+const DBPollService = require('../DBPollService');
 
 module.exports = function(describe, it, vars) {
     describe('GenFace', function() {
@@ -68,6 +70,137 @@ module.exports = function(describe, it, vars) {
                             { id: 5, type: 'ABCDEFHIJ_KLMN_O', data: {} },
                             { id: 6, type: 'ABCDEFHIJ_KLMN_O', data: {"some": "data"} },
                         ]);
+                    } );
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done() );
+            as.execute();
+        });
+        
+        it('should generate event in xfer', function(done) {
+            as.add(
+                (as) => {
+                    const iface = ccm.iface('evtgen');
+                    const db = ccm.db('evt');
+                    
+                    const xb = db.newXfer();
+                    iface.addXferEvent(xb, 'XFER_EVT', 123);
+                    iface.addXferEvent(xb, 'XFER_EVT', 321);
+                    
+                    expect(function() {
+                        iface.addXferEvent(xb, 'Invld', 321);
+                    }).to.throw('Invalid event type: Invld');
+                    xb.execute(as);
+                    
+                    ccm.db('evt')
+                        .select('EvtQueue')
+                        .get(['id', 'type', 'data'])
+                        .where('type', 'XFER_EVT')
+                        .order('id')
+                        .executeAssoc(as);
+                    as.add( ( as, res ) => {
+                        res = res.map( (v) => ({
+                            id: parseInt(v.id),
+                            type: v.type,
+                            data: JSON.parse(v.data),
+                        }));
+                        expect(res).to.eql([
+                            { id: 7, type: 'XFER_EVT', data: 123 },
+                            { id: 8, type: 'XFER_EVT', data: 321 },
+                        ]);
+                    } );
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done() );
+            as.execute();
+        });
+    });
+    
+    describe('PollFace', function() {
+        let as;
+        let ccm;
+        let executor;
+        
+        beforeEach('specific', function() {
+            ccm = vars.ccm;
+            as = vars.as;
+            executor = new Executor(ccm);
+            
+            executor.on('notExpected', function() {
+                console.dir(arguments);
+            });
+            
+            as.add(
+                (as) => {
+                    DBGenService.register(as, executor);
+                    DBPollService.register(as, executor);
+                    GenFace.register(as, ccm, 'evtgen', executor);
+                    PollFace.register(as, ccm, 'evtpoll', executor);
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                }
+            );
+        });
+        
+        it('should generate events', function(done) {
+            as.add(
+                (as) => {
+                    const poll = ccm.iface('evtpoll');
+                    
+                    poll.registerConsumer(as, 'T1');
+                    poll.registerConsumer(as, 'T2');
+                    
+                    poll.pollEvents(as, 'T1', null, null);
+                   
+                    as.add( ( as, res ) => {
+                        res = res.map( (v) => ({
+                            id: parseInt(v.id),
+                            type: v.type,
+                            data: v.data,
+                        }));
+                        expect(res).to.eql([
+                            { id: 1, type: 'AB_C', data: null },
+                            { id: 2, type: 'AB_C', data: false },
+                            { id: 3, type: 'AB_C', data: "dt" },
+                            { id: 4, type: 'X', data: 1 },
+                            { id: 5, type: 'ABCDEFHIJ_KLMN_O', data: {} },
+                            { id: 6, type: 'ABCDEFHIJ_KLMN_O', data: {"some": "data"} },
+                            { id: 7, type: 'XFER_EVT', data: 123 },
+                            { id: 8, type: 'XFER_EVT', data: 321 },
+                        ]);
+                    } );
+                    
+                    poll.pollEvents(as, 'T1', '1', ['AB_C']);
+                   
+                    as.add( ( as, res ) => {
+                        res = res.map( (v) => ({
+                            id: parseInt(v.id),
+                            type: v.type,
+                            data: v.data,
+                        }));
+                        expect(res).to.eql([
+                            { id: 2, type: 'AB_C', data: false },
+                            { id: 3, type: 'AB_C', data: "dt" },
+                        ]);
+                    } );
+
+                    poll.pollEvents(as, 'T1', '3', ['AB_C']);
+                    
+                    as.add( ( as, res ) => {
+                        expect( res.length ).to.equal(0);
                     } );
                 },
                 (as, err) => {
