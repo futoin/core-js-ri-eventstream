@@ -161,7 +161,7 @@ module.exports = function(describe, it, vars) {
                     const poll = ccm.iface('evtpoll');
                     
                     poll.registerConsumer(as, 'T1');
-                    poll.registerConsumer(as, 'T2');
+                    poll.registerConsumer(as, 'T1');
                     
                     poll.pollEvents(as, 'T1', null, null);
                    
@@ -207,6 +207,50 @@ module.exports = function(describe, it, vars) {
                     console.log(err);
                     console.log(as.state.error_info);
                     done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done() );
+            as.execute();
+        });
+        
+        it('must detect not registrated', function(done) {
+            as.add(
+                (as) => {
+                    const poll = ccm.iface('evtpoll');
+                    
+                    poll.pollEvents(as, 'T2', null, null);
+                    as.add((as) => as.error('Fail'));
+                },
+                (as, err) => {
+                    if (err === 'NotRegistered') {
+                        done();
+                    } else {
+                        console.log(err);
+                        console.log(as.state.error_info);
+                        done(as.state.last_exception);
+                    }
+                }
+            );
+            as.add((as) => done() );
+            as.execute();
+        });
+        
+        it('must not allow LIVE registration', function(done) {
+            as.add(
+                (as) => {
+                    const poll = ccm.iface('evtpoll');
+                    
+                    poll.registerConsumer(as, 'LIVE');
+                    as.add((as) => as.error('Fail'));
+                },
+                (as, err) => {
+                    if (err === 'LiveNotAllowed') {
+                        done();
+                    } else {
+                        console.log(err);
+                        console.log(as.state.error_info);
+                        done(as.state.last_exception);
+                    }
                 }
             );
             as.add((as) => done() );
