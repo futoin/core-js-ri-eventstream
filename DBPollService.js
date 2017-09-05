@@ -7,7 +7,7 @@ class DBPollService extends PollService
 {
     constructor( _as, executor, options )
     {
-        super();
+        super( _as, executor, options );
         executor.ccm().assertIface( '#db.evt', DB_IFACEVER );
         this._evt_table = options.event_table || DB_EVTTABLE;
         this._consumer_table = options.consumer_table || DB_EVTCONSUMERS;
@@ -21,6 +21,11 @@ class DBPollService extends PollService
         {
             as.error( 'LiveNotAllowed',
                 'Live consumer should not register' );
+        }
+
+        if ( !this._allow_reliable )
+        {
+            as.error( 'SecurityError', 'Registration is not allowed' );
         }
 
         as.add(

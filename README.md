@@ -66,7 +66,7 @@ The concept is described in FutoIn specification: [FTN18: FutoIn Interface - Eve
 <dd><p>Event Stream - Push Service Base</p>
 </dd>
 <dt><a href="#ReceiverFace">ReceiverFace</a></dt>
-<dd><p>Event Stream - Poll Face</p>
+<dd><p>Event Stream - Receiver Face</p>
 </dd>
 </dl>
 
@@ -255,13 +255,13 @@ Register futoin.evt.push interface with Executor
 <a name="ReceiverFace"></a>
 
 ## ReceiverFace
-Event Stream - Poll Face
+Event Stream - Receiver Face
 
 **Kind**: global class  
 
 * [ReceiverFace](#ReceiverFace)
     * [.LATEST_VERSION](#ReceiverFace.LATEST_VERSION)
-    * [.register(as, ccm, name, endpoint, [credentials], [options])](#ReceiverFace.register)
+    * [.register(as, channel, [options])](#ReceiverFace.register) ⇒ <code>string</code>
 
 <a name="ReceiverFace.LATEST_VERSION"></a>
 
@@ -271,18 +271,16 @@ Latest supported FTN17 version
 **Kind**: static property of [<code>ReceiverFace</code>](#ReceiverFace)  
 <a name="ReceiverFace.register"></a>
 
-### ReceiverFace.register(as, ccm, name, endpoint, [credentials], [options])
+### ReceiverFace.register(as, channel, [options]) ⇒ <code>string</code>
 CCM registration helper
 
 **Kind**: static method of [<code>ReceiverFace</code>](#ReceiverFace)  
+**Returns**: <code>string</code> - - iface:ver of registered interface  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | as | <code>AsyncSteps</code> |  | steps interface |
-| ccm | <code>AdvancedCCM</code> |  | CCM instance |
-| name | <code>string</code> |  | CCM registration name |
-| endpoint | <code>\*</code> |  | see AdvancedCCM#register |
-| [credentials] | <code>\*</code> | <code></code> | see AdvancedCCM#register |
+| channel | <code>ChannelContext</code> |  | Bi-Direction channel instance |
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 

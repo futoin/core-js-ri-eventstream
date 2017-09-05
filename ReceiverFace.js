@@ -7,7 +7,7 @@ const { FTN18_VERSION } = require( './common' );
 
 
 /**
- * Event Stream - Poll Face
+ * Event Stream - Receiver Face
  */
 class ReceiverFace extends NativeIface
 {
@@ -24,14 +24,12 @@ class ReceiverFace extends NativeIface
      * CCM registration helper
      * 
      * @param {AsyncSteps} as - steps interface
-     * @param {AdvancedCCM} ccm - CCM instance
-     * @param {string} name - CCM registration name
-     * @param {*} endpoint - see AdvancedCCM#register
-     * @param {*} [credentials=null] - see AdvancedCCM#register
+     * @param {ChannelContext} channel - Bi-Direction channel instance
      * @param {object} [options={}] - interface options
      * @param {string} [options.version=1.0] - interface version to use
+     * @returns {string} - iface:ver of registered interface
      */
-    static register( as, ccm, name, endpoint, credentials=null, options={} )
+    static register( as, channel, options={} )
     {
         const ifacever = options.version || this.LATEST_VERSION;
 
@@ -41,14 +39,13 @@ class ReceiverFace extends NativeIface
             sendOnBehalfOf: false,
         } );
 
-        ccm.register(
+        channel.register(
             as,
-            name,
             `futoin.evt.receiver:${ifacever}`,
-            endpoint,
-            credentials,
             options
         );
+
+        return ifacever;
     }
 }
 

@@ -1,5 +1,6 @@
 'use strict';
 
+const _defaults = require( 'lodash/defaults' );
 const PingService = require( 'futoin-executor/PingService' );
 const PingFace = require( 'futoin-invoker/PingFace' );
 const PollFace = require( './PollFace' );
@@ -32,6 +33,13 @@ class PollService extends PingService
         executor.once( 'close', () => impl._close() );
 
         return impl;
+    }
+
+    constructor( as, _executor, options )
+    {
+        super();
+        _defaults( options, { allow_reliable: true } );
+        this._allow_reliable = options.allow_reliable;
     }
 
     _close()

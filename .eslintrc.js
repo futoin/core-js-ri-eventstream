@@ -65,12 +65,4 @@ module.exports = {
         "quote-props": ["error", "as-needed"],
         "wrap-regex": "error",
     },
-    overrides: [
-        {
-            files: [ "AutoConfig.js" ],
-            rules: {
-                "no-console" : ["off"],
-            }
-        },
-    ],
 };
