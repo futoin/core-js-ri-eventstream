@@ -68,7 +68,13 @@ class DBPollService extends PollService
         // Update info
         if ( is_reliable )
         {
-            xfer.update( this._consumer_table, { affected: 1 } )
+            // check, if registered
+            xfer.select( this._consumer_table, { selected: 1 } )
+                .get( 'id' )
+                .where( { ident } )
+                .forUpdate();
+
+            xfer.update( this._consumer_table )
                 .set( {
                     last_evt_id: last_id,
                     last_time: helpers.now(),
@@ -78,6 +84,7 @@ class DBPollService extends PollService
                     'last_evt_id <=': last_id,
                 } );
 
+            // make sure to select actual last_id
             last_id = db.select( this._consumer_table )
                 .get( 'last_evt_id' )
                 .where( { ident } );

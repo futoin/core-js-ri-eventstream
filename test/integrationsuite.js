@@ -70,6 +70,7 @@ module.exports = function(describe, it, vars) {
                             { id: 5, type: 'ABCDEFHIJ_KLMN_O', data: {} },
                             { id: 6, type: 'ABCDEFHIJ_KLMN_O', data: {"some": "data"} },
                         ]);
+                        executor.close();
                     } );
                 },
                 (as, err) => {
@@ -202,6 +203,24 @@ module.exports = function(describe, it, vars) {
                     as.add( ( as, res ) => {
                         expect( res.length ).to.equal(0);
                     } );
+                    
+                    // ensure WAX
+                    poll.pollEvents(as, 'T1', '3', ['AB_C']);
+                    
+                    as.add( ( as, res ) => {
+                        expect( res.length ).to.equal(0);
+                    } );
+                    
+                    //---
+                    ccm.iface('evtgen').addEvent(as, 'AB_C', 'dt')
+                    poll.pollEvents(as, 'T1', '3', ['AB_C']);
+                    as.add( (as, res) => expect(res.length).to.equal(1) );
+                    poll.pollEvents(as, 'T1', '3', ['AB_C']);
+                    as.add( (as, res) => expect(res.length).to.equal(1) );
+                    poll.pollEvents(as, 'T1', '9', ['AB_C']);
+                    as.add( (as, res) => expect(res.length).to.equal(0) );
+                    //---
+                    as.add( (as) => executor.close() );
                 },
                 (as, err) => {
                     console.log(err);
