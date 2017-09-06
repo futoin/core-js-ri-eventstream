@@ -275,5 +275,74 @@ module.exports = function(describe, it, vars) {
             as.add((as) => done() );
             as.execute();
         });
+        
+        it('should silently cancel skip on new event', function(done) {
+            as.add(
+                (as) => {
+                    const poll = ccm.iface('evtpoll');
+                    const db = ccm.db('evt');
+                    let first = true;
+                    
+                    db.newXfer = function() {
+                        const xfer = this.constructor.prototype.newXfer.apply(this, arguments);
+                        
+                        if (first) {
+                            first = false;
+                            return xfer;
+                        }
+                        
+                        delete db.newXfer;
+                        xfer.execute = function( as ) {
+                            ccm.iface('evtgen').addEvent(as, 'EVT_MIDDLE', 'dt');
+                            as.add( (as) => this.constructor.prototype.execute.apply( this, [ as ] ) );
+                        };
+                        return xfer;
+                    };
+                    
+                    poll.pollEvents(as, 'T1', null, ['EVT_MIDDLE']);
+                    as.add( (as, res) => expect(res.length).to.equal(0) );
+                    
+                    poll.pollEvents(as, 'T1', null, ['EVT_MIDDLE']);
+                    as.add( (as, res) => expect(res.length).to.equal(1) );
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done() );
+            as.execute();
+        });
+        
+        it('should allow LIVE polling', function(done) {
+            as.add(
+                (as) => {
+                    const poll = ccm.iface('evtpoll');
+                    const db = ccm.db('evt');
+                    
+                    ccm.iface('evtgen').addEvent(as, 'EVT_LV', 'lv');
+                    as.add( (as, res) => { as.state.live_id = res; } );
+                    
+                    poll.pollEvents(as, 'LIVE', null, ['EVT_LV']);
+                    as.add( (as, res) => {
+                        expect(res.length).to.equal(1);
+                        
+                        poll.pollEvents(as, 'LIVE', as.state.live_id, ['EVT_LV']);
+                        as.add( (as, res) => expect(res.length).to.equal(0) );
+                        
+                        poll.pollEvents(as, 'LIVE', `${as.state.live_id - 1}`, ['EVT_LV']);
+                        as.add( (as, res) => expect(res.length).to.equal(1) );
+                    });
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done() );
+            as.execute();
+        });
     });
 };

@@ -45,6 +45,57 @@ class PollService extends PingService
     _close()
     {
     }
+
+    registerConsumer( as, reqinfo )
+    {
+        const component = reqinfo.params().component;
+
+        if ( component === 'LIVE' )
+        {
+            as.error( 'LiveNotAllowed',
+                'Live consumer should not register' );
+        }
+
+        if ( !this._allow_reliable )
+        {
+            as.error( 'SecurityError', 'Registration is not allowed' );
+        }
+
+        const user_id = reqinfo.info.USER_INFO.localID();
+        const ident = `${user_id}:${component}`;
+
+        reqinfo.result( true ); // set in advance
+        this._registerConsumer( as, reqinfo.executor(), ident );
+    }
+
+    _registerConsumer( as, _executor, _ident )
+    {
+        as.error( 'NotImplemented', 'Please override PollService#_registerConsumer' );
+    }
+
+    pollEvents( as, reqinfo )
+    {
+        const params = reqinfo.params();
+        const component = params.component;
+        const user_id = reqinfo.info.USER_INFO.localID();
+        const ident = `${user_id}:${component}`;
+        let last_id = params.last_id || '0';
+        const want = params.want;
+        const is_reliable = ( component !== 'LIVE' );
+
+        if ( is_reliable && !this._allow_reliable )
+        {
+            as.error( 'SecurityError', 'Reliable delivery is disabled' );
+        }
+
+        this._pollEvents( as, reqinfo.executor(), ident, last_id, want, is_reliable );
+        as.add( ( as, res ) => reqinfo.result( res ) );
+    }
+
+    _pollEvents( as, _executor, _ident, _last_id, _want, _is_reliable )
+    {
+        as.error( 'NotImplemented', 'Please override PollService#_pollEvents' );
+    }
 }
 
 module.exports = PollService;

@@ -13,28 +13,13 @@ class DBPollService extends PollService
         this._consumer_table = options.consumer_table || DB_EVTCONSUMERS;
     }
 
-    registerConsumer( as, reqinfo )
+    _registerConsumer( as, executor, ident )
     {
-        const component = reqinfo.params().component;
-
-        if ( component === 'LIVE' )
-        {
-            as.error( 'LiveNotAllowed',
-                'Live consumer should not register' );
-        }
-
-        if ( !this._allow_reliable )
-        {
-            as.error( 'SecurityError', 'Registration is not allowed' );
-        }
-
         as.add(
             ( as ) =>
             {
-                const db = reqinfo.executor().ccm().db( 'evt' );
+                const db = executor.ccm().db( 'evt' );
                 const now = db.queryBuilder().helpers().now();
-                const user_id = parseInt( reqinfo.info.USER_INFO.localID() );
-                const ident = `${user_id}:${component}`;
 
                 db.insert( this._consumer_table )
                     .set( {
@@ -53,22 +38,13 @@ class DBPollService extends PollService
                 }
             }
         );
-        as.add( ( as ) => reqinfo.result( true ) );
     }
 
-    pollEvents( as, reqinfo )
+    _pollEvents( as, executor, ident, last_id, want, is_reliable )
     {
-        const params = reqinfo.params();
-        const component = params.component;
-        const user_id = parseInt( reqinfo.info.USER_INFO.localID() );
-        const ident = `${user_id}:${component}`;
-        let last_id = params.last_id || 0;
-        const want = params.want;
-
-        const db = reqinfo.executor().ccm().db( 'evt' );
+        const db = executor.ccm().db( 'evt' );
         const xfer = db.newXfer();
         const helpers = xfer.helpers();
-        const is_reliable = ( component !== 'LIVE' );
 
         // Update info
         if ( is_reliable )
@@ -114,7 +90,6 @@ class DBPollService extends PollService
                 as.add( ( as, res ) =>
                 {
                     const events = this._res2events( res[0].rows, helpers );
-                    reqinfo.result( events );
 
                     // Make sure we do not run through events again
                     // and again.
@@ -148,8 +123,11 @@ class DBPollService extends PollService
                                 }
                             }
                         );
-                        as.add( ( as ) =>
-                        {} );
+                        as.add( ( as ) => as.success( events ) );
+                    }
+                    else
+                    {
+                        as.success( events );
                     }
                 } );
             },
