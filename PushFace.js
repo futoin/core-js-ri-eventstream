@@ -2,7 +2,7 @@
 
 const _defaults = require( 'lodash/defaults' );
 const PingFace = require( 'futoin-invoker/PingFace' );
-const PollFace = require( 'PollFace' );
+const PollFace = require( './PollFace' );
 
 
 /**
