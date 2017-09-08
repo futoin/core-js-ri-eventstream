@@ -926,9 +926,9 @@ futoin-database@^1.2.2:
     pg "^7.3.0"
     sqlite3 "^3.1.9"
 
-futoin-executor@^1.5.1:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.5.1.tgz#89508c5f08bc4a2a383ac2422709b81675714913"
+futoin-executor@^1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.5.2.tgz#488a39836e94759ece3e159874409d799223a534"
   dependencies:
     cookies "^0.7.1"
     detect-node "^2.0.3"
@@ -937,9 +937,9 @@ futoin-executor@^1.5.1:
     lodash "^4.17.4"
     performance-now "^2.1.0"
 
-futoin-invoker@^1.5.3:
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.5.3.tgz#58c7e72fd91456560e9e5e67e08ec4470554d55a"
+futoin-invoker@^1.5.4:
+  version "1.5.4"
+  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.5.4.tgz#9c06731cbc9233ac5f1acc8b4eef6d32f7e188b2"
   dependencies:
     agentkeepalive "^3.3.0"
     detect-node "^2.0.3"

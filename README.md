@@ -238,6 +238,19 @@ CCM registration helper
 Event Stream - Push Service Base
 
 **Kind**: global class  
+
+* [PushService](#PushService)
+    * _instance_
+        * ["pushError"](#PushService+event_pushError)
+    * _static_
+        * [.register(as, executor, options)](#PushService.register) ⇒ [<code>PushService</code>](#PushService)
+
+<a name="PushService+event_pushError"></a>
+
+### "pushError"
+Emitted in push error handlers
+
+**Kind**: event emitted by [<code>PushService</code>](#PushService)  
 <a name="PushService.register"></a>
 
 ### PushService.register(as, executor, options) ⇒ [<code>PushService</code>](#PushService)

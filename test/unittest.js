@@ -275,15 +275,12 @@ describe( 'PushService', function() {
         $as().add(
             (as) => {
                 const call_count = 100;
-                as.setTimeout( 10e3 );
-                as.setCancel((as) => {
-                    console.log(live_rcv_svc);
-                });
                 SpecTools.once('error', (err) => console.log(err));
                 
                 const push_svc = MockPushService.register( as, executor, {
                     request_max : call_count,
                 });
+                push_svc.on('pushError', function() { console.log(arguments); } );
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
                 
                 push_svc._next_events = [];
@@ -313,6 +310,11 @@ describe( 'PushService', function() {
                 };
 
                 liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
+
+                as.setTimeout( 10e3 );
+                as.setCancel((as) => {
+                    console.log(live_rcv_svc);
+                });
                 
                 as.add( (as) => {
                     const pfl = ccm.iface('pfl');
@@ -379,15 +381,12 @@ describe( 'PushService', function() {
         
         $as().add(
             (as) => {
-                const call_count = 100;
-                as.setTimeout( 10e3 );
-                as.setCancel((as) => {
-                    console.log(live_rcv_svc);
-                    console.log(reliable_rcv_svc);
-                });
+                const call_count = 10;
                 SpecTools.once('error', (err) => console.log(err));
                 
                 const push_svc = MockPushService.register( as, executor);
+                push_svc.on('pushError', function() { console.log(arguments); } );
+                
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
                 PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
                 
@@ -420,6 +419,12 @@ describe( 'PushService', function() {
                 Object.assign( reliable_rcv_svc, live_rcv_svc );
                 liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
                 reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                
+                as.setTimeout( 10e3 );
+                as.setCancel((as) => {
+                    console.log(live_rcv_svc);
+                    console.log(reliable_rcv_svc);
+                });
                 
                 as.add( (as) => {
                     const pfl = ccm.iface('pfl');

@@ -6,6 +6,7 @@ const PingFace = require( 'futoin-invoker/PingFace' );
 const PollService = require( './PollService' );
 const PushFace = require( './PushFace' );
 const ReceiverFace = require( './ReceiverFace' );
+const ee = require( 'event-emitter' );
 
 class EventChannel
 {
@@ -167,7 +168,6 @@ class PushService extends PollService
                         executor,
                         iface,
                         want,
-                        root_as: worker_as,
                         wait_as: null,
                         history_push: events.length ? events : false,
                     } );
@@ -180,7 +180,7 @@ class PushService extends PollService
 
                     echan.addConsumer( iface, state );
 
-                    worker_as.add( this._reliableWorker );
+                    worker_as.add( ( as ) => this._reliableWorker( as ) );
                     worker_as.execute();
 
                     this._pokeWorker();
@@ -397,7 +397,7 @@ class PushService extends PollService
                 }
                 else if ( queue.length )
                 {
-                    const chunk = this._mergeQueue( queue, this.MAX_EVENTS );
+                    const chunk = PushService._mergeQueue( queue, this.MAX_EVENTS );
 
                     as.loop( ( as ) => as.add(
                         ( as ) =>
@@ -413,23 +413,29 @@ class PushService extends PollService
                         },
                         ( as, err ) =>
                         {
-                            this._onError( as, err );
-                            as.success();
+                            if ( err !== 'LoopBreak' )
+                            {
+                                this._onError( as, err );
+                                as.success();
+                            }
                         }
                     ) );
                 }
                 else
                 {
                     state.wait_as = as;
-                    as.waitCancel();
+                    as.waitExternal();
                 }
             },
             ( as, err ) =>
             {
-                this._onError( as, err );
+                if ( err !== 'LoopCont' )
+                {
+                    this._onError( as, err );
 
-                evt_stats.reliable_fails += 1;
-                as.success();
+                    evt_stats.reliable_fails += 1;
+                    as.success();
+                }
             }
         ) );
     }
@@ -502,13 +508,15 @@ class PushService extends PollService
 
     _onError( as, err )
     {
-        // TODO: avoid console
-        /* eslint-disable no-console */
-        console.log( err );
-        console.log( as.state.error_info );
-        console.log( as.state.last_exception );
-        /* eslint-enable no-console */
+        this.emit( 'pushError', err, as.state.error_info, as.state.last_exception );
     }
 }
 
 module.exports = PushService;
+
+ee( PushService.prototype );
+
+/**
+ * Emitted in push error handlers
+ * @event PushService#pushError
+ */
