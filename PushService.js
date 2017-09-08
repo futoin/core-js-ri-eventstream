@@ -27,7 +27,7 @@ class EventChannel
 
     addConsumer( iface, state )
     {
-        this.consumers.add( iface, state );
+        this.consumers.set( iface, state );
     }
 
     removeConsumer( iface )
@@ -83,7 +83,7 @@ class PushService extends PollService
      */
     static register( as, executor, options={} )
     {
-        const ifacever = 'futoin.evt.poll:' + PushFace.LATEST_VERSION;
+        const ifacever = 'futoin.evt.push:' + PushFace.LATEST_VERSION;
         const impl = new this( as, executor, options );
         const spec_dirs = [ PushFace.spec(), PingFace.spec( PushFace.PING_VERSION ) ];
 
@@ -110,6 +110,11 @@ class PushService extends PollService
             const iface = channel.iface( ifacever );
             const want = params.want;
 
+            if ( !iface )
+            {
+                as.error( 'InternalError',
+                    'Failed to register receiver iface' );
+            }
 
             const echan_key = EventChannel.want2key( want );
             let echan = this._echannels.get( echan_key );
@@ -130,6 +135,7 @@ class PushService extends PollService
                     req_count: 0,
                     queue: false,
                 } );
+
                 this._pokeWorker();
                 reqinfo.result( true );
             }
@@ -163,7 +169,7 @@ class PushService extends PollService
                         want,
                         root_as: worker_as,
                         wait_as: null,
-                        history_push: events,
+                        history_push: events.length ? events : false,
                     } );
 
                     channel.onInvokerAbort( () =>
@@ -193,13 +199,18 @@ class PushService extends PollService
         throw new Error( 'Not Implemented' );
     }
 
+    _recordLastId( as, _ident, _last_id )
+    {
+        throw new Error( 'Not Implemented' );
+    }
+
     _onEvents( events )
     {
         const REQUEST_MAX = this._request_max;
         const QUEUE_MAX = this._queue_max;
         const stats = this._stats;
 
-        for ( let [ k, echan ] in this._echannels.entries() )
+        for ( let [ k, echan ] of this._echannels.entries() )
         {
             let consumers = echan.consumers;
 
@@ -227,7 +238,7 @@ class PushService extends PollService
                 continue;
             }
 
-            for ( let [ iface, state ] in consumers )
+            for ( let [ iface, state ] of consumers )
             {
                 const c_queue = state.queue;
 
@@ -275,9 +286,14 @@ class PushService extends PollService
                             // TODO: create larger packets to increase
                             // throughput of small chunks
                             iface.onEvents( as, seq_id, filtered );
+                            as.add( ( as ) =>
+                            {
+                                state.req_count -= 1;
+                            } );
                         },
                         ( as, err ) =>
                         {
+                            this._onError( as, err );
                             state.req_count -= 1;
                         }
                     ).execute();
@@ -379,15 +395,38 @@ class PushService extends PollService
                         } );
                     }
                 }
+                else if ( queue.length )
+                {
+                    const chunk = this._mergeQueue( queue, this.MAX_EVENTS );
+
+                    as.loop( ( as ) => as.add(
+                        ( as ) =>
+                        {
+                            const next_last_id = sendEvents( as, chunk );
+
+                            as.add( ( as ) =>
+                            {
+                                state.last_id = next_last_id;
+                                this._recordLastId( as, state.ident, next_last_id );
+                                as.break();
+                            } );
+                        },
+                        ( as, err ) =>
+                        {
+                            this._onError( as, err );
+                            as.success();
+                        }
+                    ) );
+                }
                 else
                 {
-                    // TODO
-                    void state;
+                    state.wait_as = as;
+                    as.waitCancel();
                 }
             },
             ( as, err ) =>
             {
-                // TODO: log error here
+                this._onError( as, err );
 
                 evt_stats.reliable_fails += 1;
                 as.success();
@@ -440,6 +479,35 @@ class PushService extends PollService
         }
 
         return chunk.slice( start );
+    }
+
+    static _mergeQueue( queue, limit )
+    {
+        let chunk = queue.shift();
+
+        if ( !queue.length || ( chunk.length + queue[0].length ) > limit )
+        {
+            return chunk;
+        }
+
+        chunk = chunk.slice();
+
+        while ( queue.length && ( chunk.length + queue[0].length ) <= limit )
+        {
+            Array.prototype.push.apply( chunk, queue.shift() );
+        }
+
+        return chunk;
+    }
+
+    _onError( as, err )
+    {
+        // TODO: avoid console
+        /* eslint-disable no-console */
+        console.log( err );
+        console.log( as.state.error_info );
+        console.log( as.state.last_exception );
+        /* eslint-enable no-console */
     }
 }
 

@@ -31,7 +31,8 @@ class ReceiverFace extends NativeIface
      */
     static register( as, channel, options={} )
     {
-        const ifacever = options.version || this.LATEST_VERSION;
+        const version = options.version || this.LATEST_VERSION;
+        const ifacever = `futoin.evt.receiver:${version}`;
 
         _defaults( options, {
             nativeImpl: this,
@@ -39,12 +40,7 @@ class ReceiverFace extends NativeIface
             sendOnBehalfOf: false,
         } );
 
-        channel.register(
-            as,
-            `futoin.evt.receiver:${ifacever}`,
-            options
-        );
-
+        channel.register( as, ifacever, options );
         return ifacever;
     }
 }
