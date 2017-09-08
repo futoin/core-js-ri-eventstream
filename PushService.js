@@ -68,7 +68,9 @@ class PushService extends PollService
 
         this._stats = {
             skip_on_live: 0,
+            skip_on_reliable: 0,
             live_calls: 0,
+            live_fails: 0,
             reliable_calls: 0,
             reliable_fails: 0,
         };
@@ -128,14 +130,21 @@ class PushService extends PollService
 
             if ( component === 'LIVE' )
             {
-                channel.onInvokerAbort(
-                    () => echan.removeConsumer( iface ) );
-
-                echan.addConsumer( iface, {
+                const state = {
                     seq_id: 0,
                     req_count: 0,
-                    queue: false,
+                    queue: [],
+                    queue_count: 0,
+                    ident: null,
+                    iface,
+                };
+
+                channel.onInvokerAbort( () =>
+                {
+                    echan.removeConsumer( iface );
                 } );
+
+                echan.addConsumer( iface, state );
 
                 this._pokeWorker();
                 reqinfo.result( true );
@@ -206,7 +215,6 @@ class PushService extends PollService
 
     _onEvents( events )
     {
-        const REQUEST_MAX = this._request_max;
         const QUEUE_MAX = this._queue_max;
         const stats = this._stats;
 
@@ -238,27 +246,37 @@ class PushService extends PollService
                 continue;
             }
 
-            for ( let [ iface, state ] of consumers )
+            for ( let state of consumers.values() )
             {
                 const c_queue = state.queue;
+                const is_reliable = state.ident !== null;
 
-                if ( c_queue )
+                c_queue.push( filtered );
+                state.queue_count += filtered.length;
+
+                // removed oldest queue chunks on reach of limit
+                while ( state.queue_count > QUEUE_MAX )
                 {
-                    c_queue.push( filtered );
-                    state.queue_count += filtered.length;
+                    state.queue_count -= c_queue[0].length;
+                    c_queue.shift();
 
-                    // removed oldest queue chunks on reach of limit
-                    while ( state.queue_count > QUEUE_MAX )
+                    if ( is_reliable )
                     {
-                        state.queue_count -= c_queue[0].length;
-                        c_queue.shift();
-
                         if ( !state.history_push )
                         {
                             state.history_push = true;
                         }
-                    }
 
+                        stats.skip_on_reliable += 1;
+                    }
+                    else
+                    {
+                        stats.skip_on_live += 1;
+                    }
+                }
+
+                if ( is_reliable )
+                {
                     // trigger further execution of worker steps
                     if ( state.wait_as )
                     {
@@ -273,38 +291,50 @@ class PushService extends PollService
                         }
                     }
                 }
-                else if ( state.req_count < REQUEST_MAX )
-                {
-                    state.req_count += 1;
-                    const seq_id = state.seq_id + 1;
-                    state.seq_id = seq_id;
-
-                    // live events
-                    $as().add(
-                        ( as ) =>
-                        {
-                            // TODO: create larger packets to increase
-                            // throughput of small chunks
-                            iface.onEvents( as, seq_id, filtered );
-                            as.add( ( as ) =>
-                            {
-                                state.req_count -= 1;
-                            } );
-                        },
-                        ( as, err ) =>
-                        {
-                            this._onError( as, err );
-                            state.req_count -= 1;
-                        }
-                    ).execute();
-
-                    stats.live_calls += 1;
-                }
                 else
                 {
-                    stats.skip_on_live += 1;
+                    this._pushLive( state );
                 }
             }
+        }
+    }
+
+    _pushLive( state )
+    {
+        const stats = this._stats;
+
+        if ( state.req_count < this._request_max )
+        {
+            state.req_count += 1;
+            const seq_id = state.seq_id + 1;
+            state.seq_id = seq_id;
+
+            const chunk = PushService._mergeQueue( state, this.MAX_EVENTS );
+
+            // live events
+            $as().add(
+                ( as ) =>
+                {
+                    state.iface.onEvents( as, seq_id, chunk );
+                    as.add( ( as ) =>
+                    {
+                        state.req_count -= 1;
+
+                        if ( state.queue.length )
+                        {
+                            this._pushLive( state );
+                        }
+                    } );
+                },
+                ( as, err ) =>
+                {
+                    this._onError( as, err );
+                    state.req_count -= 1;
+                    stats.live_fails += 1;
+                }
+            ).execute();
+
+            stats.live_calls += 1;
         }
     }
 
@@ -397,7 +427,7 @@ class PushService extends PollService
                 }
                 else if ( queue.length )
                 {
-                    const chunk = PushService._mergeQueue( queue, this.MAX_EVENTS );
+                    const chunk = PushService._mergeQueue( state, this.MAX_EVENTS );
 
                     as.loop( ( as ) => as.add(
                         ( as ) =>
@@ -487,12 +517,14 @@ class PushService extends PollService
         return chunk.slice( start );
     }
 
-    static _mergeQueue( queue, limit )
+    static _mergeQueue( state, limit )
     {
+        const queue = state.queue;
         let chunk = queue.shift();
 
         if ( !queue.length || ( chunk.length + queue[0].length ) > limit )
         {
+            state.queue_count -= chunk.length;
             return chunk;
         }
 
@@ -503,6 +535,7 @@ class PushService extends PollService
             Array.prototype.push.apply( chunk, queue.shift() );
         }
 
+        state.queue_count -= chunk.length;
         return chunk;
     }
 

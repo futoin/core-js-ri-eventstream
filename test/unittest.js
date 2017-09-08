@@ -221,9 +221,14 @@ describe( 'PushService', function() {
     
     it('should combine chunks in queue', function() {
         const test = ( queue, chunk, after ) => {
-            const res = PushService._mergeQueue( queue, 1000 );
+            const queue_count = queue.reduce( (m, v) => m + v.length, 0 );
+            const state = { queue, queue_count };
+            const res = PushService._mergeQueue( state, 1000 );
             expect( res ).to.eql( chunk );
             expect( queue ).to.eql( after );
+            expect( state.queue_count ).to.eql(
+                queue.reduce( (m, v) => m + v.length, 0 )
+            );
         };
         
         const arr = [];
