@@ -147,6 +147,10 @@ describe( 'PushService', function() {
         }
     };
     
+    afterEach(function(){
+        require('event-emitter/all-off')(SpecTools);
+    });
+    
     it('should properly trim chunks by last ID', function() {
         const test = ( chunk, last_id, after ) => {
             const before = chunk.slice();
@@ -350,6 +354,13 @@ describe( 'PushService', function() {
                         .to.equal(events_expected);
                     expect( live_rcv_svc._call_count )
                         .to.be.below(call_count+1);
+            
+                    ccm.once('close', () => as.success());
+                    as.waitExternal();
+                    
+                    executor.close();
+                    liveExecutor.close();
+                    ccm.close();
                 } );
                 as.add( (as) => done() );
             },
@@ -468,6 +479,14 @@ describe( 'PushService', function() {
                         .to.be.below(call_count+1);
                     expect( reliable_rcv_svc._call_count )
                         .to.be.below(call_count+1);
+                    
+                    ccm.once('close', () => as.success());
+                    as.waitExternal();
+                    
+                    executor.close();
+                    reliableExecutor.close();
+                    liveExecutor.close();
+                    ccm.close();
                 } );
                 as.add( (as) => done() );
             },
@@ -477,6 +496,51 @@ describe( 'PushService', function() {
                 console.log(live_rcv_svc);
                 console.log(reliable_rcv_svc);
                 console.log(push_svc._stats);
+                done(as.state.last_exception);                
+            }
+        ).execute();
+    });
+    
+    it('should throw placeholder errors', function(done) {
+        const ccm = new AdvancedCCM();
+        const executor = new Executor( ccm );
+        
+        $as().add(
+            (as) => {
+                const push_svc = PushService.register( as, executor);
+                let push_error = null;
+                push_svc.on('pushError', function() { push_error = Array.from(arguments) } );
+                
+                expect( () => push_svc._pokeWorker() )
+                    .to.throw('Not Implemented');
+                
+                expect( () => push_svc._recordLastId() )
+                    .to.throw('Not Implemented');
+                    
+                as.add(
+                    (as) => as.error('MyError', 'My Info'),
+                    (as, err) => {
+                        push_svc._onPushError(as, err);
+                        as.success();
+                    }
+                );
+                
+                as.add( (as) => {
+                    expect(push_error[0]).to.equal('MyError');
+                    expect(push_error[1]).to.equal('My Info');
+                    expect(push_error[2]).to.be.instanceof(Error);
+                    
+                    ccm.once('close', () => as.success());
+                    as.waitExternal();
+                    
+                    executor.close();
+                    ccm.close();
+                } );
+                as.add( (as) => done() );
+            },
+            (as, err) => {
+                console.log(err);
+                console.log(as.state.error_info);
                 done(as.state.last_exception);                
             }
         ).execute();

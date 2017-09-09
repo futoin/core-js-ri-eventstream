@@ -113,12 +113,6 @@ class PushService extends PollService
             const iface = channel.iface( ifacever );
             const want = params.want;
 
-            if ( !iface )
-            {
-                as.error( 'InternalError',
-                    'Failed to register receiver iface' );
-            }
-
             const echan_key = EventChannel.want2key( want );
             let echan = this._echannels.get( echan_key );
 
@@ -138,6 +132,7 @@ class PushService extends PollService
                     ident: null,
                     iface,
                 };
+                Object.seal( state );
 
                 channel.onInvokerAbort( () =>
                 {
@@ -166,9 +161,7 @@ class PushService extends PollService
 
                 as.add( ( as, events ) =>
                 {
-                    const worker_as = $as();
-                    const state = worker_as.state;
-                    Object.assign( state, {
+                    const state = {
                         seq_id: 0,
                         queue: [],
                         queue_count: 0,
@@ -179,8 +172,11 @@ class PushService extends PollService
                         want,
                         wait_as: null,
                         history_push: events.length ? events : false,
-                    } );
+                    };
+                    Object.seal( state );
 
+                    const worker_as = $as();
+                    worker_as.state.worker = state;
                     channel.onInvokerAbort( () =>
                     {
                         echan.removeConsumer( iface );
@@ -272,6 +268,7 @@ class PushService extends PollService
                     else
                     {
                         stats.skip_on_live += 1;
+                        state.seq_id += 1; // indicate skip
                     }
                 }
 
@@ -328,7 +325,7 @@ class PushService extends PollService
                 },
                 ( as, err ) =>
                 {
-                    this._onError( as, err );
+                    this._onPushError( as, err );
                     state.req_count -= 1;
                     stats.live_fails += 1;
                 }
@@ -341,7 +338,7 @@ class PushService extends PollService
     _reliableWorker( as )
     {
         const MAX_EVENTS = this.MAX_EVENTS;
-        const state = as.state;
+        const state = as.state.worker;
         const evt_stats = this._stats;
 
         const sendEvents = ( as, events ) =>
@@ -445,7 +442,7 @@ class PushService extends PollService
                         {
                             if ( err !== 'LoopBreak' )
                             {
-                                this._onError( as, err );
+                                this._onPushError( as, err );
                                 as.success();
                             }
                         }
@@ -461,7 +458,7 @@ class PushService extends PollService
             {
                 if ( err !== 'LoopCont' )
                 {
-                    this._onError( as, err );
+                    this._onPushError( as, err );
 
                     evt_stats.reliable_fails += 1;
                     as.success();
@@ -509,11 +506,6 @@ class PushService extends PollService
             }
         }
 
-        if ( chunk.length <= start )
-        {
-            return null;
-        }
-
         return chunk.slice( start );
     }
 
@@ -539,7 +531,7 @@ class PushService extends PollService
         return chunk;
     }
 
-    _onError( as, err )
+    _onPushError( as, err )
     {
         this.emit( 'pushError', err, as.state.error_info, as.state.last_exception );
     }
