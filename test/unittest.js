@@ -142,13 +142,41 @@ describe( 'PushService', function() {
         _pollEvents( as, executor, ident, last_id, want, is_reliable )
         {
             as.add( (as) => {
-                as.success( this._next_events );
+                if (this._event_history && this._event_history.queue.length) {
+                    as.success(PushService._mergeQueue(this._event_history));
+                } else {
+                    as.success([]);
+                }
             });
         }
     };
     
     afterEach(function(){
         require('event-emitter/all-off')(SpecTools);
+    });
+    
+    it('should properly compare event IDs', function() {
+        const test = ( a, b, req ) => {
+            const res = PushService._cmpIds(a, b);
+            
+            switch (req) {
+                case -1: expect(res).to.be.below(0); break;
+                case 1: expect(res).to.be.above(0); break;
+                case 0: expect(res).to.equal(0); break;
+                default: fail();
+            }
+        };
+        
+        test('1', '1', 0);
+        test('0', '1', -1);
+        test('1', '2', -1);
+        test('1', '0', 1);
+        test('2', '1', 1);
+        test('1', '11', -1);
+        test('2', '11', -1);
+        test('11', '11', 0);
+        test('111', '11', 1);
+        test('111', '110', 1);
     });
     
     it('should properly trim chunks by last ID', function() {
@@ -160,66 +188,66 @@ describe( 'PushService', function() {
         };
         
         test(
-            [{id: 1}],
-            0,
-            [{id: 1}]
+            [{id: '1'}],
+            '0',
+            [{id: '1'}]
         );
         test(
-            [{id: 1}, {id: 2}],
-            2,
+            [{id: '1'}, {id: '2'}],
+            '2',
             null
         );
         test(
-            [{id: 1}, {id: 2}],
-            3,
+            [{id: '1'}, {id: '2'}],
+            '3',
             null
         );
         
         test(
-            [{id: 2}, {id: 3}],
-            2,
-            [{id: 3}]
+            [{id: '2'}, {id: '3'}],
+            '2',
+            [{id: '3'}]
         );
         test(
-            [{id: 2}, {id: 3}, {id: 4}],
-            2,
-            [{id: 3}, {id: 4}]
+            [{id: '2'}, {id: '3'}, {id: '4'}],
+            '2',
+            [{id: '3'}, {id: '4'}]
         );
         
         test(
-            [{id:2}, {id:3}, {id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
-            10,
-            [{id:20}, {id:30}, {id:31}],
+            [{id:'2'}, {id:'3'}, {id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
+            '10',
+            [{id:'20'}, {id:'30'}, {id:'31'}],
         );
         test(
-            [{id:2}, {id:3}, {id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
-            11,
-            [{id:20}, {id:30}, {id:31}],
+            [{id:'2'}, {id:'3'}, {id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
+            '11',
+            [{id:'20'}, {id:'30'}, {id:'31'}],
         );
         test(
-            [{id:2}, {id:3}, {id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
-            19,
-            [{id:20}, {id:30}, {id:31}],
+            [{id:'2'}, {id:'3'}, {id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
+            '19',
+            [{id:'20'}, {id:'30'}, {id:'31'}],
         );
         test(
-            [{id:2}, {id:3}, {id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
-            20,
-            [{id:30}, {id:31}],
+            [{id:'2'}, {id:'3'}, {id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
+            '20',
+            [{id:'30'}, {id:'31'}],
         );
         test(
-            [{id:2}, {id:3}, {id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
-            21,
-            [{id:30}, {id:31}],
+            [{id:'2'}, {id:'3'}, {id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
+            '21',
+            [{id:'30'}, {id:'31'}],
         );
         test(
-            [{id:2}, {id:3}, {id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
-            3,
-            [{id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
+            [{id:'2'}, {id:'3'}, {id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
+            '3',
+            [{id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
         );
         test(
-            [{id:2}, {id:3}, {id:4}, {id:10}, {id:20}, {id:30}, {id:31}],
-            7,
-            [{id:10}, {id:20}, {id:30}, {id:31}],
+            [{id:'2'}, {id:'3'}, {id:'4'}, {id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
+            '7',
+            [{id:'10'}, {id:'20'}, {id:'30'}, {id:'31'}],
         );
     });
     
@@ -266,7 +294,7 @@ describe( 'PushService', function() {
     });
     
     it('should process live events', function(done) {
-        this.timeout(30e3);
+        this.timeout(15e3);
         
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
@@ -292,7 +320,6 @@ describe( 'PushService', function() {
                 push_svc.on('pushError', function() { console.log(arguments); } );
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
                 
-                push_svc._next_events = [];
                 let events_expected = 0;
                 
                 const live_rcv_svc = {
@@ -375,7 +402,7 @@ describe( 'PushService', function() {
     });
     
     it('should process events', function(done) {
-        this.timeout(30e3);
+        this.timeout(15e3);
         
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
@@ -406,7 +433,6 @@ describe( 'PushService', function() {
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
                 PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
                 
-                push_svc._next_events = [];
                 let events_expected = 0;
                 
                 const live_rcv_svc = {
@@ -547,7 +573,7 @@ describe( 'PushService', function() {
     });
     
     it('should deliver with failures', function(done) {
-        this.timeout(30e3);
+        this.timeout(15e3);
         
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
@@ -577,7 +603,6 @@ describe( 'PushService', function() {
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
                 PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
                 
-                push_svc._next_events = [];
                 let events_expected = 0;
                 
                 const live_rcv_svc = {
@@ -639,6 +664,9 @@ describe( 'PushService', function() {
                                 ts: moment.utc().format(),
                             });
                         }
+                        
+                        if (!events.length) return;
+                        
                         events_expected += events.length;
                         push_svc._onEvents(events);
                     });
@@ -678,5 +706,307 @@ describe( 'PushService', function() {
                 done(as.state.last_exception);                
             }
         ).execute();
+    });
+    
+    it('should deliver with history', function(done) {
+        this.timeout(15e3);
+        
+        const ccm = new AdvancedCCM();
+        const executor = new Executor( ccm );
+        const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
+        const reliableExecutor = new Executor( ccm, { specDirs: main.specDirs } );
+        
+        executor.on('notExpected', function() {
+            console.log('executor');
+            console.dir(arguments);
+        });
+        liveExecutor.on('notExpected', function() {
+            console.log('liveExecutor');
+            console.dir(arguments);
+        });
+        reliableExecutor.on('notExpected', function() {
+            console.log('reliableExecutor');
+            console.dir(arguments);
+        });
+        
+        $as().add(
+            (as) => {
+                SpecTools.once('error', (err) => console.log(err));
+                
+                const push_svc = MockPushService.register( as, executor, {
+                    queue_max: 100e3,
+                });
+                push_svc.on('pushError', function() { console.log(arguments); } );
+                push_svc.on('queueOverflow', function() { console.log(arguments); } );
+                
+                PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
+                PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
+                
+                push_svc._event_history = { queue: [], queue_count: 0};
+                let events_expected = 0;
+                const call_count = 20;
+                
+                as.repeat(2, (as, i) => {
+                    const events = [];
+                    const max = i ? 700 : 1000;
+                    for ( let j = 0; j < max; ++j ) {
+                        events.push({
+                            id: `${events_expected + j + 1}`,
+                            type: 'EVT',
+                            data: 1,
+                            ts: moment.utc().format(),
+                        });
+                    }
+                    if (!events.length) return;
+                          
+                    events_expected += events.length;
+                    push_svc._event_history.queue.push( events );
+                    push_svc._event_history.queue_count += events.length;
+                });
+                
+                const live_rcv_svc = {
+                    _count: 0,
+                    _call_count: 0,
+                    _as: null,
+                    _inter_as: null,
+                    onEvents: function(as, reqinfo) {
+                        this._call_count += 1;
+
+                        this._count += reqinfo.params().events.length;
+                        
+                        if (this._count >= events_expected && this._as ) {
+                            this._as.success();
+                            this._as = null;
+                        }
+                        
+                        if (this._inter_as) {
+                            this._inter_as.success();
+                            this._inter_as = null;
+                        }
+                        
+                        reqinfo.result(true);
+                    },
+                };
+                const reliable_rcv_svc = {};
+                Object.assign( reliable_rcv_svc, live_rcv_svc );
+                liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
+                reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                
+                as.setTimeout( 10e3 );
+                as.setCancel((as) => {
+                    console.log(live_rcv_svc);
+                    console.log(reliable_rcv_svc);
+                });
+                
+                as.add( (as) => {
+                    events_expected /= 2;
+                    const shift = events_expected;
+                    const pfl = ccm.iface('pfl');
+                    pfl.readyToReceive(as, 'LIVE');
+                    const pfr = ccm.iface('pfr');
+                    pfr.readyToReceive(as, 'RLB');
+                    
+                    as.repeat(call_count, (as, i) => {
+                        const events = [];
+                        for ( let j = 0; j < (((i + 1) * (1000 / call_count * 2)) % 1000); ++j ) {
+                            events.push({
+                                id: `${events_expected + j + 1}`,
+                                type: 'EVT',
+                                data: 2,
+                                ts: moment.utc().format(),
+                            });
+                        }
+                        
+                        if (!events.length) return;
+                              
+                        events_expected += events.length;
+                        push_svc._onEvents(events);
+                    });
+                    as.add( (as) => {
+                        if (reliable_rcv_svc._count < events_expected) {
+                            as.waitExternal();
+                            reliable_rcv_svc._as = as;
+                        }
+                    });
+                });
+                as.add( (as) => {
+                    expect( live_rcv_svc._count )
+                        .to.be.below(events_expected);
+                    expect( reliable_rcv_svc._count )
+                        .to.equal(events_expected);
+                    expect( live_rcv_svc._call_count )
+                        .to.be.below(call_count+1);
+                    expect( reliable_rcv_svc._call_count )
+                        .to.be.below(call_count * 2);
+                    
+                    ccm.once('close', () => as.success());
+                    as.waitExternal();
+                    
+                    executor.close();
+                    reliableExecutor.close();
+                    liveExecutor.close();
+                    ccm.close();
+                } );
+                as.add( (as) => done() );
+            },
+            (as, err) => {
+                console.log(err);
+                console.log(as.state.error_info);
+                console.log(live_rcv_svc);
+                console.log(reliable_rcv_svc);
+                console.log(push_svc._stats);
+                done(as.state.last_exception);                
+            }
+        ).execute();
+    });
+    
+    it('should deliver from history', function(done) {
+        this.timeout(15e3);
+
+        $as().repeat(2, (as, global_iter) => {
+        
+            const ccm = new AdvancedCCM();
+            const executor = new Executor( ccm );
+            const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
+            const reliableExecutor = new Executor( ccm, { specDirs: main.specDirs } );
+            
+            executor.on('notExpected', function() {
+                console.log('executor');
+                console.dir(arguments);
+            });
+            liveExecutor.on('notExpected', function() {
+                console.log('liveExecutor');
+                console.dir(arguments);
+            });
+            reliableExecutor.on('notExpected', function() {
+                console.log('reliableExecutor');
+                console.dir(arguments);
+            });
+        
+            as.add(
+                (as) => {
+                    SpecTools.once('error', (err) => console.log(err));
+                    
+                    const push_svc = MockPushService.register( as, executor);
+                    push_svc.on('pushError', function() { console.log(arguments); } );
+                    push_svc.on('queueOverflow', function() { console.log(arguments); } );
+                    
+                    PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
+                    
+                    push_svc._event_history = { queue: [], queue_count: 0};
+                    let events_expected = 0;
+                    const call_count = 3;
+                    
+                    as.repeat(2, (as, i) => {
+                        const events = [];
+                        const max = (global_iter && i) ? 700 : 1000;
+                        for ( let j = 0; j < max; ++j ) {
+                            events.push({
+                                id: `${events_expected + j + 1}`,
+                                type: 'EVT',
+                                data: 1,
+                                ts: moment.utc().format(),
+                            });
+                        }
+                        if (!events.length) return;
+
+                        events_expected += events.length;
+                        push_svc._event_history.queue.push( events );
+                        push_svc._event_history.queue_count += events.length;
+                    });
+                    
+                    const reliable_rcv_svc = {
+                        _count: 0,
+                        _call_count: 0,
+                        _as: null,
+                        _inter_as: null,
+                        onEvents: function(as, reqinfo) {
+                            this._call_count += 1;
+
+                            this._count += reqinfo.params().events.length;
+                            
+                            if (this._count >= events_expected && this._as ) {
+                                this._as.success();
+                                this._as = null;
+                            }
+                            
+                            if (this._inter_as) {
+                                this._inter_as.success();
+                                this._inter_as = null;
+                            }
+                            
+                            reqinfo.result(true);
+                        },
+                    };
+
+                    reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                    
+                    as.setTimeout( 10e3 );
+                    as.setCancel((as) => {
+                        console.log(reliable_rcv_svc);
+                    });
+                    
+                    as.add( (as) => {
+                        const shift = events_expected;
+                        const pfr = ccm.iface('pfr');
+                        pfr.readyToReceive(as, 'RLB');
+                        
+                        as.add( (as) => {
+                            if (reliable_rcv_svc._count < events_expected) {
+                                as.waitExternal();
+                                reliable_rcv_svc._as = as;
+                            }
+                        });
+                        
+                        as.add( (as) => {
+                            events_expected /= 2;
+                        });
+                        
+                        as.repeat(call_count, (as, i) => {
+                            const events = [];
+                            for ( let j = 0; j < (((i + 1) * (1000 / call_count * 2)) % 1000); ++j ) {
+                                events.push({
+                                    id: `${events_expected + j + 1}`,
+                                    type: 'EVT',
+                                    data: 2,
+                                    ts: moment.utc().format(),
+                                });
+                            }
+                            
+                            if (!events.length) return;
+                                
+                            events_expected += events.length;
+                            push_svc._onEvents(events);
+                        });
+                        as.add( (as) => {
+                            if (reliable_rcv_svc._count < events_expected) {
+                                as.waitExternal();
+                                reliable_rcv_svc._as = as;
+                            }
+                        });
+                    });
+                    as.add( (as) => {
+                        expect( reliable_rcv_svc._count )
+                            .to.equal(events_expected);
+                        expect( reliable_rcv_svc._call_count )
+                            .to.be.below(call_count + 2);
+                        
+                        ccm.once('close', () => as.success());
+                        as.waitExternal();
+                        
+                        executor.close();
+                        reliableExecutor.close();
+                        liveExecutor.close();
+                        ccm.close();
+                    } );
+                    as.add( (as) => global_iter && done() );
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);                
+                }
+            );
+        } ).execute();
     });
 });

@@ -254,7 +254,8 @@ class PushService extends PollService
                 while ( state.queue_count > QUEUE_MAX )
                 {
                     state.queue_count -= c_queue[0].length;
-                    c_queue.shift();
+                    const removed = c_queue.shift();
+                    this.emit( 'queueOverflow', state.ident || 'LIVE', removed.length );
 
                     if ( is_reliable )
                     {
@@ -263,12 +264,12 @@ class PushService extends PollService
                             state.history_push = true;
                         }
 
-                        stats.skip_on_reliable += 1;
+                        stats.skip_on_reliable++;
                     }
                     else
                     {
-                        stats.skip_on_live += 1;
-                        state.seq_id += 1; // indicate skip
+                        stats.skip_on_live++;
+                        state.seq_id++; // indicate skip
                     }
                 }
 
@@ -302,9 +303,8 @@ class PushService extends PollService
 
         if ( state.req_count < this._request_max )
         {
-            state.req_count += 1;
-            const seq_id = state.seq_id + 1;
-            state.seq_id = seq_id;
+            state.req_count++;
+            const seq_id = state.seq_id++;
 
             const chunk = PushService._mergeQueue( state, this.MAX_EVENTS );
 
@@ -315,7 +315,7 @@ class PushService extends PollService
                     state.iface.onEvents( as, seq_id, chunk );
                     as.add( ( as ) =>
                     {
-                        state.req_count -= 1;
+                        state.req_count--;
 
                         if ( state.queue.length )
                         {
@@ -326,12 +326,12 @@ class PushService extends PollService
                 ( as, err ) =>
                 {
                     this._onPushError( as, err );
-                    state.req_count -= 1;
-                    stats.live_fails += 1;
+                    state.req_count--;
+                    stats.live_fails++;
                 }
             ).execute();
 
-            stats.live_calls += 1;
+            stats.live_calls++;
         }
     }
 
@@ -343,43 +343,22 @@ class PushService extends PollService
 
         const sendEvents = ( as, events ) =>
         {
-            const seq_id = state.seq_id + 1;
-            state.seq_id = seq_id;
             const last_id = events[events.length - 1].id;
 
-            state.iface.onEvents( as, seq_id, events );
-            evt_stats.reliable_calls += 1;
-            return last_id;
+            state.iface.onEvents( as, state.seq_id, events );
+            evt_stats.reliable_calls++;
+
+            as.add( ( as ) =>
+            {
+                state.seq_id++;
+                state.last_id = last_id;
+            } );
         };
 
         as.loop( ( as ) => as.add(
             ( as ) =>
             {
                 const queue = state.queue;
-                const last_id = state.last_id;
-
-                if ( state.history_push && queue.length && queue[0][0].id <= last_id )
-                {
-                    state.history_push = false;
-
-                    // remove already sent queued items
-                    while ( queue.length )
-                    {
-                        const chunk = PushService._trimChunk( queue[0], last_id );
-
-                        if ( chunk )
-                        {
-                            queue[0] = chunk;
-                            break;
-                        }
-                        else
-                        {
-                            queue.shift();
-                            continue;
-                        }
-                    }
-                }
-
                 const history_push = state.history_push;
 
                 // If have history events or marked for history push
@@ -394,13 +373,38 @@ class PushService extends PollService
                             as.continue();
                         }
 
-                        const next_last_id = sendEvents( as, history_push );
+                        sendEvents( as, history_push );
 
                         as.add( ( as ) =>
                         {
-                            state.last_id = next_last_id;
-                            state.history_push = ( history_push.length >= MAX_EVENTS );
-                            as.continue();
+                            const last_id = state.last_id;
+
+                            if ( queue.length &&
+                                ( PushService._cmpIds( queue[0][0].id, last_id ) <= 0 ) )
+                            {
+                                // remove already sent queued items
+                                while ( queue.length )
+                                {
+                                    const chunk = PushService._trimChunk( queue[0], last_id );
+
+                                    if ( chunk )
+                                    {
+                                        queue[0] = chunk;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        queue.shift();
+                                        continue;
+                                    }
+                                }
+
+                                state.history_push = false;
+                            }
+                            else
+                            {
+                                state.history_push = ( history_push.length >= MAX_EVENTS );
+                            }
                         } );
                     }
                     else
@@ -418,7 +422,6 @@ class PushService extends PollService
                         as.add( ( as, events ) =>
                         {
                             state.history_push = events;
-                            as.continue();
                         } );
                     }
                 }
@@ -429,12 +432,11 @@ class PushService extends PollService
                     as.loop( ( as ) => as.add(
                         ( as ) =>
                         {
-                            const next_last_id = sendEvents( as, chunk );
+                            sendEvents( as, chunk );
 
                             as.add( ( as ) =>
                             {
-                                state.last_id = next_last_id;
-                                this._recordLastId( as, state.ident, next_last_id );
+                                this._recordLastId( as, state.ident, state.last_id );
                                 as.break();
                             } );
                         },
@@ -460,7 +462,7 @@ class PushService extends PollService
                 {
                     this._onPushError( as, err );
 
-                    evt_stats.reliable_fails += 1;
+                    evt_stats.reliable_fails++;
                     as.success();
                 }
             }
@@ -469,12 +471,12 @@ class PushService extends PollService
 
     static _trimChunk( chunk, last_id )
     {
-        if ( chunk[0].id > last_id )
+        if ( this._cmpIds( chunk[0].id, last_id ) > 0 )
         {
             return chunk;
         }
 
-        if ( chunk[chunk.length - 1].id <= last_id )
+        if ( this._cmpIds( chunk[chunk.length - 1].id, last_id ) <= 0 )
         {
             return null;
         }
@@ -488,19 +490,19 @@ class PushService extends PollService
             i = start + ~~( ( end - start ) / 2 );
 
             const c = chunk[i].id;
+            const cmp_res = this._cmpIds( c, last_id );
 
-            if ( c === last_id )
+            if ( !cmp_res )
             {
                 start = i + 1;
                 break;
             }
 
-            if ( c < last_id )
+            if ( cmp_res < 0 )
             {
                 start = i + 1;
             }
-
-            if ( c > last_id )
+            else
             {
                 end = i;
             }
@@ -531,6 +533,21 @@ class PushService extends PollService
         return chunk;
     }
 
+    static _cmpIds( a, b )
+    {
+        const a_len = a.length;
+        const b_len = b.length;
+
+        if ( a_len === b_len )
+        {
+            return a.localeCompare( b );
+        }
+        else
+        {
+            return a_len - b_len;
+        }
+    }
+
     _onPushError( as, err )
     {
         this.emit( 'pushError', err, as.state.error_info, as.state.last_exception );
@@ -544,4 +561,9 @@ ee( PushService.prototype );
 /**
  * Emitted in push error handlers
  * @event PushService#pushError
+ */
+
+/**
+ * Emitted in push error handlers
+ * @event PushService#queueOverflow
  */

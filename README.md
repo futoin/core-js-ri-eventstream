@@ -242,12 +242,19 @@ Event Stream - Push Service Base
 * [PushService](#PushService)
     * _instance_
         * ["pushError"](#PushService+event_pushError)
+        * ["queueOverflow"](#PushService+event_queueOverflow)
     * _static_
         * [.register(as, executor, options)](#PushService.register) ⇒ [<code>PushService</code>](#PushService)
 
 <a name="PushService+event_pushError"></a>
 
 ### "pushError"
+Emitted in push error handlers
+
+**Kind**: event emitted by [<code>PushService</code>](#PushService)  
+<a name="PushService+event_queueOverflow"></a>
+
+### "queueOverflow"
 Emitted in push error handlers
 
 **Kind**: event emitted by [<code>PushService</code>](#PushService)  
