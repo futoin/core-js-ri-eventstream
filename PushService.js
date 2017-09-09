@@ -253,8 +253,9 @@ class PushService extends PollService
                 // removed oldest queue chunks on reach of limit
                 while ( state.queue_count > QUEUE_MAX )
                 {
-                    state.queue_count -= c_queue[0].length;
                     const removed = c_queue.shift();
+                    state.queue_count -= removed.length;
+                    
                     this.emit( 'queueOverflow', state.ident || 'LIVE', removed.length );
 
                     if ( is_reliable )
