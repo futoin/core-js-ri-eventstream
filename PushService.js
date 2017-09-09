@@ -230,7 +230,7 @@ class PushService extends PollService
 
             if ( want )
             {
-                filtered = events.filter( ( v ) => ( want.get( v.type ) !== undefined ) );
+                filtered = events.filter( ( v ) => ( want.has( v.type ) ) );
             }
             else
             {
@@ -255,7 +255,7 @@ class PushService extends PollService
                 {
                     const removed = c_queue.shift();
                     state.queue_count -= removed.length;
-                    
+
                     this.emit( 'queueOverflow', state.ident || 'LIVE', removed.length );
 
                     if ( is_reliable )

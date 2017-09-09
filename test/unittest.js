@@ -394,8 +394,6 @@ describe( 'PushService', function() {
             (as, err) => {
                 console.log(err);
                 console.log(as.state.error_info);
-                console.log(live_rcv_svc);
-                console.log(push_svc._stats);
                 done(as.state.last_exception);                
             }
         ).execute();
@@ -519,9 +517,6 @@ describe( 'PushService', function() {
             (as, err) => {
                 console.log(err);
                 console.log(as.state.error_info);
-                console.log(live_rcv_svc);
-                console.log(reliable_rcv_svc);
-                console.log(push_svc._stats);
                 done(as.state.last_exception);                
             }
         ).execute();
@@ -700,9 +695,6 @@ describe( 'PushService', function() {
             (as, err) => {
                 console.log(err);
                 console.log(as.state.error_info);
-                console.log(live_rcv_svc);
-                console.log(reliable_rcv_svc);
-                console.log(push_svc._stats);
                 done(as.state.last_exception);                
             }
         ).execute();
@@ -852,9 +844,6 @@ describe( 'PushService', function() {
             (as, err) => {
                 console.log(err);
                 console.log(as.state.error_info);
-                console.log(live_rcv_svc);
-                console.log(reliable_rcv_svc);
-                console.log(push_svc._stats);
                 done(as.state.last_exception);                
             }
         ).execute();
@@ -1150,9 +1139,225 @@ describe( 'PushService', function() {
             (as, err) => {
                 console.log(err);
                 console.log(as.state.error_info);
-                console.log(live_rcv_svc);
-                console.log(reliable_rcv_svc);
-                console.log(push_svc._stats);
+                done(as.state.last_exception);                
+            }
+        ).execute();
+    });
+    
+    it('should handle event filters', function(done) {
+        this.timeout(15e3);
+        
+        const ccm = new AdvancedCCM();
+        const executor = new Executor( ccm );
+        const execAB = new Executor( ccm, { specDirs: main.specDirs } );
+        const execBC = new Executor( ccm, { specDirs: main.specDirs } );
+        
+        executor.on('notExpected', function() {
+            console.log('executor');
+            console.dir(arguments);
+        });
+        execAB.on('notExpected', function() {
+            console.log('execAB');
+            console.dir(arguments);
+        });
+        execBC.on('notExpected', function() {
+            console.log('execBC');
+            console.dir(arguments);
+        });
+
+        $as().add(
+            (as) => {
+                SpecTools.once('error', (err) => console.log(err));
+                
+                const push_svc = MockPushService.register( as, executor);
+                push_svc.on('pushError', function() { console.log(arguments); } );
+                
+                const ab_svc = {
+                    _count: 0,
+                    _as: null,
+                  
+                    onEvents: function(as, reqinfo) {
+                        const events = reqinfo.params().events;
+                        this._count += events.length;
+                        
+                        events.forEach( (v) => {
+                            if ( v.type !== 'AEVT' && v.type !== 'BEVT' ) {
+                                console.log(v);
+                                as.error('Fail');
+                            }
+                        });
+                        
+                        reqinfo.result(true);
+                                
+                        if (this._count >= 10 && this._as ) {
+                            this._as.success();
+                            this._as = null;
+                        }
+                    }
+                };
+                execAB.register( as, 'futoin.evt.receiver:1.0', ab_svc );
+                const bc_svc = {
+                    _count: 0,
+                    _as: null,
+                  
+                    onEvents: function(as, reqinfo) {
+                        const events = reqinfo.params().events;
+                        this._count += events.length;
+                        
+                        events.forEach( (v) => {
+                            if ( v.type !== 'CEVT' && v.type !== 'BEVT' ) {
+                                console.log(v);
+                                as.error('Fail');
+                            }
+                        });
+                        
+                        reqinfo.result(true);
+                                
+                        if (this._count >= 7 && this._as ) {
+                            this._as.success();
+                            this._as = null;
+                        }
+                    }
+                };
+                execBC.register( as, 'futoin.evt.receiver:1.0', bc_svc );
+
+                PushFace.register( as, ccm, 'ab', executor, null, { executor: execAB } );
+                PushFace.register( as, ccm, 'bc', executor, null, { executor: execBC } );
+                PushFace.register( as, ccm, 'ee', executor, null, { executor: execBC } );
+                
+                as.add( (as) => {
+                    ccm.iface('ab').readyToReceive(as, 'LIVE', ['AEVT', 'BEVT']);
+                    ccm.iface('bc').readyToReceive(as, 'RLB', ['BEVT', 'CEVT']);
+                    ccm.iface('ee').readyToReceive(as, 'RLB', ['EEVT']);
+                } );
+                    
+                as.add( (as) => {
+                    const data = null;
+                    const ts = moment.utc().format();
+                    
+                    push_svc._onEvents([
+                        {id:'1', type:'AEVT', data, ts },
+                        {id:'2', type:'BEVT', data, ts },
+                        {id:'3', type:'CEVT', data, ts },
+                        {id:'4', type:'DEVT', data, ts },
+                        {id:'5', type:'AEVT', data, ts },
+                        {id:'6', type:'BEVT', data, ts },
+                        {id:'7', type:'BEVT', data, ts },
+                        {id:'8', type:'CEVT', data, ts },
+                        {id:'9', type:'CEVT', data, ts },
+                        {id:'10', type:'CEVT', data, ts },
+                    ]);
+                } );
+                
+                
+                as.add( (as) => {
+                    if (bc_svc._count < 7){
+                        bc_svc._as = as;
+                        as.waitExternal();
+                    }
+                } );
+                
+                as.add( (as) => {
+                    execBC.close();
+                } );
+                
+                as.add( (as) => {
+                    const data = null;
+                    const ts = moment.utc().format();
+                    
+                    push_svc._onEvents([
+                        {id:'11', type:'AEVT', data, ts },
+                        {id:'12', type:'BEVT', data, ts },
+                        {id:'13', type:'CEVT', data, ts },
+                        {id:'14', type:'DEVT', data, ts },
+                        {id:'15', type:'AEVT', data, ts },
+                        {id:'16', type:'BEVT', data, ts },
+                        {id:'17', type:'BEVT', data, ts },
+                        {id:'18', type:'CEVT', data, ts },
+                        {id:'19', type:'CEVT', data, ts },
+                        {id:'20', type:'CEVT', data, ts },
+                    ]);                    
+                } );
+                
+                as.add( (as) => {
+                    if (ab_svc._count < 10){
+                        ab_svc._as = as;
+                        as.waitExternal();
+                    }
+                } );
+
+                as.add( (as) => {
+                    expect(ab_svc._count).to.equal(10);
+                    expect(bc_svc._count).to.equal(7);
+                    
+                    ccm.once('close', () => as.success());
+                    as.waitExternal();
+                    
+                    executor.close();
+                    execAB.close();
+                    ccm.close();
+                } );
+                as.add( (as) => done() );
+            },
+            (as, err) => {
+                console.log(err);
+                console.log(as.state.error_info);
+                done(as.state.last_exception);                
+            }
+        ).execute();
+    });
+    
+    it('should handle allow only fine tune', function(done) {
+        this.timeout(15e3);
+        
+        const ccm = new AdvancedCCM();
+        const executor = new Executor( ccm );
+        const clientExecutor = new Executor(ccm);
+        
+        executor.on('notExpected', function() {
+            console.log('executor');
+            console.dir(arguments);
+        });
+
+
+        $as().add(
+            (as) => {
+                SpecTools.once('error', (err) => console.log(err));
+                
+                const push_svc = MockPushService.register( as, executor, {
+                    allow_reliable: false
+                });
+                push_svc.on('pushError', function() { console.log(arguments); } );
+                
+                
+                PushFace.register( as, ccm, 't', executor, null, { executor: clientExecutor } );
+                
+                as.add(
+                    (as) => {
+                        ccm.iface('t').readyToReceive(as, 'RLB');
+                        as.add( (as) => as.error('Fail') );
+                    },
+                    (as, err) => {
+                        expect( err ).to.equal('SecurityError');
+                        expect( as.state.error_info ).to.equal('Only LIVE delivery is allowed');
+                        as.success();
+                    }
+                );
+                as.add( (as) => ccm.iface('t').readyToReceive(as, 'LIVE') );
+                
+                as.add( (as) => {
+                    ccm.once('close', () => as.success());
+                    as.waitExternal();
+                    
+                    executor.close();
+                    clientExecutor.close();
+                    ccm.close();
+                } );
+                as.add( (as) => done() );
+            },
+            (as, err) => {
+                console.log(err);
+                console.log(as.state.error_info);
                 done(as.state.last_exception);                
             }
         ).execute();
