@@ -19,13 +19,19 @@ class DBPushService extends PushService
                 sleep_min: 100,
                 sleep_max: 3000,
                 sleep_step: 100,
+                event_table: DB_EVTTABLE,
+                consumer_table: DB_EVTCONSUMERS,
             }
         );
 
-        this._ccm = executor.ccm();
-        this._ccm.assertIface( '#db.evt', DB_IFACEVER );
-        this._evt_table = options.event_table || DB_EVTTABLE;
-        this._consumer_table = options.consumer_table || DB_EVTCONSUMERS;
+
+        const ccm = executor.ccm();
+        this._ccm = ccm;
+        ccm.assertIface( '#db.evt', DB_IFACEVER );
+
+        const qb = ccm.db( 'evt' ).queryBuilder();
+        this._evt_table = qb.identifier( options.event_table );
+        this._consumer_table = qb.identifier( options.consumer_table );
 
         this._worker_as = null;
 

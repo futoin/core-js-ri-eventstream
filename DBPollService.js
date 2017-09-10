@@ -1,5 +1,6 @@
 'use strict';
 
+const _defaults = require( 'lodash/defaults' );
 const PollService = require( './PollService' );
 const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
 
@@ -8,9 +9,18 @@ class DBPollService extends PollService
     constructor( _as, executor, options )
     {
         super( _as, executor, options );
-        executor.ccm().assertIface( '#db.evt', DB_IFACEVER );
-        this._evt_table = options.event_table || DB_EVTTABLE;
-        this._consumer_table = options.consumer_table || DB_EVTCONSUMERS;
+
+        _defaults( options, {
+            event_table: DB_EVTTABLE,
+            consumer_table: DB_EVTCONSUMERS,
+        } );
+
+        const ccm = executor.ccm();
+        ccm.assertIface( '#db.evt', DB_IFACEVER );
+
+        const qb = ccm.db( 'evt' ).queryBuilder();
+        this._evt_table = qb.identifier( options.event_table );
+        this._consumer_table = qb.identifier( options.consumer_table );
     }
 
     _registerConsumer( as, executor, ident )

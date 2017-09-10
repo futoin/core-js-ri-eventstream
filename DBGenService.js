@@ -8,10 +8,16 @@ class DBGenService extends GenService
     constructor( _as, executor, options )
     {
         super();
-        executor.ccm().assertIface( '#db.evt', DB_IFACEVER );
+
+        const ccm = executor.ccm();
+        ccm.assertIface( '#db.evt', DB_IFACEVER );
+
+        const db = ccm.db( 'evt' );
 
         this._add_event_query = null;
-        this._evt_table = options.event_table || DB_EVTTABLE;
+        this._evt_table = db.queryBuilder().identifier(
+            options.event_table || DB_EVTTABLE
+        );
     }
 
     addEvent( as, reqinfo )
