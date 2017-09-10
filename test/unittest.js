@@ -78,6 +78,7 @@ describe('PollService', function() {
                     (as) =>
                     {
                         ccm.iface('pf').registerConsumer( as, 'SC' );
+                        as.add( (as) => as.error('Fail') );
                     },
                     (as, err) =>
                     {
@@ -93,11 +94,65 @@ describe('PollService', function() {
                     (as) =>
                     {
                         ccm.iface('pf').pollEvents( as, 'SC', null, null );
+                        as.add( (as) => as.error('Fail') );
                     },
                     (as, err) =>
                     {
                         if ( err === 'SecurityError' &&
                              as.state.error_info === 'Reliable delivery is disabled' )
+                        {
+                            as.success();
+                        }
+                    }
+                );
+                
+                as.add( (as) => done() );
+            },
+            (as, err) =>
+            {
+                console.log(err);
+                console.log(as.state.error_info);
+                done(as.state.last_exception);
+            }
+        ).execute();
+    });
+    
+    it('should forbid polling, if configured', function(done) {
+        const ccm = new AdvancedCCM();
+        const executor = new Executor( ccm );
+        
+        $as().add(
+            (as) =>
+            {
+                PollService.register( as, executor, { allow_polling: false } );
+                PollFace.register(as, ccm, 'pf', executor );
+                
+                as.add(
+                    (as) =>
+                    {
+                        ccm.iface('pf').pollEvents( as, 'PLT', null, null );
+                        as.add( (as) => as.error('Fail') );
+                    },
+                    (as, err) =>
+                    {
+                        if ( err === 'SecurityError' &&
+                             as.state.error_info === 'Only event push is allowed' )
+                        {
+                            as.success();
+                        }
+                    }
+                );
+                
+                as.add(
+                    (as) =>
+                    {
+                        ccm.iface('pf').pollEvents( as, 'LIVE', null, null );
+                        as.add( (as) => as.error('Fail') );
+                    },
+                    (as, err) =>
+                    {
+                        if ( err === 'SecurityError' &&
+                             as.state.error_info === 'Only event push is allowed' )
                         {
                             as.success();
                         }

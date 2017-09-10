@@ -38,8 +38,12 @@ class PollService extends PingService
     constructor( as, _executor, options )
     {
         super();
-        _defaults( options, { allow_reliable: true } );
+        _defaults( options, {
+            allow_reliable: true,
+            allow_polling: true,
+        } );
         this._allow_reliable = options.allow_reliable;
+        this._allow_polling = options.allow_polling;
     }
 
     _close()
@@ -75,6 +79,11 @@ class PollService extends PingService
 
     pollEvents( as, reqinfo )
     {
+        if ( !this._allow_polling )
+        {
+            as.error( 'SecurityError', 'Only event push is allowed' );
+        }
+
         const params = reqinfo.params();
         const component = params.component;
         const user_id = reqinfo.info.USER_INFO.localID();

@@ -127,7 +127,7 @@ module.exports = function(describe, it, vars) {
         });
     });
     
-    describe('PollFace', function() {
+    describe('DBPollFace', function() {
         let as;
         let ccm;
         let executor;
