@@ -33,7 +33,7 @@ class DBPushService extends PushService
         this._sleep_max = options.sleep_max;
         this._sleep_step = options.sleep_step;
         this._sleep_curr = this._sleep_min;
-        this._sleep_prev = this._sleep_curr;
+        this._sleep_prev = 0;
     }
 
     _close()
@@ -86,7 +86,7 @@ class DBPushService extends PushService
 
                     if ( res.rows.length )
                     {
-                        state.last_id = res.rows[0][0];
+                        state.last_id = `${res.rows[0][0] || 0}`;
                     }
                     else
                     {

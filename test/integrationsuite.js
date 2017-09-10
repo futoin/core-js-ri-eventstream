@@ -368,7 +368,11 @@ module.exports = function(describe, it, vars) {
             as.add(
                 (as) => {
                     DBGenService.register(as, executor);
-                    const push_svc = DBPushService.register(as, executor);
+                    const push_svc = DBPushService.register(as, executor, {
+                        sleep_min: 10,
+                        sleep_max: 30,
+                        sleep_step: 21,
+                    });
                     GenFace.register(as, ccm, 'evtgen', executor);
                     PushFace.register(as, ccm, 'evtpush', executor, null, {executor: clientExecutor});
                     
@@ -383,6 +387,10 @@ module.exports = function(describe, it, vars) {
             );
         });
         
+        afterEach('common', function() {
+            executor.close();
+        });
+        
         it('should push events', function(done) {
             this.timeout(5e3);
             
@@ -393,11 +401,13 @@ module.exports = function(describe, it, vars) {
                     const recv_svc = {
                         _count: 0,
                         _as: null,
+                        _last_id: '0',
 
                         onEvents(as, reqinfo)
                         {
                             const events = reqinfo.params().events;
                             this._count += events.length;
+                            this._last_id = events[events.length - 1].id;
                             reqinfo.result(true);
                             
                             if (this._count >= expected_events && this._as)
@@ -415,11 +425,64 @@ module.exports = function(describe, it, vars) {
                     const db = ccm.db('evt');
                     
                     as.add( (as) => push.readyToReceive(as, 'LIVE') );
+                    as.add( (as) => push.readyToReceive(as, 'LIVE', ['INVALID']) );
                     
                     as.repeat( 10, (as, i) => {
                         gen.addEvent(as, 'EVT_PUSH', { i });
                         expected_events += 1;
                     });
+                    as.add( (as) => {
+                        if (recv_svc._count < expected_events) {
+                            recv_svc._as = as;
+                            as.waitExternal();
+                        }
+                    });
+                    as.add( (as) => clientExecutor.close() );
+                    as.add( (as) => push.registerConsumer(as, 'RLB') );
+                    as.add( (as) => push.pollEvents(as, 'RLB', null, ['EVT_PUSH']));
+                    as.add( (as, events) => expect(events.length).to.equal(expected_events) );
+                    as.add( (as) =>
+                    {
+                        as.waitExternal();
+                        setTimeout( () => as.success(), as.state.push_svc._sleep_curr * 2 + 1);
+                    });
+                    as.add( (as) => {
+                        // Not reliable due to race condition, but
+                        // we try to go through all codepaths here
+                        // to increase test coverage
+                        const push_svc = as.state.push_svc;
+                        
+                        expect(push_svc._worker_as).to.be.null;
+                        
+                        // tricky, we need to wait for internal worker
+                        // to inject all events
+                        push_svc._sleep_curr = 3e3;
+                        push_svc._sleep_min = push_svc._sleep_curr;
+                        push_svc._sleep_max = push_svc._sleep_curr;
+                        
+                        push.readyToReceive(as, 'RLB');
+                        
+                        // Give some time to enter sleep loop
+                        as.add( (as) =>
+                        {
+                            as.waitExternal();
+                            setTimeout( () => as.success(), 100);
+                        });
+                    });
+                    
+                    as.repeat( 11, (as) =>
+                    {
+                        const xfer = db.newXfer();
+                        
+                        for (let i = 0; i < 100; ++i)
+                        {
+                            gen.addXferEvent(xfer, 'EVT_PUSH', { i });
+                            expected_events += 1;
+                        }
+                        
+                        xfer.execute(as);
+                    });
+
                     as.add( (as) => {
                         if (recv_svc._count < expected_events) {
                             recv_svc._as = as;
