@@ -55,7 +55,7 @@ module.exports = function(describe, it, vars) {
                     });
                     
                     ccm.db('evt')
-                        .select('EvtQueue')
+                        .select('evt_queue')
                         .get(['id', 'type', 'data'])
                         .order('id')
                         .executeAssoc(as);
@@ -102,7 +102,7 @@ module.exports = function(describe, it, vars) {
                     xb.execute(as);
                     
                     ccm.db('evt')
-                        .select('EvtQueue')
+                        .select('evt_queue')
                         .get(['id', 'type', 'data'])
                         .where('type', 'XFER_EVT')
                         .order('id')

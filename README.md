@@ -97,7 +97,7 @@ Helper to add event generation into DB transaction
 | xb | <code>XferBuilder</code> |  | instance of transaction builder |
 | type | <code>string</code> |  | event type |
 | data | <code>\*</code> |  | any data |
-| [table] | <code>string</code> | <code>&quot;EvtQueue&quot;</code> | event queue |
+| [table] | <code>string</code> | <code>&quot;evt_queue&quot;</code> | event queue |
 
 <a name="GenFace.LATEST_VERSION"></a>
 

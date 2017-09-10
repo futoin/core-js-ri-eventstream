@@ -3,7 +3,7 @@ SET GLOBAL innodb_file_per_table=1;
 -- SET GLOBAL innodb_file_format=Barracuda;
 
 -- 
-CREATE TABLE EvtQueue (
+CREATE TABLE evt_queue (
     id BIGINT UNSIGNED NOT NULL auto_increment PRIMARY KEY,
     type VARCHAR(16) NOT NULL
         COMMENT "Convert to enum for efficiency",
@@ -16,7 +16,7 @@ CREATE TABLE EvtQueue (
 
 
 -- 
-CREATE TABLE EvtConsumers (
+CREATE TABLE evt_consumers (
     id SMALLINT NOT NULL auto_increment PRIMARY KEY,
     last_evt_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
     reg_time TIMESTAMP NOT NULL,

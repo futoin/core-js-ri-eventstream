@@ -69,7 +69,7 @@ class GenFace extends PingFace
      * @param {XferBuilder} xb - instance of transaction builder
      * @param {string} type - event type
      * @param {*} data - any data
-     * @param {string} [table=EvtQueue] - event queue
+     * @param {string} [table=evt_queue] - event queue
      */
     addXferEvent( xb, type, data, table=DB_EVTTABLE )
     {
