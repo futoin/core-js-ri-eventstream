@@ -25,6 +25,8 @@ describe('MySQL', function(){
                     ccm.db().query(as, 'DROP DATABASE IF EXISTS evthistory');
                     ccm.db().query(as, 'CREATE DATABASE evtactive');
                     ccm.db().query(as, 'CREATE DATABASE evthistory');
+                    ccm.db().query(as, 'SET GLOBAL innodb_flush_log_at_trx_commit=0');
+                    ccm.db().query(as, 'SET GLOBAL sync_binlog=0');
                 });
                 as.add((as) => {
                     let res;

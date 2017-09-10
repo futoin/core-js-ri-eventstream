@@ -6,7 +6,10 @@ const Executor = require('futoin-executor/Executor');
 const GenFace = require('../GenFace');
 const DBGenService = require('../DBGenService');
 const PollFace = require('../PollFace');
+const PushFace = require('../PushFace');
 const DBPollService = require('../DBPollService');
+const DBPushService = require('../DBPushService');
+const main = require( '../main' );
 
 module.exports = function(describe, it, vars) {
     describe('GenFace', function() {
@@ -14,7 +17,7 @@ module.exports = function(describe, it, vars) {
         let ccm;
         let executor;
         
-        beforeEach('specific', function() {
+        beforeEach('common', function() {
             ccm = vars.ccm;
             as = vars.as;
             executor = new Executor(ccm);
@@ -132,7 +135,7 @@ module.exports = function(describe, it, vars) {
         let ccm;
         let executor;
         
-        beforeEach('specific', function() {
+        beforeEach('common', function() {
             ccm = vars.ccm;
             as = vars.as;
             executor = new Executor(ccm);
@@ -333,6 +336,100 @@ module.exports = function(describe, it, vars) {
                         
                         poll.pollEvents(as, 'LIVE', `${as.state.live_id - 1}`, ['EVT_LV']);
                         as.add( (as, res) => expect(res.length).to.equal(1) );
+                    });
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done() );
+            as.execute();
+        });
+    });
+
+    describe('DBPushService', function() {
+        let as;
+        let ccm;
+        let executor;
+        let clientExecutor;
+        
+        beforeEach('common', function() {
+            ccm = vars.ccm;
+            as = vars.as;
+            executor = new Executor(ccm, { specDirs: main.specDirs });
+            clientExecutor = new Executor(ccm, { specDirs: main.specDirs });
+            
+            executor.on('notExpected', function() {
+                console.dir(arguments);
+            });
+            
+            as.add(
+                (as) => {
+                    DBGenService.register(as, executor);
+                    const push_svc = DBPushService.register(as, executor);
+                    GenFace.register(as, ccm, 'evtgen', executor);
+                    PushFace.register(as, ccm, 'evtpush', executor, null, {executor: clientExecutor});
+                    
+                    as.state.push_svc = push_svc;
+                    push_svc.on('pushError', function(){ console.log(arguments); });
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                }
+            );
+        });
+        
+        it('should push events', function(done) {
+            this.timeout(5e3);
+            
+            as.add(
+                (as) => {
+                    let expected_events = 0;
+                    
+                    const recv_svc = {
+                        _count: 0,
+                        _as: null,
+
+                        onEvents(as, reqinfo)
+                        {
+                            const events = reqinfo.params().events;
+                            this._count += events.length;
+                            reqinfo.result(true);
+                            
+                            if (this._count >= expected_events && this._as)
+                            {
+                                this._as.success();
+                                this._as = null;
+                            }
+                        }
+                    };
+                    
+                    clientExecutor.register(as, 'futoin.evt.receiver:1.0', recv_svc);
+                    
+                    const gen = ccm.iface('evtgen');
+                    const push = ccm.iface('evtpush');
+                    const db = ccm.db('evt');
+                    
+                    as.add( (as) => push.readyToReceive(as, 'LIVE') );
+                    
+                    as.repeat( 10, (as, i) => {
+                        gen.addEvent(as, 'EVT_PUSH', { i });
+                        expected_events += 1;
+                    });
+                    as.add( (as) => {
+                        if (recv_svc._count < expected_events) {
+                            recv_svc._as = as;
+                            as.waitExternal();
+                        }
+                    });
+                    
+                    as.add( (as) => {
+                        clientExecutor.close();
+                        executor.close();
                     });
                 },
                 (as, err) => {
