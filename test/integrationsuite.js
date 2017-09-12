@@ -9,10 +9,11 @@ const PollFace = require('../PollFace');
 const PushFace = require('../PushFace');
 const DBPollService = require('../DBPollService');
 const DBPushService = require('../DBPushService');
+const DBEventArchiver = require('../DBEventArchiver');
 const main = require( '../main' );
 
 module.exports = function(describe, it, vars) {
-    describe('GenFace', function() {
+    describe('DBGenService', function() {
         let as;
         let ccm;
         let executor;
@@ -502,6 +503,141 @@ module.exports = function(describe, it, vars) {
                 }
             );
             as.add((as) => done() );
+            as.execute();
+        });
+    });
+    
+    describe('DBEventArchiver', function() {
+        let as;
+        let ccm;
+        let executor;
+        
+        beforeEach('common', function() {
+            ccm = vars.ccm;
+            as = vars.as;
+            executor = new Executor(ccm, { specDirs: main.specDirs });
+            
+            executor.on('notExpected', function() {
+                console.dir(arguments);
+            });
+            
+            as.add(
+                (as) => {
+                    DBGenService.register(as, executor);
+                    const push_svc = DBPushService.register(as, executor, {
+                        sleep_min: 10,
+                        sleep_max: 30,
+                        sleep_step: 5,
+                    });
+                    GenFace.register(as, ccm, 'evtgen', executor);
+                    
+                    as.state.push_svc = push_svc;
+                    push_svc.on('pushError', function(){ console.log(arguments); });
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    console.log(as.state.last_exception);
+                }
+            );
+        });
+        
+        afterEach('common', function() {
+            executor.close();
+        });
+        
+        it('should archive events', function(done) {
+            this.timeout(5e3);
+            
+            as.add(
+                (as) => {
+                    const archiver = new DBEventArchiver(ccm);
+                    
+                    archiver.on('workerError', function() {
+                        console.log(arguments);
+                    });
+                    archiver.on('receiverError', function() {
+                        console.log(arguments);
+                    });
+                    
+                    let push_count = 0;
+                    let push_cb = null;
+                    archiver.on('newEvents', () => {
+                        push_count++;
+                        
+                        if (push_cb) {
+                            push_cb();
+                        }
+                    });
+                    
+                    archiver.start(executor);
+                    archiver.start(executor);
+                    
+                    ccm.db('evt').select('evt_queue')
+                        .get('c', 'COUNT(*)').execute(as);
+
+                    as.add((as, res_orig) => {
+                        as.state.res_orig = parseInt(res_orig.rows[0][0]);
+                        as.state.push_count_expect =
+                            ~~((parseInt(`${res_orig.rows[0][0]}`) + 100) / 100);
+
+                        if (push_count < as.state.push_count_expect)
+                        {
+                            as.waitExternal();
+                            push_cb = () =>
+                            {
+                                if (push_count === as.state.push_count_expect) {
+                                    push_cb = null;
+                                    as.success();
+                                }
+                            };
+                        }
+                    });
+                    
+                    ccm.db('evtdwh').select('evt_history')
+                        .get('c', 'COUNT(*)').execute(as);
+                    
+                    as.add((as, res) => {
+                        expect(parseInt(res.rows[0][0])).to.equal(as.state.res_orig);
+                        expect(push_count).to.equal(as.state.push_count_expect);
+                        archiver.stop();
+                        archiver.start(executor);
+                        
+                        ccm.iface('evtgen').addEvent(as, 'NEW_EVT', 123);
+                        ccm.iface('evtgen').addEvent(as, 'NEW_EVT', 234);
+                    });
+
+                    as.add((as, res_orig) => {
+                        as.state.push_count_expect++;
+
+                        if (push_count < as.state.push_count_expect)
+                        {
+                            as.waitExternal();
+                            push_cb = () =>
+                            {
+                                if (push_count >= as.state.push_count_expect) {
+                                    push_cb = null;
+                                    as.success();
+                                }
+                            };
+                        }
+                    });
+                    
+                    ccm.db('evtdwh').select('evt_history')
+                        .get('c', 'COUNT(*)').execute(as);
+                    
+                    as.add((as, res) => {
+                        expect(parseInt(res.rows[0][0])).to.equal(as.state.res_orig + 2);
+                        ccm.close();
+                    });
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done());
             as.execute();
         });
     });

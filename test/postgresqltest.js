@@ -103,7 +103,7 @@ describe('PostgreSQL', function(){
                     DB_EVTDWH_PORT: '5433',
                     DB_EVTDWH_USER: 'ftntest',
                     DB_EVTDWH_DB: 'evthistory',
-                    DB_EVT_PASS: 'test',
+                    DB_EVTDWH_PASS: 'test',
                 });
             },
             (as, err) => {

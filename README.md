@@ -47,6 +47,11 @@ The concept is described in FutoIn specification: [FTN18: FutoIn Interface - Eve
 ## Classes
 
 <dl>
+<dt><a href="#DBEventArchiver">DBEventArchiver</a></dt>
+<dd><p>Database Event Archiver service.</p>
+</dd>
+<dt><a href="#EventArchiver">EventArchiver</a></dt>
+<dd></dd>
 <dt><a href="#GenFace">GenFace</a></dt>
 <dd><p>Event Stream - Generator Face</p>
 </dd>
@@ -68,8 +73,79 @@ The concept is described in FutoIn specification: [FTN18: FutoIn Interface - Eve
 <dt><a href="#ReceiverFace">ReceiverFace</a></dt>
 <dd><p>Event Stream - Receiver Face</p>
 </dd>
+<dt><a href="#ReliableReceiverService">ReliableReceiverService</a></dt>
+<dd><p>Base implementation for reliable receiver side</p>
+</dd>
 </dl>
 
+<a name="DBEventArchiver"></a>
+
+## DBEventArchiver
+Database Event Archiver service.
+
+**Kind**: global class  
+**Note**: No more than one instance should run at once.  
+<a name="EventArchiver"></a>
+
+## EventArchiver
+**Kind**: global class  
+
+* [EventArchiver](#EventArchiver)
+    * [new EventArchiver(executor_ccm)](#new_EventArchiver_new)
+    * [.start(endpoint, [credentials], [options])](#EventArchiver+start)
+    * [.stop()](#EventArchiver+stop)
+    * ["receiverError"](#EventArchiver+event_receiverError)
+    * ["workerError"](#EventArchiver+event_workerError)
+    * ["newEvents"](#EventArchiver+event_newEvents)
+
+<a name="new_EventArchiver_new"></a>
+
+### new EventArchiver(executor_ccm)
+Initialize event archiver.
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| executor_ccm | <code>AdvancedCCM</code> | CCM for executor |
+
+<a name="EventArchiver+start"></a>
+
+### eventArchiver.start(endpoint, [credentials], [options])
+Start receiving events for archiving
+
+**Kind**: instance method of [<code>EventArchiver</code>](#EventArchiver)  
+**Note**: options.executor is overridden  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| endpoint | <code>\*</code> |  | see PushFace |
+| [credentials] | <code>\*</code> | <code></code> | see PushFace |
+| [options] | <code>\*</code> | <code>{}</code> | see PushFace |
+
+<a name="EventArchiver+stop"></a>
+
+### eventArchiver.stop()
+Stop receiving events
+
+**Kind**: instance method of [<code>EventArchiver</code>](#EventArchiver)  
+<a name="EventArchiver+event_receiverError"></a>
+
+### "receiverError"
+Emitted on not expected receiver errors
+
+**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
+<a name="EventArchiver+event_workerError"></a>
+
+### "workerError"
+Emitted on worker errors
+
+**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
+<a name="EventArchiver+event_newEvents"></a>
+
+### "newEvents"
+Emitted after new events being pushed to DWH
+
+**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
 <a name="GenFace"></a>
 
 ## GenFace
@@ -303,6 +379,39 @@ CCM registration helper
 | channel | <code>ChannelContext</code> |  | Bi-Direction channel instance |
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+
+<a name="ReliableReceiverService"></a>
+
+## ReliableReceiverService
+Base implementation for reliable receiver side
+
+**Kind**: global class  
+
+* [ReliableReceiverService](#ReliableReceiverService)
+    * _instance_
+        * ["newEvents"](#ReliableReceiverService+event_newEvents)
+    * _static_
+        * [.register(as, executor, options)](#ReliableReceiverService.register) ⇒ [<code>PushService</code>](#PushService)
+
+<a name="ReliableReceiverService+event_newEvents"></a>
+
+### "newEvents"
+Emitted after new events being pushed to DWH
+
+**Kind**: event emitted by [<code>ReliableReceiverService</code>](#ReliableReceiverService)  
+<a name="ReliableReceiverService.register"></a>
+
+### ReliableReceiverService.register(as, executor, options) ⇒ [<code>PushService</code>](#PushService)
+Register futoin.evt.receiver interface with Executor
+
+**Kind**: static method of [<code>ReliableReceiverService</code>](#ReliableReceiverService)  
+**Returns**: [<code>PushService</code>](#PushService) - instance  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | steps interface |
+| executor | <code>Executor</code> | executor instance |
+| options | <code>object</code> | implementation defined options |
 
 
 

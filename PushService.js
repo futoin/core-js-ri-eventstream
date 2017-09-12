@@ -7,6 +7,7 @@ const PollService = require( './PollService' );
 const PushFace = require( './PushFace' );
 const ReceiverFace = require( './ReceiverFace' );
 const ee = require( 'event-emitter' );
+const { cmpIds } = require( './common' );
 
 class EventChannel
 {
@@ -381,7 +382,7 @@ class PushService extends PollService
                             const last_id = state.last_id;
 
                             if ( queue.length &&
-                                ( PushService._cmpIds( queue[0][0].id, last_id ) <= 0 ) )
+                                ( cmpIds( queue[0][0].id, last_id ) <= 0 ) )
                             {
                                 // remove already sent queued items
                                 while ( queue.length )
@@ -472,12 +473,12 @@ class PushService extends PollService
 
     static _trimChunk( chunk, last_id )
     {
-        if ( this._cmpIds( chunk[0].id, last_id ) > 0 )
+        if ( cmpIds( chunk[0].id, last_id ) > 0 )
         {
             return chunk;
         }
 
-        if ( this._cmpIds( chunk[chunk.length - 1].id, last_id ) <= 0 )
+        if ( cmpIds( chunk[chunk.length - 1].id, last_id ) <= 0 )
         {
             return null;
         }
@@ -491,7 +492,7 @@ class PushService extends PollService
             i = start + ~~( ( end - start ) / 2 );
 
             const c = chunk[i].id;
-            const cmp_res = this._cmpIds( c, last_id );
+            const cmp_res = cmpIds( c, last_id );
 
             if ( !cmp_res )
             {
@@ -532,21 +533,6 @@ class PushService extends PollService
 
         state.queue_count -= chunk.length;
         return chunk;
-    }
-
-    static _cmpIds( a, b )
-    {
-        const a_len = a.length;
-        const b_len = b.length;
-
-        if ( a_len === b_len )
-        {
-            return a.localeCompare( b );
-        }
-        else
-        {
-            return a_len - b_len;
-        }
     }
 
     _onPushError( as, err )

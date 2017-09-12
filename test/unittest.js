@@ -8,6 +8,7 @@ const Executor = require('futoin-executor/Executor');
 const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
 const $as = require( 'futoin-asyncsteps' );
 const SpecTools = require('futoin-invoker/SpecTools');
+const {cmpIds} = require('../common');
 
 describe('PollService', function() {
     const PollService = require( '../PollService' );
@@ -212,7 +213,7 @@ describe( 'PushService', function() {
     
     it('should properly compare event IDs', function() {
         const test = ( a, b, req ) => {
-            const res = PushService._cmpIds(a, b);
+            const res = cmpIds(a, b);
             
             switch (req) {
                 case -1: expect(res).to.be.below(0); break;
