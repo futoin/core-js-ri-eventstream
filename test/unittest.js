@@ -2,6 +2,7 @@
 
 const expect = require('chai').expect;
 const moment = require('moment');
+const ee = require('event-emitter');
 
 const main = require( '../main' );
 const Executor = require('futoin-executor/Executor');
@@ -1417,5 +1418,57 @@ describe( 'PushService', function() {
                 done(as.state.last_exception);                
             }
         ).execute();
+    });
+});
+
+describe('EventArchiver', function() {
+    const EventArchiver = require('../EventArchiver');
+    
+    it('should throw error on failed setup', function(done){
+        const ccm = new AdvancedCCM();
+        const archiver = new EventArchiver(ccm);
+        archiver.once('workerError', (err) => {
+            try {
+                expect(err).to.equal('NotImplemented');
+            } catch (e) {
+                done(e);
+            }
+            
+            setTimeout(() => {
+                archiver.stop();
+                done();
+            }, 0);
+        });
+        archiver.start('wss://127.0.0.1:12345/api', 'login:pass');
+    });
+
+    it('should handle disconnects', function(done){
+        const ccm = new AdvancedCCM();
+        const archiver = new class extends EventArchiver {
+            constructor() {
+                super(ccm);
+            }
+
+            _registerReceiver( as, _executor )
+            {
+                const res = {};
+                ee(res);
+                return res;
+            }            
+        };
+        
+        archiver.once('workerError', (err) => {
+            try {
+                expect(err).to.equal('Disconnect');
+            } catch (e) {
+                done(e);
+            }
+            
+            setTimeout(() => {
+                archiver.stop();
+                done();
+            }, 0);
+        });
+        archiver.start('wss://127.0.0.1:12345/api', 'login:pass');
     });
 });
