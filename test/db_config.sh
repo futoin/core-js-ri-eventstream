@@ -27,7 +27,7 @@ fi
 
 # Add test users
 mysql -e "\
-    CREATE USER IF NOT EXISTS  'ftntest'@'%'; \
+    CREATE USER 'ftntest'@'%'; \
     GRANT ALL PRIVILEGES ON *.* TO 'ftntest'@'%'"
 #
 su -c "psql -c \"CREATE ROLE ftntest WITH SUPERUSER LOGIN PASSWORD 'test'\"" postgres
