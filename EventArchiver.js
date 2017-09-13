@@ -7,6 +7,9 @@ const ee = require( 'event-emitter' );
 
 const PushFace = require( './PushFace' );
 
+/**
+ * Base storage neutral class for event archiving
+ */
 class EventArchiver
 {
     /**

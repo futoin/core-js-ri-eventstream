@@ -104,6 +104,11 @@ class ReliableDBReceiverService extends ReliableReceiverService
  */
 class DBEventArchiver extends EventArchiver
 {
+    /**
+     * C-tor
+     * 
+     * @param {AdvancedCCM} db_ccm - CCM instance with registered '#db.evtdwh' interface
+     */
     constructor( db_ccm )
     {
         super( db_ccm );

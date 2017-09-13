@@ -21,6 +21,8 @@ class PollService extends PingService
      * @param {AsyncSteps} as - steps interface
      * @param {Executor} executor - executor instance
      * @param {object} options - implementation defined options
+     * @param {boolean} [options.allow_reliable=true] - allow reliable consumers
+     * @param {boolean} [options.allow_polling=true] - allow polling calls
      * @returns {PollService} instance
      */
     static register( as, executor, options={} )

@@ -4,11 +4,23 @@ const _defaults = require( 'lodash/defaults' );
 const PollService = require( './PollService' );
 const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
 
+/**
+ * Database-based Poll Service
+ */
 class DBPollService extends PollService
 {
-    constructor( _as, executor, options )
+    /**
+     * Please use DBPollService,register()
+     * 
+     * @param {AsyncSteps} as - async step interface
+     * @param {Executor} executor - related Executor
+     * @param {object} [options={}] - options
+     * @param {string} [options.event_table=default] - events table
+     * @param {string} [options.consumer_table=default] - consumers table
+     */
+    constructor( as, executor, options )
     {
-        super( _as, executor, options );
+        super( as, executor, options );
 
         _defaults( options, {
             event_table: DB_EVTTABLE,

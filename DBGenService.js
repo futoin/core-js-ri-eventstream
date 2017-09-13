@@ -3,8 +3,19 @@
 const GenService = require( './GenService' );
 const { DB_IFACEVER, DB_EVTTABLE } = require( './common' );
 
+/**
+ * Database-specific event generation service
+ */
 class DBGenService extends GenService
 {
+    /**
+     * Please use DBGenService.regster()
+     * 
+     * @param {AsyncSteps} _as - async step interface
+     * @param {Executor} executor - related Executor
+     * @param {object} [options={}] - options
+     * @param {string} [options.event_table=default] - events table
+     */
     constructor( _as, executor, options )
     {
         super();

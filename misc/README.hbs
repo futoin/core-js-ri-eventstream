@@ -30,6 +30,14 @@ for asynchronous state distribution and interaction in large microservice system
 
 **You should really understand the concepts to properly use it.**
 
+# Supported database types
+
+* MySQL
+* PostgreSQL
+* SQLite
+* Potentially, any other SQL-compliant supported by `futoin-database`
+
+
 # Stability Warning
 
 The code is fully covered in tests, including many edge cases. However, the software is still
@@ -52,13 +60,13 @@ $ npm install futoin-eventstream --save
 Each event has auto-generated ID, type, data and timestamp. Type is all upper case identifier.
 Data is arbitrary JSON-friendly data.
 
-There are two configurable delivery strategies are supported: polling and streaming, but consumer
+Two configurable delivery strategies are supported: polling and streaming, but consumer
 acts as client in both cases.
 
 There are two delivery modes: reliable and live. The later allow messages to be skipped.
 To ensure that events are reliably delivered, each consumer must register first.
 
-There are two message storage types assumed: active small high performance area and slower data warehouse
+Two message storage types are assumed: active small high performance area and slower data warehouse
 for all time history. DBEventArchiver tool is provided for efficient reliable data transfer.
 
 More detailed concept is in the FTN18 spec.

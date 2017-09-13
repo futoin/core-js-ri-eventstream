@@ -7,11 +7,26 @@ const DBPollService = require( './DBPollService' );
 const PushService = require( './PushService' );
 const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
 
+/**
+ * Database-specific Push Service
+ */
 class DBPushService extends PushService
 {
-    constructor( _as, executor, options )
+    /**
+     * Please use DBPushService,register()
+     * 
+     * @param {AsyncSteps} as - async step interface
+     * @param {Executor} executor - related Executor
+     * @param {object} [options={}] - options
+     * @param {string} [options.event_table=default] - events table
+     * @param {string} [options.consumer_table=default] - consumers table
+     * @param {integer} [options.sleep_min=100] - minimal sleep on lack of events
+     * @param {integer} [options.sleep_max=3000] - maximal sleep on lack of events
+     * @param {integer} [options.sleep_step=100] - sleep time increase on lack of events
+     */
+    constructor( as, executor, options )
     {
-        super( _as, executor, options );
+        super( as, executor, options );
 
         _defaults(
             options,

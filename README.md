@@ -30,6 +30,14 @@ for asynchronous state distribution and interaction in large microservice system
 
 **You should really understand the concepts to properly use it.**
 
+# Supported database types
+
+* MySQL
+* PostgreSQL
+* SQLite
+* Potentially, any other SQL-compliant supported by `futoin-database`
+
+
 # Stability Warning
 
 The code is fully covered in tests, including many edge cases. However, the software is still
@@ -52,13 +60,13 @@ $ npm install futoin-eventstream --save
 Each event has auto-generated ID, type, data and timestamp. Type is all upper case identifier.
 Data is arbitrary JSON-friendly data.
 
-There are two configurable delivery strategies are supported: polling and streaming, but consumer
+Two configurable delivery strategies are supported: polling and streaming, but consumer
 acts as client in both cases.
 
 There are two delivery modes: reliable and live. The later allow messages to be skipped.
 To ensure that events are reliably delivered, each consumer must register first.
 
-There are two message storage types assumed: active small high performance area and slower data warehouse
+Two message storage types are assumed: active small high performance area and slower data warehouse
 for all time history. DBEventArchiver tool is provided for efficient reliable data transfer.
 
 More detailed concept is in the FTN18 spec.
@@ -183,8 +191,23 @@ The concept is described in FutoIn specification: [FTN18: FutoIn Interface - Eve
 <dt><a href="#DBEventArchiver">DBEventArchiver</a></dt>
 <dd><p>Database Event Archiver service.</p>
 </dd>
+<dt><a href="#DBEventDiscarder">DBEventDiscarder</a></dt>
+<dd><p>DB-specific event discarding.</p>
+<p>It&#39;s assumed to be run against &quot;active&quot; database part as defined in the concept
+to reduce its size after all reliably delivered events are delivered to consumers.</p>
+</dd>
+<dt><a href="#DBGenService">DBGenService</a></dt>
+<dd><p>Database-specific event generation service</p>
+</dd>
+<dt><a href="#DBPollService">DBPollService</a></dt>
+<dd><p>Database-based Poll Service</p>
+</dd>
+<dt><a href="#DBPushService">DBPushService</a></dt>
+<dd><p>Database-specific Push Service</p>
+</dd>
 <dt><a href="#EventArchiver">EventArchiver</a></dt>
-<dd></dd>
+<dd><p>Base storage neutral class for event archiving</p>
+</dd>
 <dt><a href="#GenFace">GenFace</a></dt>
 <dd><p>Event Stream - Generator Face</p>
 </dd>
@@ -218,9 +241,133 @@ Database Event Archiver service.
 
 **Kind**: global class  
 **Note**: No more than one instance should run at once.  
+<a name="new_DBEventArchiver_new"></a>
+
+### new DBEventArchiver(db_ccm)
+C-tor
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| db_ccm | <code>AdvancedCCM</code> | CCM instance with registered '#db.evtdwh' interface |
+
+<a name="DBEventDiscarder"></a>
+
+## DBEventDiscarder
+DB-specific event discarding.
+
+It's assumed to be run against "active" database part as defined in the concept
+to reduce its size after all reliably delivered events are delivered to consumers.
+
+**Kind**: global class  
+
+* [DBEventDiscarder](#DBEventDiscarder)
+    * [.start(ccm, [options])](#DBEventDiscarder+start)
+    * [.stop()](#DBEventDiscarder+stop)
+    * ["workerError"](#DBEventDiscarder+event_workerError)
+    * ["eventDiscard"](#DBEventDiscarder+event_eventDiscard)
+
+<a name="DBEventDiscarder+start"></a>
+
+### dbEventDiscarder.start(ccm, [options])
+Start event discarding
+
+**Kind**: instance method of [<code>DBEventDiscarder</code>](#DBEventDiscarder)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| ccm | <code>AdvancedCCM</code> |  | CCM with registered #db.evt interface |
+| [options] | <code>object</code> | <code>{}</code> | options |
+| [options.poll_period_ms] | <code>integer</code> | <code>600e3</code> | poll interval |
+| [options.limit_at_once] | <code>integer</code> | <code>1000</code> | events to delete at once |
+| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
+| [options.consumer_table] | <code>string</code> | <code>&quot;default&quot;</code> | consumers table |
+
+<a name="DBEventDiscarder+stop"></a>
+
+### dbEventDiscarder.stop()
+Stop event discarding
+
+**Kind**: instance method of [<code>DBEventDiscarder</code>](#DBEventDiscarder)  
+<a name="DBEventDiscarder+event_workerError"></a>
+
+### "workerError"
+Emitted on worker errors
+
+**Kind**: event emitted by [<code>DBEventDiscarder</code>](#DBEventDiscarder)  
+<a name="DBEventDiscarder+event_eventDiscard"></a>
+
+### "eventDiscard"
+Emitted on discarded events
+
+**Kind**: event emitted by [<code>DBEventDiscarder</code>](#DBEventDiscarder)  
+<a name="DBGenService"></a>
+
+## DBGenService
+Database-specific event generation service
+
+**Kind**: global class  
+<a name="new_DBGenService_new"></a>
+
+### new DBGenService(_as, executor, [options])
+Please use DBGenService.regster()
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| _as | <code>AsyncSteps</code> |  | async step interface |
+| executor | <code>Executor</code> |  | related Executor |
+| [options] | <code>object</code> | <code>{}</code> | options |
+| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
+
+<a name="DBPollService"></a>
+
+## DBPollService
+Database-based Poll Service
+
+**Kind**: global class  
+<a name="new_DBPollService_new"></a>
+
+### new DBPollService(as, executor, [options])
+Please use DBPollService,register()
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | async step interface |
+| executor | <code>Executor</code> |  | related Executor |
+| [options] | <code>object</code> | <code>{}</code> | options |
+| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
+| [options.consumer_table] | <code>string</code> | <code>&quot;default&quot;</code> | consumers table |
+
+<a name="DBPushService"></a>
+
+## DBPushService
+Database-specific Push Service
+
+**Kind**: global class  
+<a name="new_DBPushService_new"></a>
+
+### new DBPushService(as, executor, [options])
+Please use DBPushService,register()
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | async step interface |
+| executor | <code>Executor</code> |  | related Executor |
+| [options] | <code>object</code> | <code>{}</code> | options |
+| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
+| [options.consumer_table] | <code>string</code> | <code>&quot;default&quot;</code> | consumers table |
+| [options.sleep_min] | <code>integer</code> | <code>100</code> | minimal sleep on lack of events |
+| [options.sleep_max] | <code>integer</code> | <code>3000</code> | maximal sleep on lack of events |
+| [options.sleep_step] | <code>integer</code> | <code>100</code> | sleep time increase on lack of events |
+
 <a name="EventArchiver"></a>
 
 ## EventArchiver
+Base storage neutral class for event archiving
+
 **Kind**: global class  
 
 * [EventArchiver](#EventArchiver)
@@ -412,11 +559,13 @@ Register futoin.evt.poll interface with Executor
 **Kind**: static method of [<code>PollService</code>](#PollService)  
 **Returns**: [<code>PollService</code>](#PollService) - instance  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | steps interface |
-| executor | <code>Executor</code> | executor instance |
-| options | <code>object</code> | implementation defined options |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | steps interface |
+| executor | <code>Executor</code> |  | executor instance |
+| options | <code>object</code> |  | implementation defined options |
+| [options.allow_reliable] | <code>boolean</code> | <code>true</code> | allow reliable consumers |
+| [options.allow_polling] | <code>boolean</code> | <code>true</code> | allow polling calls |
 
 <a name="PushFace"></a>
 
@@ -475,11 +624,13 @@ Register futoin.evt.push interface with Executor
 **Kind**: static method of [<code>PushService</code>](#PushService)  
 **Returns**: [<code>PushService</code>](#PushService) - instance  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | steps interface |
-| executor | <code>Executor</code> | executor instance |
-| options | <code>object</code> | implementation defined options |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | steps interface |
+| executor | <code>Executor</code> |  | executor instance |
+| options | <code>object</code> |  | implementation defined options |
+| [options.allow_reliable] | <code>boolean</code> | <code>true</code> | allow reliable consumers |
+| [options.allow_polling] | <code>boolean</code> | <code>true</code> | allow polling calls |
 
 <a name="ReceiverFace"></a>
 
