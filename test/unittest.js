@@ -1472,3 +1472,130 @@ describe('EventArchiver', function() {
         archiver.start('wss://127.0.0.1:12345/api', 'login:pass');
     });
 });
+
+describe('ReliableReceiverService', function() {
+    const ReliableReceiverService = require('../ReliableReceiverService');
+    const ReceiverFace = require('../ReceiverFace');
+    
+    it('should handle out-of-order requests', function(done) {
+        const as = $as();
+        const ccm = new AdvancedCCM();
+        const executor = new Executor(ccm);
+        
+        class TestService extends ReliableReceiverService
+        {
+            _onEvents( as, _reqinfo, events )
+            {
+                this._received = this._received || [];
+                this._received.push(events[0]);
+            }
+        }
+        
+        as.add(
+            (as) =>
+            {
+                const svc = TestService.register(as, executor);
+                ccm.register(as, 'rcvr', 'futoin.evt.receiver:1.0',
+                             executor, null, { specDirs: main.specDirs });
+                
+                as.add((as) => {
+                    ccm.iface('rcvr').onEvents(
+                        as,
+                        0,
+                        [{id: '100', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'}]
+                    );
+                });
+                
+                //---
+                const p = as.parallel();
+                p.add((as) => {
+                    ccm.iface('rcvr').onEvents(
+                        as,
+                        3,
+                        [{id: '400', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'}]
+                    );
+                });
+                p.add((as) => {
+                    ccm.iface('rcvr').onEvents(
+                        as,
+                        1,
+                        [{id: '200', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'}]
+                    );
+                });
+                p.add((as) => {
+                    ccm.iface('rcvr').onEvents(
+                        as,
+                        2,
+                        [{id: '300', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'}]
+                    );
+                });
+                
+                //---
+                as.add((as) => {
+                    ccm.iface('rcvr').onEvents(
+                        as,
+                        4,
+                        [{id: '500', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'}]
+                    );
+                });
+                //----
+                as.add((as) => {
+                    expect(svc._received).to.eql([
+                        {id: '100', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'},
+                        {id: '200', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'},
+                        {id: '300', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'},
+                        {id: '400', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'},
+                        {id: '500', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'},
+                    ]);
+                });
+            },
+            (as, err) =>
+            {
+                console.log(err);
+                console.log(as.state.error_info);
+                done(as.state.last_exception || 'Fail');
+            }
+        );
+        as.add((as) => done());
+        as.execute();
+    });
+    
+    it('should throw error', function(done) {
+        const as = $as();
+        const ccm = new AdvancedCCM();
+        const executor = new Executor(ccm);
+        
+        as.add(
+            (as) =>
+            {
+                const svc = ReliableReceiverService.register(as, executor);
+                ccm.register(as, 'rcvr', 'futoin.evt.receiver:1.0',
+                             executor, null, { specDirs: main.specDirs });
+                
+                as.add(
+                    (as) => {
+                        ccm.iface('rcvr').onEvents(
+                            as,
+                            0,
+                            [{id: '100', type: 'T', data: null, ts:'2000-01-01T12:00:00Z'}]
+                        );
+                        as.add((as) => as.error('Fail'));
+                    },
+                    (as, err) => {
+                        if (err === 'NotImplemented') {
+                            as.success();
+                        }
+                    }
+                );
+            },
+            (as, err) =>
+            {
+                console.log(err);
+                console.log(as.state.error_info);
+                done(as.state.last_exception || 'Fail');
+            }
+        );
+        as.add((as) => done());
+        as.execute();
+    });
+});

@@ -45,13 +45,18 @@ class ReliableReceiverService
         const p = reqinfo.params();
         let seq_id = p.seq;
 
+        // extra "if" is cheaper than empty step
         if ( this._next_seq_id !== seq_id )
         {
             as.add( ( as ) =>
             {
-                as.setCancel( ( as ) => this._out_of_order.delete( seq_id ) );
-                this._out_of_order.set( seq_id, as );
-                as.waitExternal();
+                // check again due to race condition
+                if ( this._next_seq_id !== seq_id )
+                {
+                    as.setCancel( ( as ) => this._out_of_order.delete( seq_id ) );
+                    this._out_of_order.set( seq_id, as );
+                    as.waitExternal();
+                }
             } );
         }
 
