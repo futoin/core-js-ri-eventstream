@@ -442,10 +442,19 @@ module.exports = function(describe, it, vars) {
                     as.add( (as) => push.registerConsumer(as, 'RLB') );
                     as.add( (as) => push.pollEvents(as, 'RLB', null, ['EVT_PUSH']));
                     as.add( (as, events) => expect(events.length).to.equal(expected_events) );
-                    as.add( (as) =>
+                    as.loop( (as) =>
                     {
-                        as.waitExternal();
-                        setTimeout( () => as.success(), as.state.push_svc._sleep_curr * 2 + 1);
+                        const push_svc = as.state.push_svc;
+                        
+                        if ( push_svc._worker_as )
+                        {
+                            as.waitExternal();
+                            setTimeout( () => as.success(), push_svc._sleep_curr);
+                        }
+                        else
+                        {
+                            as.break();
+                        }
                     });
                     as.add( (as) => {
                         // Not reliable due to race condition, but
@@ -532,7 +541,7 @@ module.exports = function(describe, it, vars) {
                     GenFace.register(as, ccm, 'evtgen', executor);
                     
                     as.state.push_svc = push_svc;
-                    push_svc.on('pushError', function(){ console.log(arguments); });
+                    //push_svc.on('pushError', function(){ console.log(arguments); });
                 },
                 (as, err) => {
                     console.log(err);
@@ -557,7 +566,9 @@ module.exports = function(describe, it, vars) {
                         console.log(arguments);
                     });
                     archiver.on('receiverError', function() {
-                        console.log(arguments);
+                        if (arguments[0] !== 'Duplicate') {
+                            console.log(arguments);
+                        }
                     });
                     
                     let push_count = 0;
@@ -603,13 +614,36 @@ module.exports = function(describe, it, vars) {
                         archiver.stop();
                         archiver.start(executor);
                         
+                        const db = ccm.db('evtdwh');
                         ccm.iface('evtgen').addEvent(as, 'NEW_EVT', 123);
+                        as.state.push_count_expect++;
+                        
+                        as.loop( (as) => {
+                            db.select('evt_history')
+                                .get('c', 'COUNT(*)').execute(as);
+                                
+                            as.add( (as, res) => {
+                                if (parseInt(res.rows[0][0]) === as.state.res_orig + 1) {
+                                    as.break();
+                                }
+                            });
+                        });
+                        
+                        db.insert('evt_history')
+                            .set({
+                                'id' : as.state.res_orig + 2,
+                                'type': 'NEW_EVT',
+                                'data': JSON.stringify(234),
+                                'ts': db.queryBuilder().helpers().now(),
+                            })
+                            .execute(as);
+
                         ccm.iface('evtgen').addEvent(as, 'NEW_EVT', 234);
+                        ccm.iface('evtgen').addEvent(as, 'NEW_EVT', 345);
+                        as.state.push_count_expect++;
                     });
 
-                    as.add((as, res_orig) => {
-                        as.state.push_count_expect++;
-
+                    as.add((as) => {
                         if (push_count < as.state.push_count_expect)
                         {
                             as.waitExternal();
@@ -627,7 +661,7 @@ module.exports = function(describe, it, vars) {
                         .get('c', 'COUNT(*)').execute(as);
                     
                     as.add((as, res) => {
-                        expect(parseInt(res.rows[0][0])).to.equal(as.state.res_orig + 2);
+                        expect(parseInt(res.rows[0][0])).to.equal(as.state.res_orig + 3);
                         ccm.close();
                     });
                 },

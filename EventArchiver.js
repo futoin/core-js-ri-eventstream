@@ -83,16 +83,9 @@ class EventArchiver
                         {
                             wait_as = false;
                         }
-                        else
+                        else if ( wait_as.state )
                         {
-                            try
-                            {
-                                wait_as.success();
-                            }
-                            catch ( e )
-                            {
-                                // ignore
-                            }
+                            wait_as.success();
                         }
 
                         executor.close();

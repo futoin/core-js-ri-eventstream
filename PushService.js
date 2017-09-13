@@ -137,7 +137,7 @@ class PushService extends PollService
 
                 channel.onInvokerAbort( () =>
                 {
-                    echan.removeConsumer( iface );
+                    this._cleanupChannel( echan_key, echan, iface );
                 } );
 
                 echan.addConsumer( iface, state );
@@ -180,8 +180,8 @@ class PushService extends PollService
                     worker_as.state.worker = state;
                     channel.onInvokerAbort( () =>
                     {
-                        echan.removeConsumer( iface );
                         worker_as.cancel();
+                        this._cleanupChannel( echan_key, echan, iface );
                     } );
 
                     echan.addConsumer( iface, state );
@@ -208,6 +208,17 @@ class PushService extends PollService
     _recordLastId( as, _ident, _last_id )
     {
         throw new Error( 'Not Implemented' );
+    }
+
+    _cleanupChannel( echan_key, echan, consumer_key )
+    {
+        echan.removeConsumer( consumer_key );
+
+        // cleanup empty channels
+        if ( !echan.consumers.size )
+        {
+            this._echannels.delete( echan_key );
+        }
     }
 
     _onEvents( events )

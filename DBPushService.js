@@ -77,6 +77,8 @@ class DBPushService extends PushService
         }
 
         const was = $as();
+
+        // startup
         was.loop( ( as ) => as.add(
             ( as ) =>
             {
@@ -89,16 +91,7 @@ class DBPushService extends PushService
                 as.add( ( as, res ) =>
                 {
                     const state = as.state;
-
-                    if ( res.rows.length )
-                    {
-                        state.last_id = `${res.rows[0][0] || 0}`;
-                    }
-                    else
-                    {
-                        state.last_id = '0';
-                    }
-
+                    state.last_id = `${res.rows[0][0] || 0}`;
                     as.break();
                 } );
             },
@@ -111,6 +104,8 @@ class DBPushService extends PushService
                 }
             }
         ) );
+
+        // main loop
         was.loop( ( as ) => as.add(
             ( as ) =>
             {
@@ -125,7 +120,7 @@ class DBPushService extends PushService
 
                 const q = db.select( this._evt_table )
                     .get( [ 'id', 'type', 'data', 'ts' ] )
-                    .where( 'id >=', as.state.last_id )
+                    .where( 'id >', as.state.last_id )
                     .order( 'id' )
                     .limit( MAX_EVENTS );
                 const helpers = q.helpers();

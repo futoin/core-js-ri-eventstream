@@ -21,6 +21,7 @@ class ReliableDBReceiverService extends ReliableReceiverService
         const db = ccm.db( 'evtdwh' );
         const history_table = this._history_table;
 
+        // startup & error recovery
         if ( !this._last_id )
         {
             as.add( ( as ) =>
@@ -30,36 +31,37 @@ class ReliableDBReceiverService extends ReliableReceiverService
                     .execute( as );
                 as.add( ( as, res ) =>
                 {
-                    if ( res.rows.length )
-                    {
-                        this._last_id = `${res.rows[0][0] || 0}`;
-                    }
-                    else
-                    {
-                        this._last_id = '0';
-                    }
+                    this._last_id = `${res.rows[0][0] || 0}`;
                 } );
             } );
         }
 
         as.add( ( as ) =>
         {
-            as.setCancel( ( as ) =>
-            {
-                // make sure to re-read Last ID on any error
-                this._last_id = null;
-            } );
-
             const iter = events[Symbol.iterator]();
             let last_id = this._last_id;
             let c = iter.next();
 
             // Skip already archived
+            //---
             while ( !c.done &&
                     ( cmpIds( c.value.id, last_id ) <= 0 ) )
             {
                 c = iter.next();
             }
+
+            if ( c.done )
+            {
+                return;
+            }
+
+            // Push to DB
+            //---
+            as.setCancel( ( as ) =>
+            {
+                // make sure to re-read Last ID on any error
+                this._last_id = null;
+            } );
 
             while ( !c.done )
             {
