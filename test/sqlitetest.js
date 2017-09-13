@@ -28,7 +28,7 @@ describe('SQLite', function(){
                             fs.unlinkSync(f);
                         }
                         
-                        const executor = new Executor();
+                        const executor = new Executor(ccm);
                         SQLiteService.register(as, executor, {
                             port: f,
                         });
