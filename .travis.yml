@@ -4,7 +4,7 @@ node_js:
 - '8'
 - '6'
 services:
-- mysql
+#- mysql
 - postgresql
 env:
 - MYSQL_PORT=3306 POSTGRESQL_PORT=5432

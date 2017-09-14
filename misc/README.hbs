@@ -229,7 +229,7 @@ p.add( (as) => {
     let last_id = null;
     
     as.loop( (as) => {
-        ccm.iface('evtpoll').pollEvents(as, 'LIVE", last_id);
+        ccm.iface('evtpoll').pollEvents(as, 'LIVE', last_id);
         
         as.add((as, events) => {
             if (events.length) {
