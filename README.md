@@ -10,7 +10,7 @@
 
 Reference implementation of:
  
-    FTN17: FutoIn Interface - Event Stream
+    FTN18: FutoIn Interface - Event Stream
     Version: 1.0
     
 * Spec: [FTN18: FutoIn Interface - Event Stream v1.x](http://specs.futoin.org/final/preview/ftn18_if_eventstream-1.html)
