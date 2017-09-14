@@ -7,6 +7,7 @@ services:
 - mysql
 - postgresql
 before_install:
+- sudo pip install -U urllib3 requests
 - sudo pip install futoin-cid
 install:
 - nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid prepare
