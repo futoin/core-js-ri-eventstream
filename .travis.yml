@@ -7,8 +7,7 @@ services:
 - mysql
 - postgresql
 env:
-- MYSQL_PORT=3306
-- POSTGRESQL_PORT=5432
+- MYSQL_PORT=3306 POSTGRESQL_PORT=5432
 before_install:
 - sudo pip install -U urllib3 requests
 - sudo pip install futoin-cid
