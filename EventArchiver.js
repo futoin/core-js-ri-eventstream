@@ -44,14 +44,17 @@ class EventArchiver
         options = Object.assign( {}, options );
         options.component = options.component || 'ARCHIVER';
 
+        const executor_ccm = this._executor_ccm;
+        executor_ccm.once( 'close', () => this.stop() );
+
         const was = $as();
         this._worker_as = was;
         was.loop( ( as ) => as.add(
             ( as ) =>
             {
                 //---
-                const executor = new Executor( this._executor_ccm );
-                this._executor_ccm.once( 'close', () => executor.close() );
+                const executor = new Executor( executor_ccm );
+                executor_ccm.once( 'close', () => executor.close() );
                 executor.on( 'notExpected', ( ...args ) => this.emit( 'receiverError', ...args ) );
                 options.executor = executor;
 
