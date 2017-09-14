@@ -6,6 +6,8 @@ const AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 const DBAutoConfig = require('futoin-database/AutoConfig');
 const integration_suite = require('./integrationsuite');
 
+const DB_PORT = process.env.POSTGRESQL_PORT || '5433';
+
 describe('PostgreSQL', function(){
     
     before(function(done){
@@ -17,7 +19,7 @@ describe('PostgreSQL', function(){
                 DBAutoConfig(as, ccm, null, {
                     DB_TYPE: 'postgresql',
                     DB_HOST: '127.0.0.1',
-                    DB_PORT: '5433',
+                    DB_PORT: DB_PORT,
                     DB_USER: 'ftntest',
                     DB_PASS: 'test',
                     DB_DB: 'postgres',
@@ -36,7 +38,7 @@ describe('PostgreSQL', function(){
                         [
                             'tool', 'exec', 'flyway', '--',
                             'migrate',
-                            '-url=jdbc:postgresql://127.0.0.1:5433/evtactive',
+                            `-url=jdbc:postgresql://127.0.0.1:${DB_PORT}/evtactive`,
                             '-user=ftntest',
                             '-password=test',
                             `-locations=filesystem:${__dirname}/../sql/active/postgresql`,
@@ -52,7 +54,7 @@ describe('PostgreSQL', function(){
                         [
                             'tool', 'exec', 'flyway', '--',
                             'migrate',
-                            '-url=jdbc:postgresql://127.0.0.1:5433/evthistory',
+                            `-url=jdbc:postgresql://127.0.0.1:${DB_PORT}/evthistory`,
                             '-user=ftntest',
                             '-password=test',
                             `-locations=filesystem:${__dirname}/../sql/dwh/postgresql`,
@@ -94,13 +96,13 @@ describe('PostgreSQL', function(){
                 }, {
                     DB_EVT_TYPE: 'postgresql',
                     DB_EVT_HOST: '127.0.0.1',
-                    DB_EVT_PORT: '5433',
+                    DB_EVT_PORT: DB_PORT,
                     DB_EVT_USER: 'ftntest',
                     DB_EVT_DB: 'evtactive',
                     DB_EVT_PASS: 'test',
                     DB_EVTDWH_TYPE: 'postgresql',
                     DB_EVTDWH_HOST: '127.0.0.1',
-                    DB_EVTDWH_PORT: '5433',
+                    DB_EVTDWH_PORT: DB_PORT,
                     DB_EVTDWH_USER: 'ftntest',
                     DB_EVTDWH_DB: 'evthistory',
                     DB_EVTDWH_PASS: 'test',

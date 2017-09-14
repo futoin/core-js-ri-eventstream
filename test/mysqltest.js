@@ -6,6 +6,8 @@ const AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 const DBAutoConfig = require('futoin-database/AutoConfig');
 const integration_suite = require('./integrationsuite');
 
+const DB_PORT = process.env.MYSQL_PORT || '3307';
+
 describe('MySQL', function(){
     
     before(function(done){
@@ -17,7 +19,7 @@ describe('MySQL', function(){
                 DBAutoConfig(as, ccm, null, {
                     DB_TYPE: 'mysql',
                     DB_HOST: '127.0.0.1',
-                    DB_PORT: '3307',
+                    DB_PORT: DB_PORT,
                     DB_USER: 'ftntest',
                 });
                 as.add((as) => {
@@ -36,7 +38,7 @@ describe('MySQL', function(){
                         [
                             'tool', 'exec', 'flyway', '--',
                             'migrate',
-                            '-url=jdbc:mysql://127.0.0.1:3307/evtactive',
+                            `-url=jdbc:mysql://127.0.0.1:${DB_PORT}/evtactive`,
                             '-user=ftntest',
                             `-locations=filesystem:${__dirname}/../sql/active/mysql`,
                         ]
@@ -51,7 +53,7 @@ describe('MySQL', function(){
                         [
                             'tool', 'exec', 'flyway', '--',
                             'migrate',
-                            '-url=jdbc:mysql://127.0.0.1:3307/evthistory',
+                            `-url=jdbc:mysql://127.0.0.1:${DB_PORT}/evthistory`,
                             '-user=ftntest',
                             `-locations=filesystem:${__dirname}/../sql/dwh/mysql`,
                         ]
@@ -92,12 +94,12 @@ describe('MySQL', function(){
                 }, {
                     DB_EVT_TYPE: 'mysql',
                     DB_EVT_HOST: '127.0.0.1',
-                    DB_EVT_PORT: '3307',
+                    DB_EVT_PORT: DB_PORT,
                     DB_EVT_USER: 'ftntest',
                     DB_EVT_DB: 'evtactive',
                     DB_EVTDWH_TYPE: 'mysql',
                     DB_EVTDWH_HOST: '127.0.0.1',
-                    DB_EVTDWH_PORT: '3307',
+                    DB_EVTDWH_PORT: DB_PORT,
                     DB_EVTDWH_USER: 'ftntest',
                     DB_EVTDWH_DB: 'evthistory',
                 });

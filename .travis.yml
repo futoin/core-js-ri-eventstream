@@ -6,13 +6,15 @@ node_js:
 services:
 - mysql
 - postgresql
+env:
+- MYSQL_PORT=3306
+- POSTGRESQL_PORT=5432
 before_install:
 - sudo pip install -U urllib3 requests
 - sudo pip install futoin-cid
-install:
-- nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid prepare
 - sudo bash test/db_config.sh
-- cid tool install flyway
 script:
+- rm -rf node_modules
+- nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid prepare
 - nodeVer=$TRAVIS_NODE_VERSION nodeEnv=development cid run test
 
