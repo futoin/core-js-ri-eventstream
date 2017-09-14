@@ -7,7 +7,8 @@ CREATE TABLE evt_queue (
     id BIGINT UNSIGNED NOT NULL auto_increment PRIMARY KEY,
     type VARCHAR(16) NOT NULL
         COMMENT "Convert to enum for efficiency",
-    data JSON NOT NULL,
+    -- data JSON NOT NULL,
+    data TEXT NOT NULL,
     ts TIMESTAMP NOT NULL
 )
     ENGINE=InnoDB

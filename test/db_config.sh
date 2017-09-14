@@ -2,19 +2,19 @@
 
 set -e
 
-# percona
-percona_deb=percona-release_0.1-4.$(lsb_release -sc)_all.deb
-wget https://repo.percona.com/apt/$percona_deb
-dpkg -i $percona_deb
-
-apt-get update
-
-# Install
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    percona-server-server-5.7 \
-    postgresql
-
 if test -z "$TRAVIS"; then
+    # percona
+    percona_deb=percona-release_0.1-4.$(lsb_release -sc)_all.deb
+    wget https://repo.percona.com/apt/$percona_deb
+    dpkg -i $percona_deb
+
+    apt-get update
+
+    # Install
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        percona-server-server-5.7 \
+        postgresql
+
     # Listen on all interfaces
     #sed -i -e s/127.0.0.1/0.0.0.0/g /etc/mysql/mysql.conf.d/mysqld.cnf
     #
