@@ -675,4 +675,65 @@ module.exports = function(describe, it, vars) {
             as.execute();
         });
     });
+    
+    describe('DBEventDiscarder', function() {
+        const DBEventDiscarder = require('../DBEventDiscarder');
+        
+        it('should discard delivered events', function (done) {
+            const as = vars.as;
+            const ccm = vars.ccm;
+            
+            
+            as.add(
+                (as) => {
+                    const db = ccm.db('evt');
+                    db.delete('evt_consumers')
+                        .where('ident !=', '-internal:ARCHIVER')
+                        .execute(as);
+                        
+                    let event_count = 0;
+                    let event_discarded = 0;
+                    let wait_as = null;
+                        
+                    const discared = new DBEventDiscarder();
+                    discared.on('eventDiscard', (cnt) => {
+                        event_discarded += cnt;
+                        
+                        if (event_discarded >= event_count) {
+                            setTimeout(() => {
+                                wait_as.success();
+                                wait_as = null;
+                            }, 100);
+                        }
+                    });
+                    discared.on('workerError', function() { console.log(arguments); } );
+                    
+                    db.select('evt_queue').get('c', 'COUNT(*)').execute(as);
+                    
+                    as.add( (as, res) => {
+                        event_count = parseInt(res.rows[0][0]);
+                        
+                        wait_as = as;
+                        as.waitExternal();
+                        discared.start(ccm, { limit_at_once: 100, poll_period_ms: 30 });
+                        discared.start();
+                    });
+                    
+                    db.select('evt_queue').get('c', 'COUNT(*)').execute(as);
+                    
+                    as.add( (as, res) => {
+                        expect(parseInt(res.rows[0][0])).to.equal(0);
+                        discared.stop();
+                    });
+                },
+                (as, err) => {
+                    console.log(err);
+                    console.log(as.state.error_info);
+                    done(as.state.last_exception);
+                }
+            );
+            as.add((as) => done());
+            as.execute();
+        });
+    });
 };
