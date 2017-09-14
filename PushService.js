@@ -443,17 +443,23 @@ class PushService extends PollService
                 else if ( queue.length )
                 {
                     const chunk = PushService._mergeQueue( state, this.MAX_EVENTS );
+                    const last_id = chunk[chunk.length - 1].id;
 
                     as.loop( ( as ) => as.add(
                         ( as ) =>
                         {
-                            sendEvents( as, chunk );
+                            // in case of attempt after _recordLastId failure
+                            if ( state.last_id !== last_id )
+                            {
+                                sendEvents( as, chunk );
+                            }
 
                             as.add( ( as ) =>
                             {
-                                this._recordLastId( as, state.ident, state.last_id );
-                                as.break();
+                                state.last_id = last_id;
+                                this._recordLastId( as, state.ident, last_id );
                             } );
+                            as.add( ( as ) => as.break() );
                         },
                         ( as, err ) =>
                         {
