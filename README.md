@@ -163,7 +163,7 @@ The tool will automatically reconnect on errors. Processing state
 can be monitored through events.
 
 ```javascript
-DBAutoConfig(as, {
+DBAutoConfig(as, ccm, {
     evtdwh: {}
 });
 const archiver = new DBEventArchiver(ccm);
@@ -177,6 +177,70 @@ archiver.start(push_endpoint, credentials);
 
 // to stop - automatically called on ccm.close()
 archiver.stop();
+```
+
+## 6. Discarding event from active database
+
+For performance and disaster recovery time reasons, operation critical
+database should be kept as small as possible. Events delivered to all consumers
+including DBEventArchiver can be removed the following way.
+
+```javascript
+DBAutoConfig(as, ccm, {
+    evt: {}
+});
+const discarder = new DBEventDiscarder(ccm);
+
+archiver.on('workerError', () => { ... });
+archiver.on('eventDiscard', () => { ... });
+
+// keep going until stopped
+discarder.start(ccm);
+
+// to stop - automatically called on ccm.close()
+discarder.stop();
+```
+
+## 7. Complete example
+
+DBPushService inherits DBPollService, so there is no need to instance both.
+
+This case show internal communicaton channel.
+
+```javascript
+const ccm = new AdvancedCCM();
+DBAutoConfig(as, ccm, {
+    evt: {}
+});
+const executor = new Executor(ccm); // or NodeExecutor() for WebSockets
+DBGenService.register(as, executor);
+DBPushService.register(as, executor);
+
+GenFace.register(as, ccm, 'evtgen', executor);
+PollFace.register(as, ccm, 'evtpoll', executor);
+
+const p = as.parallel();
+
+p.loop( (as) => {
+    ccm.iface('evtgen').addEvent(as, 'EVT', 'data');
+});
+
+p.add( (as) => {
+    let last_id = null;
+    
+    as.loop( (as) => {
+        ccm.iface('evtpoll').pollEvents(as, 'LIVE", last_id);
+        
+        as.add((as, events) => {
+            if (events.length) {
+                last_id = events[events.length - 1].id;
+            } else {
+                const timer = setTimeout( () => as.success(), 1e3 );
+                as.setCancel((as) => clearTimeout(timer));
+            }
+        });
+    });
+});
 ```
 
 
@@ -195,6 +259,8 @@ The concept is described in FutoIn specification: [FTN18: FutoIn Interface - Eve
 <dd><p>DB-specific event discarding.</p>
 <p>It&#39;s assumed to be run against &quot;active&quot; database part as defined in the concept
 to reduce its size after all reliably delivered events are delivered to consumers.</p>
+<p>Event are deleted based on limit_at_once to avoid too large transactions which
+may affect performance of realtime processes and break some DB clusters like Galera.</p>
 </dd>
 <dt><a href="#DBGenService">DBGenService</a></dt>
 <dd><p>Database-specific event generation service</p>
@@ -258,6 +324,9 @@ DB-specific event discarding.
 
 It's assumed to be run against "active" database part as defined in the concept
 to reduce its size after all reliably delivered events are delivered to consumers.
+
+Event are deleted based on limit_at_once to avoid too large transactions which
+may affect performance of realtime processes and break some DB clusters like Galera.
 
 **Kind**: global class  
 
