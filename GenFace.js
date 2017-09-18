@@ -3,8 +3,7 @@
 const _defaults = require( 'lodash/defaults' );
 const path = require( 'path' );
 const PingFace = require( 'futoin-invoker/PingFace' );
-const SpecTools = require( 'futoin-invoker/SpecTools' );
-const { FTN18_VERSION, PING_VERSION, DB_EVTTABLE } = require( './common' );
+const { FTN18_VERSION, PING_VERSION } = require( './common' );
 
 
 /**
@@ -62,28 +61,6 @@ class GenFace extends PingFace
     static spec()
     {
         return path.resolve( __dirname, 'specs' );
-    }
-
-    /**
-     * Helper to add event generation into DB transaction
-     * @param {XferBuilder} xb - instance of transaction builder
-     * @param {string} type - event type
-     * @param {*} data - any data
-     * @param {string} [table=evt_queue] - event queue
-     */
-    addXferEvent( xb, type, data, table=DB_EVTTABLE )
-    {
-        const check = SpecTools.checkType( this._raw_info, 'EventType', type );
-
-        if ( !check )
-        {
-            throw new Error( `Invalid event type: ${type}` );
-        }
-
-        xb.insert( table, { affected: 1 } )
-            .set( 'type', type )
-            .set( 'data', JSON.stringify( data ) )
-            .set( 'ts', xb.helpers().now() );
     }
 }
 

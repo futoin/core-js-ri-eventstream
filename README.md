@@ -262,6 +262,10 @@ to reduce its size after all reliably delivered events are delivered to consumer
 <p>Event are deleted based on limit_at_once to avoid too large transactions which
 may affect performance of realtime processes and break some DB clusters like Galera.</p>
 </dd>
+<dt><a href="#DBGenFace">DBGenFace</a></dt>
+<dd><p>GenFace for DB backend.</p>
+<p>The only difference to original GenFace is native DB-specific API.</p>
+</dd>
 <dt><a href="#DBGenService">DBGenService</a></dt>
 <dd><p>Database-specific event generation service</p>
 </dd>
@@ -370,6 +374,28 @@ Emitted on worker errors
 Emitted on discarded events
 
 **Kind**: event emitted by [<code>DBEventDiscarder</code>](#DBEventDiscarder)  
+<a name="DBGenFace"></a>
+
+## DBGenFace
+GenFace for DB backend.
+
+The only difference to original GenFace is native DB-specific API.
+
+**Kind**: global class  
+<a name="DBGenFace+addXferEvent"></a>
+
+### dbGenFace.addXferEvent(xb, type, data, [table])
+Helper to add event generation into DB transaction
+
+**Kind**: instance method of [<code>DBGenFace</code>](#DBGenFace)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| xb | <code>XferBuilder</code> |  | instance of transaction builder |
+| type | <code>string</code> |  | event type |
+| data | <code>\*</code> |  | any data |
+| [table] | <code>string</code> | <code>&quot;evt_queue&quot;</code> | event queue |
+
 <a name="DBGenService"></a>
 
 ## DBGenService
@@ -503,26 +529,9 @@ Event Stream - Generator Face
 **Kind**: global class  
 
 * [GenFace](#GenFace)
-    * _instance_
-        * [.addXferEvent(xb, type, data, [table])](#GenFace+addXferEvent)
-    * _static_
-        * [.LATEST_VERSION](#GenFace.LATEST_VERSION)
-        * [.PING_VERSION](#GenFace.PING_VERSION)
-        * [.register(as, ccm, name, endpoint, [credentials], [options])](#GenFace.register)
-
-<a name="GenFace+addXferEvent"></a>
-
-### genFace.addXferEvent(xb, type, data, [table])
-Helper to add event generation into DB transaction
-
-**Kind**: instance method of [<code>GenFace</code>](#GenFace)  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| xb | <code>XferBuilder</code> |  | instance of transaction builder |
-| type | <code>string</code> |  | event type |
-| data | <code>\*</code> |  | any data |
-| [table] | <code>string</code> | <code>&quot;evt_queue&quot;</code> | event queue |
+    * [.LATEST_VERSION](#GenFace.LATEST_VERSION)
+    * [.PING_VERSION](#GenFace.PING_VERSION)
+    * [.register(as, ccm, name, endpoint, [credentials], [options])](#GenFace.register)
 
 <a name="GenFace.LATEST_VERSION"></a>
 

@@ -1,4 +1,7 @@
 
+=== (next) ===
+BREAKING: moved DB-specific logic to new DBGenFace
+
 === 0.9.1 (2017-09-14) ===
 FIXED: readme
 FIXED: npmjs.com bump to update stale data

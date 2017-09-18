@@ -4,6 +4,7 @@ const expect = require( 'chai' ).expect;
 
 const Executor = require('futoin-executor/Executor');
 const GenFace = require('../GenFace');
+const DBGenFace = require('../DBGenFace');
 const DBGenService = require('../DBGenService');
 const PollFace = require('../PollFace');
 const PushFace = require('../PushFace');
@@ -30,7 +31,7 @@ module.exports = function(describe, it, vars) {
             as.add(
                 (as) => {
                     DBGenService.register(as, executor);
-                    GenFace.register(as, ccm, 'evtgen', executor);
+                    DBGenFace.register(as, ccm, 'evtgen', executor);
                 },
                 (as, err) => {
                     console.log(err);
@@ -374,7 +375,7 @@ module.exports = function(describe, it, vars) {
                         sleep_max: 30,
                         sleep_step: 21,
                     });
-                    GenFace.register(as, ccm, 'evtgen', executor);
+                    DBGenFace.register(as, ccm, 'evtgen', executor);
                     PushFace.register(as, ccm, 'evtpush', executor, null, {executor: clientExecutor});
                     
                     as.state.push_svc = push_svc;
