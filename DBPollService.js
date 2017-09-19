@@ -62,7 +62,7 @@ class DBPollService extends PollService
         );
     }
 
-    _pollEvents( as, executor, ident, last_id, want, is_reliable )
+    _pollEvents( as, { executor, ident, last_id, want, is_reliable, chunk_size } )
     {
         const db = executor.ccm().db( 'evt' );
         const xfer = db.newXfer();
@@ -97,7 +97,7 @@ class DBPollService extends PollService
         const s = xfer.select( this._evt_table, { result: true } )
             .get( [ 'id', 'type', 'data', 'ts' ] )
             .where( 'id >', last_id )
-            .limit( this.MAX_EVENTS );
+            .limit( chunk_size );
 
         if ( want )
         {
@@ -129,7 +129,7 @@ class DBPollService extends PollService
                             .get( [ 'id', 'type', 'data', 'ts' ] )
                             .where( 'id >', last_id )
                             .where( 'type IN', want )
-                            .limit( this.MAX_EVENTS );
+                            .limit( chunk_size );
 
                         const uq = xfer.update( this._consumer_table );
                         uq.set( 'last_evt_id', uq.backref( sq, 'max_id' ) );

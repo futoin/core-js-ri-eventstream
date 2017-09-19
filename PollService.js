@@ -23,7 +23,11 @@ class PollService extends PingService
      * @param {object} options - implementation defined options
      * @param {boolean} [options.allow_reliable=true] - allow reliable consumers
      * @param {boolean} [options.allow_polling=true] - allow polling calls
+     * @param {integer} [options.max_chunk_events=100] - maxium events per request 
      * @returns {PollService} instance
+     * 
+     * @note Chunk event count is lower then protocol permits by default as there is
+     *       a typical amount 64K futoin message limit.
      */
     static register( as, executor, options={} )
     {
@@ -43,13 +47,25 @@ class PollService extends PingService
         _defaults( options, {
             allow_reliable: true,
             allow_polling: true,
+            max_chunk_events: 100,
         } );
         this._allow_reliable = options.allow_reliable;
         this._allow_polling = options.allow_polling;
+        this._max_chunk_events = options.max_chunk_events;
     }
 
     _close()
     {
+    }
+
+    _maxChunkEvents( channel )
+    {
+        if ( channel.type() === 'INTERNAL' )
+        {
+            return this.MAX_EVENTS;
+        }
+
+        return this._max_chunk_events;
     }
 
     registerConsumer( as, reqinfo )
@@ -99,11 +115,18 @@ class PollService extends PingService
             as.error( 'SecurityError', 'Reliable delivery is disabled' );
         }
 
-        this._pollEvents( as, reqinfo.executor(), ident, last_id, want, is_reliable );
+        const chunk_size = this._maxChunkEvents( reqinfo.channel() );
+        this._pollEvents( as, {
+            executor: reqinfo.executor(),
+            ident,
+            last_id,
+            want,
+            is_reliable,
+            chunk_size } );
         as.add( ( as, res ) => reqinfo.result( res ) );
     }
 
-    _pollEvents( as, _executor, _ident, _last_id, _want, _is_reliable )
+    _pollEvents( as, { _executor, _ident, _last_id, _want, _is_reliable, _chunk_size } )
     {
         as.error( 'NotImplemented', 'Please override PollService#_pollEvents' );
     }

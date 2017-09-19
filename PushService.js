@@ -110,6 +110,7 @@ class PushService extends PollService
         const channel = reqinfo.channel();
 
         const ifacever = ReceiverFace.register( as, channel );
+        const chunk_size = this._maxChunkEvents( reqinfo.channel() );
 
         as.add( ( as ) =>
         {
@@ -134,6 +135,7 @@ class PushService extends PollService
                     queue_count: 0,
                     ident: null,
                     iface,
+                    chunk_size,
                 };
                 Object.seal( state );
 
@@ -155,11 +157,14 @@ class PushService extends PollService
 
                 this._pollEvents(
                     as,
-                    executor,
-                    ident,
-                    null,
-                    want,
-                    true
+                    {
+                        executor,
+                        ident,
+                        last_id: null,
+                        want,
+                        is_reliable: true,
+                        chunk_size,
+                    }
                 );
 
                 as.add( ( as, events ) =>
@@ -175,6 +180,7 @@ class PushService extends PollService
                         want,
                         wait_as: null,
                         history_push: events.length ? events : false,
+                        chunk_size,
                     };
                     Object.seal( state );
 
@@ -321,7 +327,7 @@ class PushService extends PollService
             state.req_count++;
             const seq_id = state.seq_id++;
 
-            const chunk = PushService._mergeQueue( state, this.MAX_EVENTS );
+            const chunk = PushService._mergeQueue( state );
 
             // live events
             $as().add(
@@ -352,8 +358,8 @@ class PushService extends PollService
 
     _reliableWorker( as )
     {
-        const MAX_EVENTS = this.MAX_EVENTS;
         const state = as.state.worker;
+        const CHUNK_SIZE = state.chunk_size;
         const evt_stats = this._stats;
 
         const sendEvents = ( as, events ) =>
@@ -418,7 +424,7 @@ class PushService extends PollService
                             }
                             else
                             {
-                                state.history_push = ( history_push.length >= MAX_EVENTS );
+                                state.history_push = ( history_push.length >= CHUNK_SIZE );
                             }
                         } );
                     }
@@ -427,11 +433,14 @@ class PushService extends PollService
                         // get new events for pushing
                         this._pollEvents(
                             as,
-                            state.executor,
-                            state.ident,
-                            state.last_id,
-                            state.want,
-                            true
+                            {
+                                executor: state.executor,
+                                ident: state.ident,
+                                last_id: state.last_id,
+                                want : state.want,
+                                is_reliable: true,
+                                chunk_size: state.chunk_size,
+                            }
                         );
 
                         as.add( ( as, events ) =>
@@ -442,7 +451,7 @@ class PushService extends PollService
                 }
                 else if ( queue.length )
                 {
-                    const chunk = PushService._mergeQueue( state, this.MAX_EVENTS );
+                    const chunk = PushService._mergeQueue( state );
                     const last_id = chunk[chunk.length - 1].id;
 
                     as.loop( ( as ) => as.add(
@@ -532,9 +541,10 @@ class PushService extends PollService
         return chunk.slice( start );
     }
 
-    static _mergeQueue( state, limit )
+    static _mergeQueue( state )
     {
         const queue = state.queue;
+        const limit = state.chunk_size;
         let chunk = queue.shift();
 
         if ( !queue.length || ( chunk.length + queue[0].length ) > limit )

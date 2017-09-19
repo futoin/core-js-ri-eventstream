@@ -311,8 +311,8 @@ describe( 'PushService', function() {
     it('should combine chunks in queue', function() {
         const test = ( queue, chunk, after ) => {
             const queue_count = queue.reduce( (m, v) => m + v.length, 0 );
-            const state = { queue, queue_count };
-            const res = PushService._mergeQueue( state, 1000 );
+            const state = { queue, queue_count, chunk_size: 1000 };
+            const res = PushService._mergeQueue( state );
             expect( res ).to.eql( chunk );
             expect( queue ).to.eql( after );
             expect( state.queue_count ).to.eql(
@@ -791,7 +791,7 @@ describe( 'PushService', function() {
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
                 PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
                 
-                push_svc._event_history = { queue: [], queue_count: 0};
+                push_svc._event_history = { queue: [], queue_count: 0, chunk_size: 1000};
                 let events_expected = 0;
                 const call_count = 20;
                 
@@ -939,7 +939,7 @@ describe( 'PushService', function() {
                     
                     PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
                     
-                    push_svc._event_history = { queue: [], queue_count: 0};
+                    push_svc._event_history = { queue: [], queue_count: 0, chunk_size: 1000};
                     let events_expected = 0;
                     let event_gap = 0;
                     const call_count = 3;
@@ -1100,7 +1100,7 @@ describe( 'PushService', function() {
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
                 PushFace.register( as, ccm, 'pfr', executor, null, { executor: reliableExecutor } );
                 
-                push_svc._event_history = { queue: [], queue_count: 0};
+                push_svc._event_history = { queue: [], queue_count: 0, chunk_size: 1000};
                 let events_expected = 0;
                 let last_id = '20001';
                 const call_count = 20;

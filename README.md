@@ -636,6 +636,8 @@ Register futoin.evt.poll interface with Executor
 
 **Kind**: static method of [<code>PollService</code>](#PollService)  
 **Returns**: [<code>PollService</code>](#PollService) - instance  
+**Note**: Chunk event count is lower then protocol permits by default as there is
+      a typical amount 64K futoin message limit.  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -644,6 +646,7 @@ Register futoin.evt.poll interface with Executor
 | options | <code>object</code> |  | implementation defined options |
 | [options.allow_reliable] | <code>boolean</code> | <code>true</code> | allow reliable consumers |
 | [options.allow_polling] | <code>boolean</code> | <code>true</code> | allow polling calls |
+| [options.max_chunk_events] | <code>integer</code> | <code>100</code> | maxium events per request |
 
 <a name="PushFace"></a>
 
