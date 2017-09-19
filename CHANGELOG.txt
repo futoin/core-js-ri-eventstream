@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.9.3 (2017-09-19) ===
 BREAKING: changed flyway schema version to V18.x to reflect FTN18 spec
 CHANGED: to limit non-INTERNAL channel events to 100 by default
 CHANGED: to use futoin-database v1.3.0 multi-row INSERT for DBEventArchiver
