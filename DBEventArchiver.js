@@ -65,8 +65,8 @@ class ReliableDBReceiverService extends ReliableReceiverService
 
             while ( !c.done )
             {
-                const xfer = db.newXfer();
-                const helpers = xfer.helpers();
+                const q = db.insert( history_table );
+                const helpers = q.helpers();
                 let next_last_id = last_id;
                 let j;
 
@@ -74,18 +74,19 @@ class ReliableDBReceiverService extends ReliableReceiverService
                 {
                     const v = c.value;
 
-                    xfer.insert( history_table, { affected: 1 } ).set( {
+                    q.set( {
                         id : v.id,
                         type: v.type,
                         data: JSON.stringify( v.data ),
                         ts: helpers.date( v.ts ),
                     } );
+                    q.newRow();
 
                     next_last_id = v.id;
                     c = iter.next();
                 }
 
-                xfer.execute( as );
+                q.execute( as );
 
                 as.add( ( as ) =>
                 {
