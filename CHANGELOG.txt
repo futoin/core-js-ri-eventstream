@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: to use symlinks in specs
+
 === 0.9.2 (2017-09-18) ===
 BREAKING: moved DB-specific logic to new DBGenFace
 
