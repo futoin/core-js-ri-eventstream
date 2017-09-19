@@ -1,5 +1,6 @@
 
 === (next) ===
+BREAKING: changed flyway schema version to V18.x to reflect FTN18 spec
 FIXED: to use symlinks in specs
 
 === 0.9.2 (2017-09-18) ===
