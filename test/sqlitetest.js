@@ -105,6 +105,13 @@ describe('SQLite', function(){
                     DB_EVTDWH_TYPE: 'sqlite',
                     DB_EVTDWH_SOCKET: evt_history_db,
                 });
+                as.add( (as) => {
+                    ['evt', 'evtdwh'].forEach( (v) => {
+                        const db = ccm.db(v);
+                        db.query(as, 'PRAGMA synchronous = OFF');
+                        db.query(as, 'PRAGMA journal_mode = MEMORY');
+                    });
+                });
             },
             (as, err) => {
                 console.log(err);
