@@ -681,6 +681,7 @@ module.exports = function(describe, it, vars) {
         const DBEventDiscarder = require('../DBEventDiscarder');
         
         it('should discard delivered events', function (done) {
+            this.timeout(5e3);
             const as = vars.as;
             const ccm = vars.ccm;
             
