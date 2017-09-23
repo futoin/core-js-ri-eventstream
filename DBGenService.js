@@ -3,6 +3,8 @@
 const GenService = require( './GenService' );
 const { DB_IFACEVER, DB_EVTTABLE } = require( './common' );
 
+const SYM_ADD_EVT = Symbol( 'AddEventQuery' );
+
 /**
  * Database-specific event generation service
  */
@@ -25,7 +27,6 @@ class DBGenService extends GenService
 
         const db = ccm.db( 'evt' );
 
-        this._add_event_query = null;
         this._evt_table = db.queryBuilder().identifier(
             options.event_table || DB_EVTTABLE
         );
@@ -33,25 +34,18 @@ class DBGenService extends GenService
 
     addEvent( as, reqinfo )
     {
-        let pq = this._add_event_query;
+        const db = reqinfo.executor().ccm().db( 'evt' );
+        const params = reqinfo.params();
 
-        if ( !pq )
+        const pq = db.getPrepared( SYM_ADD_EVT, ( db ) =>
         {
-            const db = reqinfo.executor().ccm().db( 'evt' );
-            db.once( 'close', () =>
-            {
-                this._add_event_query = null;
-            } );
-
             const qb = db.insert( this._evt_table );
             qb.set( 'type', qb.param( 'type' ) )
                 .set( 'data', qb.param( 'data' ) )
                 .set( 'ts', qb.helpers().now() )
                 .getInsertID( 'id' );
-            pq = this._add_event_query = qb.prepare();
-        }
-
-        const params = reqinfo.params();
+            return qb.prepare();
+        } );
 
         pq.execute( as, {
             type: params.type,
