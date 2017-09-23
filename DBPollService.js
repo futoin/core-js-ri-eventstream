@@ -41,7 +41,7 @@ class DBPollService extends PollService
             ( as ) =>
             {
                 const db = executor.ccm().db( 'evt' );
-                const now = db.queryBuilder().helpers().now();
+                const now = db.helpers().now();
 
                 db.insert( this._consumer_table )
                     .set( {

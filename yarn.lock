@@ -974,9 +974,9 @@ futoin-asyncsteps@^1.7.1:
   dependencies:
     performance-now "^2.1.0"
 
-futoin-database@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/futoin-database/-/futoin-database-1.4.0.tgz#4b436d31e2e4bf12787bd72b02e4da14cd36184f"
+futoin-database@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/futoin-database/-/futoin-database-1.4.1.tgz#a55a44855fe09364db0fe972d7842eb23bea5a42"
   dependencies:
     lodash "^4.17.4"
     moment "^2.18.1"

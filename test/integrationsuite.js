@@ -635,7 +635,7 @@ module.exports = function(describe, it, vars) {
                                 'id' : as.state.res_orig + 2,
                                 'type': 'NEW_EVT',
                                 'data': JSON.stringify(234),
-                                'ts': db.queryBuilder().helpers().now(),
+                                'ts': db.helpers().now(),
                             })
                             .execute(as);
 
