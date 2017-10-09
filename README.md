@@ -89,11 +89,11 @@ evtgen.addEvent(as, 'OBJECT_EVENT', { a: 1, b: 2, c: 3 });
 
 ## 2. Adding events in database transaction
 
-For more advanced cases, you can check source code of GenFace#addXferEvent()
+For more advanced cases, you can check source code of DBGenFace#addXferEvent()
 to build more tailored statemented.
 
 ```javascript
-GenFace.register(as, ccm, 'evtgen', endpoint );
+DBGenFace.register(as, ccm, 'evtgen', endpoint );
 // ...
 const evtgen = ccm.iface('evtgen');
 const db = ccm.db();
@@ -158,7 +158,7 @@ evtpushsec.readyToReceive(as, 'Security', ['USR_ADD', 'USR_MOD', 'USR_LOGIN']);
 
 ## 5. Event history transfer
 
-The should be a single system-wide instance of DBEventArchiver tool.
+There should be a single system-wide instance of DBEventArchiver tool.
 The tool will automatically reconnect on errors. Processing state
 can be monitored through events.
 
