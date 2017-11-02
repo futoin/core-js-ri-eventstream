@@ -12,7 +12,7 @@ class DBGenService extends GenService
 {
     /**
      * Please use DBGenService.regster()
-     * 
+     *
      * @param {AsyncSteps} _as - async step interface
      * @param {Executor} executor - related Executor
      * @param {object} [options={}] - options

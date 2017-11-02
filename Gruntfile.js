@@ -11,7 +11,12 @@ module.exports = function( grunt )
             options: { fix: true },
             target: [ '*.js', 'lib/**/*.js' ],
         },
-        mocha_istanbul: { coverage: { src: [ 'test/*test.js' ] } },
+        mocha_istanbul: {
+            coverage: { src: [ 'test/*test.js' ] },
+            options: {
+                mochaOptions: [ '--exit' ],
+            },
+        },
         istanbul_check_coverage: {},
         jsdoc2md: {
             README: {

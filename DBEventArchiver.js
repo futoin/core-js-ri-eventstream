@@ -100,14 +100,14 @@ class ReliableDBReceiverService extends ReliableReceiverService
 
 /**
  * Database Event Archiver service.
- * 
+ *
  * @note No more than one instance should run at once.
  */
 class DBEventArchiver extends EventArchiver
 {
     /**
      * C-tor
-     * 
+     *
      * @param {AdvancedCCM} db_ccm - CCM instance with registered '#db.evtdwh' interface
      */
     constructor( db_ccm )

@@ -14,7 +14,7 @@ class EventArchiver
 {
     /**
      * Initialize event archiver.
-     * 
+     *
      * @param {AdvancedCCM} executor_ccm - CCM for executor
      */
     constructor( executor_ccm )
@@ -27,11 +27,11 @@ class EventArchiver
 
     /**
      * Start receiving events for archiving
-     * 
+     *
      * @param {*} endpoint - see PushFace
      * @param {*} [credentials=null] - see PushFace
      * @param {*} [options={}] - see PushFace
-     * 
+     *
      * @note options.executor is overridden
      */
     start( endpoint, credentials=null, options={} )

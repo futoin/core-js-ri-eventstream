@@ -7,10 +7,10 @@ const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
 
 /**
  * DB-specific event discarding.
- * 
+ *
  * It's assumed to be run against "active" database part as defined in the concept
  * to reduce its size after all reliably delivered events are delivered to consumers.
- * 
+ *
  * Event are deleted based on limit_at_once to avoid too large transactions which
  * may affect performance of realtime processes and break some DB clusters like Galera.
  */
@@ -24,7 +24,7 @@ class DBEventDiscarder
 
     /**
      * Start event discarding
-     * 
+     *
      * @param {AdvancedCCM} ccm - CCM with registered #db.evt interface
      * @param {object} [options={}] - options
      * @param {integer} [options.poll_period_ms=600e3] - poll interval

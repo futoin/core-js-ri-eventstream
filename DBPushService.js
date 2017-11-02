@@ -14,7 +14,7 @@ class DBPushService extends PushService
 {
     /**
      * Please use DBPushService,register()
-     * 
+     *
      * @param {AsyncSteps} as - async step interface
      * @param {Executor} executor - related Executor
      * @param {object} [options={}] - options

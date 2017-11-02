@@ -6,7 +6,7 @@ const { DB_EVTTABLE } = require( './common' );
 
 /**
  * GenFace for DB backend.
- * 
+ *
  * The only difference to original GenFace is native DB-specific API.
  */
 class DBGenFace extends GenFace

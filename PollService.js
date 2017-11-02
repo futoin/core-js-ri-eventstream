@@ -23,9 +23,9 @@ class PollService extends PingService
      * @param {object} options - implementation defined options
      * @param {boolean} [options.allow_reliable=true] - allow reliable consumers
      * @param {boolean} [options.allow_polling=true] - allow polling calls
-     * @param {integer} [options.max_chunk_events=100] - maxium events per request 
+     * @param {integer} [options.max_chunk_events=100] - maxium events per request
      * @returns {PollService} instance
-     * 
+     *
      * @note Chunk event count is lower then protocol permits by default as there is
      *       a typical amount 64K futoin message limit.
      */

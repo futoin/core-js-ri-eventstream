@@ -22,7 +22,7 @@ class ReceiverFace extends NativeIface
 
     /**
      * CCM registration helper
-     * 
+     *
      * @param {AsyncSteps} as - steps interface
      * @param {ChannelContext} channel - Bi-Direction channel instance
      * @param {object} [options={}] - interface options

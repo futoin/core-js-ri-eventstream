@@ -29,7 +29,7 @@ class GenFace extends PingFace
 
     /**
      * CCM registration helper
-     * 
+     *
      * @param {AsyncSteps} as - steps interface
      * @param {AdvancedCCM} ccm - CCM instance
      * @param {string} name - CCM registration name

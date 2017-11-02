@@ -11,7 +11,7 @@ class DBPollService extends PollService
 {
     /**
      * Please use DBPollService,register()
-     * 
+     *
      * @param {AsyncSteps} as - async step interface
      * @param {Executor} executor - related Executor
      * @param {object} [options={}] - options
