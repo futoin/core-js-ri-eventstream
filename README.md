@@ -382,6 +382,18 @@ GenFace for DB backend.
 The only difference to original GenFace is native DB-specific API.
 
 **Kind**: global class  
+
+* [DBGenFace](#DBGenFace)
+    * [.DB_EVENT_TABLE](#DBGenFace+DB_EVENT_TABLE) ⇒ <code>string</code>
+    * [.addXferEvent(xb, type, data, [table])](#DBGenFace+addXferEvent)
+
+<a name="DBGenFace+DB_EVENT_TABLE"></a>
+
+### dbGenFace.DB_EVENT_TABLE ⇒ <code>string</code>
+Easy access to DB event table name
+
+**Kind**: instance property of [<code>DBGenFace</code>](#DBGenFace)  
+**Returns**: <code>string</code> - raw table name  
 <a name="DBGenFace+addXferEvent"></a>
 
 ### dbGenFace.addXferEvent(xb, type, data, [table])

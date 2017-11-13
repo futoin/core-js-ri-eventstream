@@ -46,6 +46,8 @@ module.exports = function(describe, it, vars) {
                 (as) => {
                     const iface = ccm.iface('evtgen');
                     
+                    expect(iface.DB_EVENT_TABLE).to.equal('evt_queue');
+                    
                     iface.addEvent(as, 'AB_C', null);
                     iface.addEvent(as, 'AB_C', false);
                     iface.addEvent(as, 'AB_C', 'dt');
@@ -161,7 +163,7 @@ module.exports = function(describe, it, vars) {
             );
         });
         
-        it('should generate events', function(done) {
+        it('should poll events', function(done) {
             as.add(
                 (as) => {
                     const poll = ccm.iface('evtpoll');

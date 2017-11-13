@@ -12,6 +12,15 @@ const { DB_EVTTABLE } = require( './common' );
 class DBGenFace extends GenFace
 {
     /**
+     * Easy access to DB event table name
+     * @returns {string} raw table name
+     */
+    get DB_EVENT_TABLE()
+    {
+        return DB_EVTTABLE;
+    }
+
+    /**
      * Helper to add event generation into DB transaction
      * @param {XferBuilder} xb - instance of transaction builder
      * @param {string} type - event type
