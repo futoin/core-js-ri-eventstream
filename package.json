@@ -29,9 +29,9 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^4.10.0",
+    "eslint": "^4.11.0",
     "futoin-asyncsteps": "^1.7.1",
-    "futoin-database": "^1.4.2",
+    "futoin-database": "^1.5.0",
     "futoin-executor": "^1.5.5",
     "futoin-invoker": "^1.5.5",
     "grunt": "^1.0.1",
@@ -41,7 +41,7 @@
     "grunt-text-replace": "^0.4.0",
     "istanbul": "^0.4.5",
     "mocha": "^4.0.1",
-    "moment": "^2.19.1"
+    "moment": "^2.19.2"
   },
   "eslintIgnore": [
     "test/**"
@@ -52,7 +52,7 @@
   "optionalDependencies": {},
   "peerDependencies": {
     "futoin-asyncsteps": "^1.7.1",
-    "futoin-database": "^1.4.2",
+    "futoin-database": "^1.5.0",
     "futoin-executor": "^1.5.5",
     "futoin-invoker": "^1.5.5"
   }
