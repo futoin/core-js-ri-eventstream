@@ -49,6 +49,8 @@ module.exports = function( describe, it, vars )
 
         it( 'should generate events', function( done )
         {
+            this.timeout( 5e3 );
+
             as.add(
                 ( as ) =>
                 {
