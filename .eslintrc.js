@@ -65,4 +65,19 @@ module.exports = {
         "quote-props": ["error", "as-needed"],
         "wrap-regex": "error",
     },
+    overrides: [
+        {
+            env : {
+                es6: true,
+                node: true,
+                commonjs: true,
+                mocha: true,
+            },
+            files: [ "test/**/*.js" ],
+            rules: {
+                "no-console" : ["off"],
+                "no-unused-vars": ["off"],
+            }
+        },
+    ],
 };
