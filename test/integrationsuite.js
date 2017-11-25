@@ -818,7 +818,7 @@ module.exports = function( describe, it, vars )
 
         it( 'should discard delivered events', function( done )
         {
-            this.timeout( 5e3 );
+            this.timeout( 10e3 );
             const as = vars.as;
             const ccm = vars.ccm;
 
