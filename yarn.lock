@@ -42,8 +42,8 @@ ajv@^4.9.1:
     json-stable-stringify "^1.0.1"
 
 ajv@^5.1.0, ajv@^5.2.3, ajv@^5.3.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.4.0.tgz#32d1cf08dbc80c432f426f12e10b2511f6b46474"
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.5.0.tgz#eb2840746e9dc48bd5e063a36e3fd400c5eab5a9"
   dependencies:
     co "^4.6.0"
     fast-deep-equal "^1.0.0"
@@ -899,15 +899,15 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-futoin-asyncsteps@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.9.0.tgz#ad51015c62901c0472f45328d84f41735d5e6956"
+futoin-asyncsteps@^1.9.1:
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.9.1.tgz#59ededf8e94f7c93c75959491b647f94d53d1c3c"
   dependencies:
     performance-now "^2.1.0"
 
-futoin-database@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/futoin-database/-/futoin-database-1.6.0.tgz#ee7032f1dbd523e6c0164c41c52a727eb0be933b"
+futoin-database@^1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/futoin-database/-/futoin-database-1.6.1.tgz#d71487c180e1d42280e5379de04c8f807f2936ea"
   dependencies:
     lodash "^4.17.4"
     moment "^2.19.2"
@@ -917,9 +917,9 @@ futoin-database@^1.6.0:
     pg "^7.4.0"
     sqlite3 "^3.1.13"
 
-futoin-executor@^1.5.7:
-  version "1.5.7"
-  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.5.7.tgz#b8aa34ec373e9f7f8e5d94b4e2d7e63fcd64d6dc"
+futoin-executor@^1.5.8:
+  version "1.5.8"
+  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.5.8.tgz#faf18e45518957a5a879ec13361d46cc1ef9d746"
   dependencies:
     cookies "^0.7.1"
     detect-node "^2.0.3"
@@ -928,9 +928,9 @@ futoin-executor@^1.5.7:
     lodash "^4.17.4"
     performance-now "^2.1.0"
 
-futoin-invoker@^1.5.6:
-  version "1.5.6"
-  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.5.6.tgz#e7a19806acf88fb2135615fbf1bbfbbaee531c47"
+futoin-invoker@^1.5.7:
+  version "1.5.7"
+  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.5.7.tgz#06bb0db3abc54d7c67bce608982af7c5b6dfa81a"
   dependencies:
     agentkeepalive "^3.3.0"
     detect-node "^2.0.3"

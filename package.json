@@ -30,10 +30,10 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "eslint": "^4.11.0",
-    "futoin-asyncsteps": "^1.9.0",
-    "futoin-database": "^1.6.0",
-    "futoin-executor": "^1.5.7",
-    "futoin-invoker": "^1.5.6",
+    "futoin-asyncsteps": "^1.9.1",
+    "futoin-database": "^1.6.1",
+    "futoin-executor": "^1.5.8",
+    "futoin-invoker": "^1.5.7",
     "grunt": "^1.0.1",
     "grunt-eslint": "^20.1.0",
     "grunt-jsdoc-to-markdown": "^3.0.0",
@@ -51,9 +51,9 @@
   },
   "optionalDependencies": {},
   "peerDependencies": {
-    "futoin-asyncsteps": "^1.9.0",
-    "futoin-database": "^1.6.0",
-    "futoin-executor": "^1.5.6",
-    "futoin-invoker": "^1.5.5"
+    "futoin-asyncsteps": "^1.9.1",
+    "futoin-database": "^1.6.1",
+    "futoin-executor": "^1.5.8",
+    "futoin-invoker": "^1.5.7"
   }
 }
