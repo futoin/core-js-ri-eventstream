@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: license disclaimers
+
 === 0.9.5 (2017-11-13) ===
 NEW: exposed event table name through DBGenFace
 
