@@ -152,18 +152,17 @@ class DBPushService extends PushService
                 const db = this._ccm.db( 'evt' );
                 const MAX_EVENTS = this.MAX_EVENTS;
 
-                const q = db.select( this._evt_table )
+                const xfer = db.newXfer( db.SERIALIZABLE );
+                xfer.select( this._evt_table, { result: true } )
                     .get( [ 'id', 'type', 'data', 'ts' ] )
                     .where( 'id >', as.state.last_id )
                     .order( 'id' )
                     .limit( MAX_EVENTS );
-                const helpers = q.helpers();
-
-                q.execute( as );
+                xfer.execute( as );
 
                 as.add( ( as, res ) =>
                 {
-                    const events = this._res2events( res.rows, helpers );
+                    const events = this._res2events( res[0].rows, db.helpers() );
                     const elen = events.length;
 
                     if ( elen )

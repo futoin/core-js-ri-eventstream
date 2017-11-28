@@ -84,7 +84,7 @@ class DBPollService extends PollService
     _pollEvents( as, { executor, ident, last_id, want, is_reliable, chunk_size } )
     {
         const db = executor.ccm().db( 'evt' );
-        const xfer = db.newXfer();
+        const xfer = db.newXfer( db.SERIALIZABLE );
         const helpers = xfer.helpers();
 
         // Update info
@@ -136,7 +136,7 @@ class DBPollService extends PollService
                     // and again.
                     if ( !events.length && want )
                     {
-                        const xfer = db.newXfer();
+                        const xfer = db.newXfer( db.SERIALIZABLE );
 
                         const sq = xfer.select( this._evt_table )
                             .get( 'max_id', 'MAX(id)' );
