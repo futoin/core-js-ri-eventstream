@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.9.90 (2017-12-05) ===
 FIXED: to properly load v1.1 specs by default
 
 === 0.9.9 (2017-12-05) ===
