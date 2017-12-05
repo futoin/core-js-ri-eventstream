@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: upgraded to FTN18 v1.1 with 8M payload size
+
 === 0.9.8 (2017-11-29) ===
 FIXED: to use futoin-database with PostgreSQL escape string fix
 

@@ -1,7 +1,7 @@
 {
   "iface": "futoin.evt.poll",
   "version": "1.0",
-  "ftn3rev": "1.7",
+  "ftn3rev": "1.8",
   "imports": [
     "futoin.evt.types:1.0",
     "futoin.ping:1.0"
@@ -31,7 +31,8 @@
       "result": "EventList",
       "throws": [
         "NotRegistered"
-      ]
+      ],
+      "maxrspsize": "8M"
     }
   }
 }
