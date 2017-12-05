@@ -920,9 +920,9 @@ futoin-database@^1.7.1:
     pg "^7.4.0"
     sqlite3 "^3.1.13"
 
-futoin-executor@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.6.0.tgz#5524fe5ff5187388faca75dbc417b9de829475a9"
+futoin-executor@^1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/futoin-executor/-/futoin-executor-1.6.1.tgz#bdf16d21259a77e9508e8c7e80e12d802efa9e1f"
   dependencies:
     cookies "^0.7.1"
     detect-node "^2.0.3"
