@@ -11,7 +11,7 @@
 Reference implementation of:
  
     FTN18: FutoIn Interface - Event Stream
-    Version: 1.0
+    Version: 1.1
     
 * Spec: [FTN18: FutoIn Interface - Event Stream v1.x](http://specs.futoin.org/final/preview/ftn18_if_eventstream-1.html)
 
