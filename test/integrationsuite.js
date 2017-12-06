@@ -11,7 +11,10 @@ const PushFace = require( '../PushFace' );
 const DBPollService = require( '../DBPollService' );
 const DBPushService = require( '../DBPushService' );
 const DBEventArchiver = require( '../DBEventArchiver' );
+const ReceiverFace = require( '../ReceiverFace' );
 const main = require( '../main' );
+
+const receiver_face = `futoin.evt.receiver:${ReceiverFace.LATEST_VERSION}`;
 
 module.exports = function( describe, it, vars )
 {
@@ -524,7 +527,7 @@ module.exports = function( describe, it, vars )
                         },
                     };
 
-                    clientExecutor.register( as, 'futoin.evt.receiver:1.0', recv_svc );
+                    clientExecutor.register( as, receiver_face, recv_svc );
 
                     const gen = ccm.iface( 'evtgen' );
                     const push = ccm.iface( 'evtpush' );

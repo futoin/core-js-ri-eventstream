@@ -11,6 +11,10 @@ const $as = require( 'futoin-asyncsteps' );
 const SpecTools = require( 'futoin-invoker/SpecTools' );
 const { cmpIds } = require( '../common' );
 
+const ReceiverFace = require( '../ReceiverFace' );
+const receiver_face = `futoin.evt.receiver:${ReceiverFace.LATEST_VERSION}`;
+
+
 describe( 'PollService', function()
 {
     const PollService = require( '../PollService' );
@@ -435,7 +439,7 @@ describe( 'PushService', function()
                     },
                 };
 
-                liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
+                liveExecutor.register( as, receiver_face, live_rcv_svc );
 
                 as.setTimeout( 10e3 );
                 as.setCancel( ( as ) =>
@@ -568,8 +572,8 @@ describe( 'PushService', function()
                 };
                 const reliable_rcv_svc = {};
                 Object.assign( reliable_rcv_svc, live_rcv_svc );
-                liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
-                reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                liveExecutor.register( as, receiver_face, live_rcv_svc );
+                reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
                 as.setCancel( ( as ) =>
@@ -769,8 +773,8 @@ describe( 'PushService', function()
                 };
                 const reliable_rcv_svc = {};
                 Object.assign( reliable_rcv_svc, live_rcv_svc );
-                liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
-                reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                liveExecutor.register( as, receiver_face, live_rcv_svc );
+                reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
                 as.setCancel( ( as ) =>
@@ -947,8 +951,8 @@ describe( 'PushService', function()
                 };
                 const reliable_rcv_svc = {};
                 Object.assign( reliable_rcv_svc, live_rcv_svc );
-                liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
-                reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                liveExecutor.register( as, receiver_face, live_rcv_svc );
+                reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
                 as.setCancel( ( as ) =>
@@ -1124,7 +1128,7 @@ describe( 'PushService', function()
                         },
                     };
 
-                    reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                    reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                     as.setTimeout( 10e3 );
                     as.setCancel( ( as ) =>
@@ -1298,8 +1302,8 @@ describe( 'PushService', function()
                 };
                 const reliable_rcv_svc = {};
                 Object.assign( reliable_rcv_svc, live_rcv_svc );
-                liveExecutor.register( as, 'futoin.evt.receiver:1.0', live_rcv_svc );
-                reliableExecutor.register( as, 'futoin.evt.receiver:1.0', reliable_rcv_svc );
+                liveExecutor.register( as, receiver_face, live_rcv_svc );
+                reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
                 as.setCancel( ( as ) =>
@@ -1437,7 +1441,7 @@ describe( 'PushService', function()
                         }
                     },
                 };
-                execAB.register( as, 'futoin.evt.receiver:1.0', ab_svc );
+                execAB.register( as, receiver_face, ab_svc );
                 const bc_svc = {
                     _count: 0,
                     _as: null,
@@ -1465,7 +1469,7 @@ describe( 'PushService', function()
                         }
                     },
                 };
-                execBC.register( as, 'futoin.evt.receiver:1.0', bc_svc );
+                execBC.register( as, receiver_face, bc_svc );
 
                 PushFace.register( as, ccm, 'ab', executor, null, { executor: execAB } );
                 PushFace.register( as, ccm, 'bc', executor, null, { executor: execBC } );
@@ -1760,7 +1764,6 @@ describe( 'EventArchiver', function()
 describe( 'ReliableReceiverService', function()
 {
     const ReliableReceiverService = require( '../ReliableReceiverService' );
-    const ReceiverFace = require( '../ReceiverFace' );
 
     it( 'should handle out-of-order requests', function( done )
     {
@@ -1781,7 +1784,7 @@ describe( 'ReliableReceiverService', function()
             ( as ) =>
             {
                 const svc = TestService.register( as, executor );
-                ccm.register( as, 'rcvr', 'futoin.evt.receiver:1.0',
+                ccm.register( as, 'rcvr', receiver_face,
                     executor, null, { specDirs: main.specDirs } );
 
                 as.add( ( as ) =>
@@ -1892,7 +1895,7 @@ describe( 'ReliableReceiverService', function()
             ( as ) =>
             {
                 const svc = ReliableReceiverService.register( as, executor );
-                ccm.register( as, 'rcvr', 'futoin.evt.receiver:1.0',
+                ccm.register( as, 'rcvr', receiver_face,
                     executor, null, { specDirs: main.specDirs } );
 
                 as.add(
