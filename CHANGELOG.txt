@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.9.91 (2017-12-06) ===
 FIXED: broken 0.9.90 build due to corrected specs & misc.
 
 === 0.9.90 (2017-12-05) ===
