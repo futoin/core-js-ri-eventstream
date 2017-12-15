@@ -1,5 +1,5 @@
 
-SET GLOBAL innodb_file_per_table=1;
+-- SET GLOBAL innodb_file_per_table=1;
 -- SET GLOBAL innodb_file_format=Barracuda;
 
 -- 
