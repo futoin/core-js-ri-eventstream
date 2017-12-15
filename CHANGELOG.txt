@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.9.93 (2017-12-15) ===
 FIXED: to remove SUPER privilege requirement for MySQL @changesets
 
 === 0.9.91 (2017-12-06) ===
