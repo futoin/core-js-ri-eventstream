@@ -9,7 +9,7 @@ CREATE TABLE evt_queue (
         COMMENT "Convert to enum for efficiency",
     -- data JSON NOT NULL,
     data TEXT NOT NULL,
-    ts TIMESTAMP NOT NULL
+    ts DATETIME NOT NULL
 )
     ENGINE=InnoDB
     CHARACTER SET 'utf8'
@@ -20,8 +20,8 @@ CREATE TABLE evt_queue (
 CREATE TABLE evt_consumers (
     id SMALLINT NOT NULL auto_increment PRIMARY KEY,
     last_evt_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    reg_time TIMESTAMP NOT NULL,
-    last_time TIMESTAMP NOT NULL,
+    reg_time DATETIME NOT NULL,
+    last_time DATETIME NOT NULL,
     ident VARCHAR(64) NOT NULL UNIQUE,
     INDEX last_evt_id (last_evt_id) USING BTREE
 )

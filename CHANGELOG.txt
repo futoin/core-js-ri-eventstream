@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: DB schema to be compatible with strict MySQL 5.7+
+
 === 0.9.93 (2017-12-15) ===
 FIXED: to remove SUPER privilege requirement for MySQL @changesets
 

@@ -9,7 +9,7 @@ CREATE TABLE evt_history (
         COMMENT "Convert to enum for efficiency",
     -- data JSON NOT NULL,
     data TEXT NOT NULL,
-    ts TIMESTAMP NOT NULL
+    ts DATETIME NOT NULL
 )
     ENGINE=InnoDB
     ROW_FORMAT=COMPRESSED
