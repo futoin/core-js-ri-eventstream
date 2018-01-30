@@ -29,31 +29,29 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^4.13.1",
-    "futoin-asyncsteps": "^1.10.4",
-    "futoin-database": "^1.7.1",
-    "futoin-executor": "^1.7.2",
-    "futoin-invoker": "^1.7.3",
+    "eslint": "^4.16.0",
+    "futoin-asyncevent": "^1.0.0",
+    "futoin-asyncsteps": "^1.10.11",
+    "futoin-database": "^1.7.2",
+    "futoin-executor": "^1.8.2",
+    "futoin-invoker": "^1.8.1",
     "grunt": "^1.0.1",
     "grunt-eslint": "^20.1.0",
-    "grunt-jsdoc-to-markdown": "^3.0.0",
+    "grunt-jsdoc-to-markdown": "^4.0.0",
     "grunt-mocha-istanbul": "^5.0.2",
     "grunt-text-replace": "^0.4.0",
     "istanbul": "^0.4.5",
-    "mocha": "^4.0.1",
-    "moment": "^2.20.0"
+    "mocha": "^5.0.0",
+    "moment": "^2.20.1"
   },
-  "eslintIgnore": [
-    "test/**"
-  ],
   "dependencies": {
     "event-emitter": "^0.3.5"
   },
   "optionalDependencies": {},
   "peerDependencies": {
-    "futoin-asyncsteps": "^1.10.4",
-    "futoin-database": "^1.7.1",
-    "futoin-executor": "^1.7.2",
-    "futoin-invoker": "^1.7.3"
+    "futoin-asyncsteps": "^1.10.11",
+    "futoin-database": "^1.7.2",
+    "futoin-executor": "^1.8.2",
+    "futoin-invoker": "^1.8.1"
   }
 }
