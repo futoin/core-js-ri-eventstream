@@ -1,5 +1,7 @@
 'use strict';
 
+require( './prepare' );
+
 const expect = require( 'chai' ).expect;
 const moment = require( 'moment' );
 const ee = require( 'event-emitter' );

@@ -1,5 +1,7 @@
 'use strict';
 
+require( './prepare' );
+
 const child_process = require( 'child_process' );
 const $as = require( 'futoin-asyncsteps' );
 const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
