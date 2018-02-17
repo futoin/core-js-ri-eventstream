@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: to use futoin-asyncevent
+
 === 0.9.95 (2018-02-17) ===
 CHANGED: Upgraded & revised dependencies
 

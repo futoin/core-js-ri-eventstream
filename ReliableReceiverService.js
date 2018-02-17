@@ -21,7 +21,7 @@
 
 const PushFace = require( './PushFace' );
 const main = require( './main' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 
 /**
  * Base implementation for reliable receiver side
@@ -49,7 +49,7 @@ class ReliableReceiverService
     constructor( executor, _options )
     {
         this._reset( executor );
-        ee( this );
+        $asyncevent( this, [ 'newEvents' ] );
     }
 
     _reset( executor )

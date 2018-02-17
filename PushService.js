@@ -25,7 +25,7 @@ const PingFace = require( 'futoin-invoker/PingFace' );
 const PollService = require( './PollService' );
 const PushFace = require( './PushFace' );
 const ReceiverFace = require( './ReceiverFace' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 const { cmpIds } = require( './common' );
 
 class EventChannel
@@ -74,6 +74,12 @@ class PushService extends PollService
     constructor( as, executor, options )
     {
         super( as, executor, options );
+
+        $asyncevent( this, [
+            'pushError',
+            'queueOverflow',
+        ] );
+
         _defaults( options, {
             queue_max: 10e3,
             request_max: 2,
@@ -591,7 +597,6 @@ class PushService extends PollService
 
 module.exports = PushService;
 
-ee( PushService.prototype );
 
 /**
  * Emitted in push error handlers

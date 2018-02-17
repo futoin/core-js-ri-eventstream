@@ -22,7 +22,7 @@
 const $as = require( 'futoin-asyncsteps' );
 const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
 const Executor = require( 'futoin-executor/Executor' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 
 const PushFace = require( './PushFace' );
 
@@ -41,7 +41,11 @@ class EventArchiver
         this._executor_ccm = executor_ccm;
         this._worker_as = null;
 
-        ee( this );
+        $asyncevent( this, [
+            'receiverError',
+            'workerError',
+            'newEvents',
+        ] );
     }
 
     /**

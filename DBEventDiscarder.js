@@ -21,7 +21,7 @@
 
 const _defaults = require( 'lodash/defaults' );
 const $as = require( 'futoin-asyncsteps' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
 
 /**
@@ -38,7 +38,10 @@ class DBEventDiscarder
     constructor()
     {
         this._worker_as = null;
-        ee( this );
+        $asyncevent( this, [
+            'workerError',
+            'eventDiscard',
+        ] );
     }
 
     /**

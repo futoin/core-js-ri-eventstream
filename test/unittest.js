@@ -4,7 +4,7 @@ require( './prepare' );
 
 const expect = require( 'chai' ).expect;
 const moment = require( 'moment' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 
 const main = require( '../main' );
 const Executor = require( 'futoin-executor/Executor' );
@@ -227,7 +227,7 @@ describe( 'PushService', function()
 
     afterEach( function()
     {
-        require( 'event-emitter/all-off' )( SpecTools );
+        //require( 'event-emitter/all-off' )( SpecTools );
     } );
 
     it( 'should properly compare event IDs', function()
@@ -1737,7 +1737,7 @@ describe( 'EventArchiver', function()
             _registerReceiver( as, _executor )
             {
                 const res = {};
-                ee( res );
+                $asyncevent( res, [ 'newEvents' ] );
                 return res;
             }
         };
