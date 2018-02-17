@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.9.95 (2018-02-17) ===
 CHANGED: Upgraded & revised dependencies
 
 === 0.9.94 (2017-12-15) ===
