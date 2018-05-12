@@ -63,7 +63,7 @@ class GenFace extends PingFace
 
         _defaults( options, {
             nativeImpl: this,
-            specDirs: [ this.spec(), PingFace.spec( this.PING_VERSION ) ],
+            specDirs: this.spec(),
             sendOnBehalfOf: false,
         } );
 
@@ -79,7 +79,10 @@ class GenFace extends PingFace
 
     static spec()
     {
-        return path.resolve( __dirname, 'specs' );
+        return [
+            path.resolve( __dirname, 'specs' ),
+            PingFace.spec( this.PING_VERSION ),
+        ];
     }
 }
 

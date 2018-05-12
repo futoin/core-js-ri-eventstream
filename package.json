@@ -3,6 +3,16 @@
   "version": "0.9.96",
   "description": "Neutral event stream interface",
   "main": "main.js",
+  "files": [
+    "lib/",
+    "sql/",
+    "specs/",
+    "*Archiver.js",
+    "*Discarder.js",
+    "*Face.js",
+    "*Service.js",
+    "futoin.json"
+  ],
   "engines": {
     "node": ">=6"
   },

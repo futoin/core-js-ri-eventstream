@@ -20,7 +20,6 @@
  */
 
 const PingService = require( 'futoin-executor/PingService' );
-const PingFace = require( 'futoin-invoker/PingFace' );
 const GenFace = require( './GenFace' );
 
 
@@ -40,7 +39,7 @@ class GenService extends PingService
     {
         const ifacever = 'futoin.evt.gen:' + GenFace.LATEST_VERSION;
         const impl = new this( as, executor, options );
-        const spec_dirs = [ GenFace.spec(), PingFace.spec( GenFace.PING_VERSION ) ];
+        const spec_dirs = GenFace.spec();
 
         executor.register( as, ifacever, impl, spec_dirs );
         executor.once( 'close', () => impl._close() );

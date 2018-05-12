@@ -21,7 +21,6 @@
 
 const $as = require( 'futoin-asyncsteps' );
 const _defaults = require( 'lodash/defaults' );
-const PingFace = require( 'futoin-invoker/PingFace' );
 const PollService = require( './PollService' );
 const PushFace = require( './PushFace' );
 const ReceiverFace = require( './ReceiverFace' );
@@ -116,7 +115,7 @@ class PushService extends PollService
     {
         const ifacever = 'futoin.evt.push:' + PushFace.LATEST_VERSION;
         const impl = new this( as, executor, options );
-        const spec_dirs = [ PushFace.spec(), PingFace.spec( PushFace.PING_VERSION ) ];
+        const spec_dirs = PushFace.spec();
 
         executor.register( as, ifacever, impl, spec_dirs );
         executor.once( 'close', () => impl._close() );

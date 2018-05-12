@@ -20,7 +20,6 @@
  */
 
 const _defaults = require( 'lodash/defaults' );
-const PingFace = require( 'futoin-invoker/PingFace' );
 const PollFace = require( './PollFace' );
 
 
@@ -46,7 +45,7 @@ class PushFace extends PollFace
 
         _defaults( options, {
             nativeImpl: this,
-            specDirs: [ this.spec(), PingFace.spec( this.PING_VERSION ) ],
+            specDirs: this.spec(),
             sendOnBehalfOf: false,
         } );
 

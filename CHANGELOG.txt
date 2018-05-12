@@ -1,4 +1,8 @@
 
+=== (next) ===
+CHANGED: minor refactoring of specDirs usage
+CHANGED: to include only listed files in package
+
 === 0.9.96 (2018-02-17) ===
 FIXED: to use futoin-asyncevent
 

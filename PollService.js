@@ -21,7 +21,6 @@
 
 const _defaults = require( 'lodash/defaults' );
 const PingService = require( 'futoin-executor/PingService' );
-const PingFace = require( 'futoin-invoker/PingFace' );
 const PollFace = require( './PollFace' );
 
 
@@ -52,7 +51,7 @@ class PollService extends PingService
     {
         const ifacever = 'futoin.evt.poll:' + PollFace.LATEST_VERSION;
         const impl = new this( as, executor, options );
-        const spec_dirs = [ PollFace.spec(), PingFace.spec( PollFace.PING_VERSION ) ];
+        const spec_dirs = PollFace.spec();
 
         executor.register( as, ifacever, impl, spec_dirs );
         executor.once( 'close', () => impl._close() );
