@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: missing files from package
+
 === 0.9.97 (2018-05-12) ===
 CHANGED: minor refactoring of specDirs usage
 CHANGED: to include only listed files in package

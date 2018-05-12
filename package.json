@@ -7,6 +7,8 @@
     "lib/",
     "sql/",
     "specs/",
+    "common.js",
+    "main.js",
     "*Archiver.js",
     "*Discarder.js",
     "*Face.js",
