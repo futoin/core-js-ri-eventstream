@@ -940,9 +940,9 @@ futoin-executor@^1.8.6:
   optionalDependencies:
     posix "^4.1.1"
 
-futoin-invoker@^1.8.4:
-  version "1.8.4"
-  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.8.4.tgz#c56a67a3b380404721051fd9c38d941d09b4e8c2"
+futoin-invoker@^1.8.5:
+  version "1.8.5"
+  resolved "https://registry.yarnpkg.com/futoin-invoker/-/futoin-invoker-1.8.5.tgz#a4dff06cc4ff302b06cf0869cc276492a7ee0b21"
   dependencies:
     agentkeepalive "^3.4.1"
     detect-node "^2.0.3"
@@ -1736,9 +1736,9 @@ mysql@^2.15.0:
     safe-buffer "5.1.1"
     sqlstring "2.3.0"
 
-nan@2.4.x:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.4.0.tgz#fb3c59d45fe4effe215f0b890f8adf6eb32d2232"
+nan@^2.4.x:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
 
 nan@~2.7.0:
   version "2.7.0"
@@ -1958,10 +1958,10 @@ pluralize@^7.0.0:
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-7.0.0.tgz#298b89df8b93b0221dbf421ad2b1b1ea23fc6777"
 
 posix@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/posix/-/posix-4.1.1.tgz#cc9e1b87316f68e782a4316c94dca0d1741e471a"
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/posix/-/posix-4.1.2.tgz#a382ee09dc7bf712f8683b3104d09d5b7909ebe9"
   dependencies:
-    nan "2.4.x"
+    nan "^2.4.x"
 
 postgres-array@~1.0.0:
   version "1.0.2"
