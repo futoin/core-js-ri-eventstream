@@ -15,9 +15,9 @@ services:
 env:
 - MYSQL_PORT=3306 POSTGRESQL_PORT=5432
 before_install:
-- mkdir -p $HOME/.local/flyway
-- wget -O- 'https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/5.0.7/flyway-commandline-5.0.7-linux-x64.tar.gz' | tar xz -C $HOME/.local/flyway
-- ln -s flyway-5.0.7 $HOME/.local/flyway/latest
+- mkdir -p $HOME/.local/flywaybin
+- wget -O- 'https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/5.0.7/flyway-commandline-5.0.7-linux-x64.tar.gz' | tar xz -C $HOME/.local/flywaybin
+- ln -s flyway-5.0.7 $HOME/.local/flywaybin/latest
 - sudo pip install -U urllib3 requests
 - sudo pip install futoin-cid
 - sudo bash test/db_config.sh
