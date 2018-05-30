@@ -48,11 +48,11 @@ class DBServiceApp
      * @param {AsyncSteps} as - AsyncSteps interface
      * @param {object} options={} - options
      * @param {AdvancedCCM} [options.ccm] - external CCM instance
-     * @param {Executor} [options.privateExecutor] - external private executor instance
+     * @param {Executor} [options.executor] - external private executor instance
      * @param {object} [options.ccmOptions] - auto-CCM options
      * @param {callable} [options.notExpectedHandler] - 'notExpected' error handler
-     * @param {object} [options.privateExecutorOptions] - private auto-Executor options
-     * @param {object} [options.options] - eventstream options
+     * @param {object} [options.executorOptions] - private auto-Executor options
+     * @param {object} [options.evtOptions] - eventstream options
      * @param {object} [options.discarderOptions] - discarder options
      * @param {boolean} [options.enableDiscarder] - enable discarder, if true
      * @param {object} [options.archiverOptions] - discarder options
@@ -62,11 +62,12 @@ class DBServiceApp
     {
         let {
             ccm,
-            privateExecutor,
+            executor,
             notExpectedHandler,
             databaseConfig = {},
             enableDiscarder,
             enableArchiver,
+            evtOptions = {},
         } = options;
 
         if ( !ccm )
@@ -90,14 +91,14 @@ class DBServiceApp
             };
         }
 
-        if ( !privateExecutor )
+        if ( !executor )
         {
-            privateExecutor = new Executor( ccm, options.privateExecutorOptions );
-            privateExecutor.on( 'notExpected', notExpectedHandler );
+            executor = new Executor( ccm, options.executorOptions );
+            executor.on( 'notExpected', notExpectedHandler );
         }
 
         this._ccm = ccm;
-        this._private_executor = privateExecutor;
+        this._executor = executor;
 
         // Common database
         if ( 'DB_EVT_TYPE' in databaseConfig )
@@ -116,10 +117,10 @@ class DBServiceApp
 
         as.add( ( as ) =>
         {
-            DBGenService.register( as, privateExecutor, options.options );
-            DBGenFace.register( as, ccm, GEN_FACE, privateExecutor );
-            DBPushService.register( as, privateExecutor, options.options );
-            PushFace.register( as, ccm, PUSH_FACE, privateExecutor );
+            DBGenService.register( as, executor, evtOptions );
+            DBGenFace.register( as, ccm, GEN_FACE, executor );
+            DBPushService.register( as, executor, evtOptions );
+            PushFace.register( as, ccm, PUSH_FACE, executor );
             ccm.alias( PUSH_FACE, POLL_FACE );
         } );
 
@@ -141,7 +142,7 @@ class DBServiceApp
             this._archiver = archiver;
 
             const opts = options.archiverOptions;
-            as.add( ( as ) => archiver.start( privateExecutor, null, opts ) );
+            as.add( ( as ) => archiver.start( executor, null, opts ) );
         }
     }
 
@@ -155,6 +156,15 @@ class DBServiceApp
     }
 
     /**
+     * Executor instance accessor
+     * @returns {Executor} instance
+     */
+    executor()
+    {
+        return this._executor;
+    }
+
+    /**
      * Shutdown of app and related instances
      * @param {callable} [done] - done callback
      */
@@ -165,10 +175,10 @@ class DBServiceApp
             this._ccm.close();
             this._ccm = null;
 
-            this._private_executor.close( done );
+            this._executor.close( done );
         }
 
-        this._private_executor = null;
+        this._executor = null;
     }
 }
 

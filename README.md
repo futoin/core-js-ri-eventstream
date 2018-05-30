@@ -303,7 +303,7 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dd><p>Event Stream - Receiver Face</p>
 </dd>
 <dt><a href="#ReliableEventReceiver">ReliableEventReceiver</a></dt>
-<dd><p>Reliable Event Receiver service.</p>
+<dd><p>Reliable Event Receiver helper to minimize boilerplate code in projects.</p>
 </dd>
 <dt><a href="#ReliableReceiverService">ReliableReceiverService</a></dt>
 <dd><p>Base implementation for reliable receiver side</p>
@@ -486,6 +486,7 @@ All-in-one DB EventStream initialization
 * [DBServiceApp](#DBServiceApp)
     * [new DBServiceApp(as, options)](#new_DBServiceApp_new)
     * [.ccm()](#DBServiceApp+ccm) ⇒ <code>AdvancedCCM</code>
+    * [.executor()](#DBServiceApp+executor) ⇒ <code>Executor</code>
     * [.close([done])](#DBServiceApp+close)
 
 <a name="new_DBServiceApp_new"></a>
@@ -499,11 +500,11 @@ C-tor
 | as | <code>AsyncSteps</code> |  | AsyncSteps interface |
 | options | <code>object</code> | <code>{}</code> | options |
 | [options.ccm] | <code>AdvancedCCM</code> |  | external CCM instance |
-| [options.privateExecutor] | <code>Executor</code> |  | external private executor instance |
+| [options.executor] | <code>Executor</code> |  | external private executor instance |
 | [options.ccmOptions] | <code>object</code> |  | auto-CCM options |
 | [options.notExpectedHandler] | <code>callable</code> |  | 'notExpected' error handler |
-| [options.privateExecutorOptions] | <code>object</code> |  | private auto-Executor options |
-| [options.options] | <code>object</code> |  | eventstream options |
+| [options.executorOptions] | <code>object</code> |  | private auto-Executor options |
+| [options.evtOptions] | <code>object</code> |  | eventstream options |
 | [options.discarderOptions] | <code>object</code> |  | discarder options |
 | [options.enableDiscarder] | <code>boolean</code> |  | enable discarder, if true |
 | [options.archiverOptions] | <code>object</code> |  | discarder options |
@@ -516,6 +517,13 @@ CCM instance accessor
 
 **Kind**: instance method of [<code>DBServiceApp</code>](#DBServiceApp)  
 **Returns**: <code>AdvancedCCM</code> - instance  
+<a name="DBServiceApp+executor"></a>
+
+### dbServiceApp.executor() ⇒ <code>Executor</code>
+Executor instance accessor
+
+**Kind**: instance method of [<code>DBServiceApp</code>](#DBServiceApp)  
+**Returns**: <code>Executor</code> - instance  
 <a name="DBServiceApp+close"></a>
 
 ### dbServiceApp.close([done])
@@ -824,7 +832,7 @@ CCM registration helper
 <a name="ReliableEventReceiver"></a>
 
 ## ReliableEventReceiver
-Reliable Event Receiver service.
+Reliable Event Receiver helper to minimize boilerplate code in projects.
 
 **Kind**: global class  
 **Note**: No more than one instance should run at once.  
