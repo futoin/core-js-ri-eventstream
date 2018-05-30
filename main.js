@@ -23,4 +23,7 @@ const path = require( 'path' );
 
 module.exports = {
     specDirs : [ path.resolve( __dirname, 'specs' ) ],
+    GEN_FACE : '#evtgen',
+    POLL_FACE : '#evtpoll',
+    PUSH_FACE : '#evtpush',
 };

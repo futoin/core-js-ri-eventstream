@@ -106,6 +106,12 @@ describe( 'SQLite', function()
         const as = $as();
         vars.ccm = ccm;
         vars.as = as;
+        vars.dbcfg = {
+            DB_EVT_TYPE: 'sqlite',
+            DB_EVT_SOCKET: evt_active_db,
+            DB_EVTDWH_TYPE: 'sqlite',
+            DB_EVTDWH_SOCKET: evt_history_db,
+        };
 
         as.add(
             ( as ) =>
@@ -113,12 +119,7 @@ describe( 'SQLite', function()
                 DBAutoConfig( as, ccm, {
                     evt: {},
                     evtdwh: {},
-                }, {
-                    DB_EVT_TYPE: 'sqlite',
-                    DB_EVT_SOCKET: evt_active_db,
-                    DB_EVTDWH_TYPE: 'sqlite',
-                    DB_EVTDWH_SOCKET: evt_history_db,
-                } );
+                }, vars.dbcfg );
                 as.add( ( as ) =>
                 {
                     [ 'evt', 'evtdwh' ].forEach( ( v ) =>

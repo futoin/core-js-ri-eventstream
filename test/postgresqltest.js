@@ -99,6 +99,20 @@ describe( 'PostgreSQL', function()
         const as = $as();
         vars.ccm = ccm;
         vars.as = as;
+        vars.dbcfg = {
+            DB_EVT_TYPE: 'postgresql',
+            DB_EVT_HOST: '127.0.0.1',
+            DB_EVT_PORT: DB_PORT,
+            DB_EVT_USER: 'ftntest',
+            DB_EVT_DB: 'evtactive',
+            DB_EVT_PASS: 'test',
+            DB_EVTDWH_TYPE: 'postgresql',
+            DB_EVTDWH_HOST: '127.0.0.1',
+            DB_EVTDWH_PORT: DB_PORT,
+            DB_EVTDWH_USER: 'ftntest',
+            DB_EVTDWH_DB: 'evthistory',
+            DB_EVTDWH_PASS: 'test',
+        };
 
         as.add(
             ( as ) =>
@@ -106,20 +120,7 @@ describe( 'PostgreSQL', function()
                 DBAutoConfig( as, ccm, {
                     evt: {},
                     evtdwh: {},
-                }, {
-                    DB_EVT_TYPE: 'postgresql',
-                    DB_EVT_HOST: '127.0.0.1',
-                    DB_EVT_PORT: DB_PORT,
-                    DB_EVT_USER: 'ftntest',
-                    DB_EVT_DB: 'evtactive',
-                    DB_EVT_PASS: 'test',
-                    DB_EVTDWH_TYPE: 'postgresql',
-                    DB_EVTDWH_HOST: '127.0.0.1',
-                    DB_EVTDWH_PORT: DB_PORT,
-                    DB_EVTDWH_USER: 'ftntest',
-                    DB_EVTDWH_DB: 'evthistory',
-                    DB_EVTDWH_PASS: 'test',
-                } );
+                }, vars.dbcfg );
             },
             ( as, err ) =>
             {

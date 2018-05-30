@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-const _defaults = require( 'lodash/defaults' );
 const $as = require( 'futoin-asyncsteps' );
 const $asyncevent = require( 'futoin-asyncevent' );
 const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
@@ -54,21 +53,17 @@ class DBEventDiscarder
      * @param {string} [options.event_table=default] - events table
      * @param {string} [options.consumer_table=default] - consumers table
      */
-    start( ccm, options={} )
+    start( ccm, {
+        poll_period_ms = 600e3,
+        limit_at_once = 1e3,
+        event_table = DB_EVTTABLE,
+        consumer_table = DB_EVTCONSUMERS,
+    }={} )
     {
         if ( this._worker_as )
         {
             return;
         }
-
-        options = Object.assign( {}, options );
-
-        _defaults( options, {
-            poll_period_ms: 600e3,
-            limit_at_once: 1e3,
-            event_table: DB_EVTTABLE,
-            consumer_table: DB_EVTCONSUMERS,
-        } );
 
         ccm.assertIface( '#db.evt', DB_IFACEVER );
         ccm.once( 'close', () => this.stop() );
@@ -83,15 +78,15 @@ class DBEventDiscarder
                 // NOTE: if last_id IS NULL then it should not delete anything
 
                 const sel_last_id = db
-                    .select( options.consumer_table )
+                    .select( consumer_table )
                     .get( 'last_id', 'MIN(last_evt_id)' );
 
                 const sel_id = db
-                    .select( options.event_table )
+                    .select( event_table )
                     .get( 'id' )
                     .where( 'id <=', sel_last_id )
                     .order( 'id' )
-                    .limit( options.limit_at_once );
+                    .limit( limit_at_once );
 
                 // Workaround MySQL case:
                 // ER_NOT_SUPPORTED_YET: This version of MySQL doesn't yet support 'LIMIT & IN/ALL/ANY/SOME subquery'
@@ -99,7 +94,7 @@ class DBEventDiscarder
                     ? sel_id
                     : db.select( [ sel_id, 'IDs' ] );
 
-                const del_events = db.delete( options.event_table )
+                const del_events = db.delete( event_table )
                     .where( 'id IN', sel_id_wrap );
                 // console.log(del_events._toQuery());
                 del_events.execute( as );
@@ -112,8 +107,9 @@ class DBEventDiscarder
                     }
                     else
                     {
-                        const timer = setTimeout( () => as.success(),
-                            options.poll_period_ms );
+                        const timer = setTimeout(
+                            () => as.success(),
+                            poll_period_ms );
                         as.setCancel( ( as ) => clearTimeout( timer ) );
                     }
                 } );

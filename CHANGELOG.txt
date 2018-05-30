@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: DBServiceApp helper support
+
 === 0.9.98 (2018-05-12) ===
 FIXED: missing files from package
 

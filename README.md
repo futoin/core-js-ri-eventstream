@@ -275,6 +275,9 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dt><a href="#DBPushService">DBPushService</a></dt>
 <dd><p>Database-specific Push Service</p>
 </dd>
+<dt><a href="#DBServiceApp">DBServiceApp</a></dt>
+<dd><p>All-in-one DB EventStream initialization</p>
+</dd>
 <dt><a href="#EventArchiver">EventArchiver</a></dt>
 <dd><p>Base storage neutral class for event archiving</p>
 </dd>
@@ -469,6 +472,57 @@ Please use DBPushService,register()
 | [options.sleep_min] | <code>integer</code> | <code>100</code> | minimal sleep on lack of events |
 | [options.sleep_max] | <code>integer</code> | <code>3000</code> | maximal sleep on lack of events |
 | [options.sleep_step] | <code>integer</code> | <code>100</code> | sleep time increase on lack of events |
+
+<a name="DBServiceApp"></a>
+
+## DBServiceApp
+All-in-one DB EventStream initialization
+
+**Kind**: global class  
+
+* [DBServiceApp](#DBServiceApp)
+    * [new DBServiceApp(as, options)](#new_DBServiceApp_new)
+    * [.ccm()](#DBServiceApp+ccm) ⇒ <code>AdvancedCCM</code>
+    * [.close([done])](#DBServiceApp+close)
+
+<a name="new_DBServiceApp_new"></a>
+
+### new DBServiceApp(as, options)
+C-tor
+
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | AsyncSteps interface |
+| options | <code>object</code> | <code>{}</code> | options |
+| [options.ccm] | <code>AdvancedCCM</code> |  | external CCM instance |
+| [options.privateExecutor] | <code>Executor</code> |  | external private executor instance |
+| [options.ccmOptions] | <code>object</code> |  | auto-CCM options |
+| [options.notExpectedHandler] | <code>callable</code> |  | 'notExpected' error handler |
+| [options.privateExecutorOptions] | <code>object</code> |  | private auto-Executor options |
+| [options.options] | <code>object</code> |  | eventstream options |
+| [options.discarderOptions] | <code>object</code> |  | discarder options |
+| [options.enableDiscarder] | <code>boolean</code> |  | enable discarder, if true |
+| [options.archiverOptions] | <code>object</code> |  | discarder options |
+| [options.enableArchiver] | <code>boolean</code> |  | enable archiver, if true |
+
+<a name="DBServiceApp+ccm"></a>
+
+### dbServiceApp.ccm() ⇒ <code>AdvancedCCM</code>
+CCM instance accessor
+
+**Kind**: instance method of [<code>DBServiceApp</code>](#DBServiceApp)  
+**Returns**: <code>AdvancedCCM</code> - instance  
+<a name="DBServiceApp+close"></a>
+
+### dbServiceApp.close([done])
+Shutdown of app and related instances
+
+**Kind**: instance method of [<code>DBServiceApp</code>](#DBServiceApp)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [done] | <code>callable</code> | <code></code> | done callback |
 
 <a name="EventArchiver"></a>
 

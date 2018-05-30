@@ -1,6 +1,7 @@
 'use strict';
 
 const expect = require( 'chai' ).expect;
+const $as_test = require( 'futoin-asyncsteps/testcase' );
 
 const Executor = require( 'futoin-executor/Executor' );
 const GenFace = require( '../GenFace' );
@@ -11,6 +12,7 @@ const PushFace = require( '../PushFace' );
 const DBPollService = require( '../DBPollService' );
 const DBPushService = require( '../DBPushService' );
 const DBEventArchiver = require( '../DBEventArchiver' );
+const DBServiceApp = require( '../DBServiceApp' );
 const ReceiverFace = require( '../ReceiverFace' );
 const main = require( '../main' );
 
@@ -888,5 +890,24 @@ module.exports = function( describe, it, vars )
             as.add( ( as ) => done() );
             as.execute();
         } );
+    } );
+
+    describe( 'DBServiceApp', function()
+    {
+        it ( 'should initialize', $as_test( ( as ) =>
+        {
+            const app = new DBServiceApp( as, {
+                databaseConfig: vars.dbcfg,
+                enableDiscarder: true,
+                enableArchiver: true,
+            } );
+            as.add( ( as ) =>
+            {
+                app.ccm().iface( '#evtgen' );
+                app.ccm().iface( '#evtpoll' );
+                app.ccm().iface( '#evtpush' );
+            } );
+            as.add( ( as ) => app.close() );
+        } ) );
     } );
 };

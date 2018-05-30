@@ -97,6 +97,18 @@ describe( 'MySQL', function()
         const as = $as();
         vars.ccm = ccm;
         vars.as = as;
+        vars.dbcfg = {
+            DB_EVT_TYPE: 'mysql',
+            DB_EVT_HOST: '127.0.0.1',
+            DB_EVT_PORT: DB_PORT,
+            DB_EVT_USER: 'ftntest',
+            DB_EVT_DB: 'evtactive',
+            DB_EVTDWH_TYPE: 'mysql',
+            DB_EVTDWH_HOST: '127.0.0.1',
+            DB_EVTDWH_PORT: DB_PORT,
+            DB_EVTDWH_USER: 'ftntest',
+            DB_EVTDWH_DB: 'evthistory',
+        };
 
         as.add(
             ( as ) =>
@@ -104,18 +116,7 @@ describe( 'MySQL', function()
                 DBAutoConfig( as, ccm, {
                     evt: {},
                     evtdwh: {},
-                }, {
-                    DB_EVT_TYPE: 'mysql',
-                    DB_EVT_HOST: '127.0.0.1',
-                    DB_EVT_PORT: DB_PORT,
-                    DB_EVT_USER: 'ftntest',
-                    DB_EVT_DB: 'evtactive',
-                    DB_EVTDWH_TYPE: 'mysql',
-                    DB_EVTDWH_HOST: '127.0.0.1',
-                    DB_EVTDWH_PORT: DB_PORT,
-                    DB_EVTDWH_USER: 'ftntest',
-                    DB_EVTDWH_DB: 'evthistory',
-                } );
+                }, vars.dbcfg );
             },
             ( as, err ) =>
             {
