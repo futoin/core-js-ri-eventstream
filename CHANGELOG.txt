@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.9.99 (2018-05-30) ===
 NEW: DBServiceApp helper support
 NEW: ReliableEventReceiver helper
 
