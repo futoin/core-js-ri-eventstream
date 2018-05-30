@@ -14,6 +14,7 @@ const DBPushService = require( '../DBPushService' );
 const DBEventArchiver = require( '../DBEventArchiver' );
 const DBServiceApp = require( '../DBServiceApp' );
 const ReceiverFace = require( '../ReceiverFace' );
+const ReliableEventReceiver = require( '../ReliableEventReceiver' );
 const main = require( '../main' );
 
 const receiver_face = `futoin.evt.receiver:${ReceiverFace.LATEST_VERSION}`;
@@ -909,5 +910,125 @@ module.exports = function( describe, it, vars )
             } );
             as.add( ( as ) => app.close() );
         } ) );
+    } );
+
+    describe( 'ReliableEventReceiver', function()
+    {
+        let as;
+        let ccm;
+        let executor;
+
+        beforeEach( 'common', function()
+        {
+            ccm = vars.ccm;
+            as = vars.as;
+            executor = new Executor( ccm, { specDirs: main.specDirs } );
+
+            executor.on( 'notExpected', function()
+            {
+                console.dir( arguments );
+            } );
+
+            as.add(
+                ( as ) =>
+                {
+                    DBGenService.register( as, executor );
+                    const push_svc = DBPushService.register( as, executor, {
+                        sleep_min: 10,
+                        sleep_max: 30,
+                        sleep_step: 5,
+                    } );
+                    GenFace.register( as, ccm, 'evtgen', executor );
+
+                    as.state.push_svc = push_svc;
+                    //push_svc.on('pushError', function(){ console.log(arguments); });
+                },
+                ( as, err ) =>
+                {
+                    console.log( err );
+                    console.log( as.state.error_info );
+                    console.log( as.state.last_exception );
+                }
+            );
+        } );
+
+        afterEach( 'common', function()
+        {
+            executor.close();
+        } );
+
+        it( 'should receive live events', function( done )
+        {
+            this.timeout( 10e3 );
+
+            as.add(
+                ( as ) =>
+                {
+                    const receiver = new class extends ReliableEventReceiver
+                    {
+                        constructor()
+                        {
+                            super( ccm );
+                            this.count = 0;
+                        }
+
+                        _onEvents( as, events )
+                        {
+                            this.count += events.length;
+                        }
+                    };
+
+                    receiver.on( 'workerError', function()
+                    {
+                        console.log( arguments );
+                    } );
+                    receiver.on( 'receiverError', function()
+                    {
+                        if ( arguments[0] !== 'Duplicate' )
+                        {
+                            console.log( arguments );
+                        }
+                    } );
+
+                    receiver.start( executor, null, { want: [ 'RER_EVT' ] } );
+                    receiver.start( executor );
+
+                    as.add( ( as ) =>
+                    {
+                        // give chance receiver to setup
+                        as.waitExternal();
+                        receiver.once( 'ready', () => as.success() );
+                    } );
+
+                    const ITERATIONS = 1234;
+                    const evgen = ccm.iface( 'evtgen' );
+
+                    as.repeat( ITERATIONS, ( as, i ) =>
+                    {
+                        evgen.addEvent( as, 'RER_EVT', i );
+                        evgen.addEvent( as, 'RER_EVT_O', i );
+                    } );
+
+                    as.loop( ( as ) =>
+                    {
+                        if ( receiver.count === ITERATIONS )
+                        {
+                            as.break();
+                        }
+
+                        as.waitExternal();
+                        setTimeout( () => as.success(), 100 );
+                    } );
+                },
+                ( as, err ) =>
+                {
+                    console.log( err );
+                    console.log( as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            );
+            as.add( ( as ) => done() );
+            as.execute();
+        } );
     } );
 };

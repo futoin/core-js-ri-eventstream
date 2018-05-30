@@ -35,7 +35,7 @@ const {
     GEN_FACE,
     POLL_FACE,
     PUSH_FACE,
-} = require( './main' );
+} = require( './common' );
 
 /**
  * All-in-one DB EventStream initialization
@@ -126,14 +126,20 @@ class DBServiceApp
         if ( enableDiscarder )
         {
             const discarder = new DBEventDiscarder();
+            discarder.on( 'workerError', notExpectedHandler );
+
             this._discarder = discarder;
+
             as.add( ( as ) => discarder.start( ccm, options.discarderOptions ) );
         }
 
         if ( enableArchiver )
         {
             const archiver = new DBEventArchiver( ccm );
+            archiver.on( 'workerError', notExpectedHandler );
+
             this._archiver = archiver;
+
             const opts = options.archiverOptions;
             as.add( ( as ) => archiver.start( privateExecutor, null, opts ) );
         }

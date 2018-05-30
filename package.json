@@ -12,6 +12,7 @@
     "*Archiver.js",
     "*Discarder.js",
     "*Face.js",
+    "*Receiver.js",
     "*Service.js",
     "futoin.json"
   ],

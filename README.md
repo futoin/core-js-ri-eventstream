@@ -302,6 +302,9 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dt><a href="#ReceiverFace">ReceiverFace</a></dt>
 <dd><p>Event Stream - Receiver Face</p>
 </dd>
+<dt><a href="#ReliableEventReceiver">ReliableEventReceiver</a></dt>
+<dd><p>Reliable Event Receiver service.</p>
+</dd>
 <dt><a href="#ReliableReceiverService">ReliableReceiverService</a></dt>
 <dd><p>Base implementation for reliable receiver side</p>
 </dd>
@@ -538,6 +541,7 @@ Base storage neutral class for event archiving
     * ["receiverError"](#EventArchiver+event_receiverError)
     * ["workerError"](#EventArchiver+event_workerError)
     * ["newEvents"](#EventArchiver+event_newEvents)
+    * ["ready"](#EventArchiver+event_ready)
 
 <a name="new_EventArchiver_new"></a>
 
@@ -585,6 +589,12 @@ Emitted on worker errors
 
 ### "newEvents"
 Emitted after new events being pushed to DWH
+
+**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
+<a name="EventArchiver+event_ready"></a>
+
+### "ready"
+Emitted after event receiver is ready
 
 **Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
 <a name="GenFace"></a>
@@ -810,6 +820,27 @@ CCM registration helper
 | channel | <code>ChannelContext</code> |  | Bi-Direction channel instance |
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+
+<a name="ReliableEventReceiver"></a>
+
+## ReliableEventReceiver
+Reliable Event Receiver service.
+
+**Kind**: global class  
+**Note**: No more than one instance should run at once.  
+**Todo**
+
+- [ ] Refactor to be based for EventArchiver, but not vice-versa.
+
+<a name="new_ReliableEventReceiver_new"></a>
+
+### new ReliableEventReceiver(db_ccm)
+C-tor
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| db_ccm | <code>AdvancedCCM</code> | CCM instance with registered '#db.evtdwh' interface |
 
 <a name="ReliableReceiverService"></a>
 

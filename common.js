@@ -26,6 +26,9 @@ module.exports = {
     DB_EVTTABLE : 'evt_queue',
     DB_EVTCONSUMERS : 'evt_consumers',
     DB_EVTHISTORY : 'evt_history',
+    GEN_FACE : '#evtgen',
+    POLL_FACE : '#evtpoll',
+    PUSH_FACE : '#evtpush',
 
     cmpIds: function( a, b )
     {

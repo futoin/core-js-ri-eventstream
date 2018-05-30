@@ -3,8 +3,8 @@
 /**
  * @file
  *
- * Copyright 2017 FutoIn Project (https://futoin.org)
- * Copyright 2017 Andrey Galkin <andrey@futoin.org>
+ * Copyright 2017-2018 FutoIn Project (https://futoin.org)
+ * Copyright 2017-2018 Andrey Galkin <andrey@futoin.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,11 @@ const PushFace = require( './PushFace' );
  */
 class EventArchiver
 {
+    static get COMPONENT()
+    {
+        return 'ARCHIVER';
+    }
+
     /**
      * Initialize event archiver.
      *
@@ -45,6 +50,7 @@ class EventArchiver
             'receiverError',
             'workerError',
             'newEvents',
+            'ready',
         ] );
     }
 
@@ -65,7 +71,10 @@ class EventArchiver
         }
 
         options = Object.assign( {}, options );
-        options.component = options.component || 'ARCHIVER';
+        const {
+            component = this.constructor.COMPONENT,
+            want = null,
+        } = options;
 
         const executor_ccm = this._executor_ccm;
         executor_ccm.once( 'close', () => this.stop() );
@@ -83,6 +92,8 @@ class EventArchiver
 
                 //---
                 const ccm = new AdvancedCCM();
+                ccm.once( 'close', () => executor.close() );
+                executor_ccm.once( 'close', () => ccm.close() );
 
                 //---
                 as.setCancel( ( as ) =>
@@ -104,7 +115,9 @@ class EventArchiver
 
                 as.add( ( as ) =>
                 {
-                    ccm.iface( 'pusher' ).once( 'disconnect', () =>
+                    const pusher = ccm.iface( 'pusher' );
+
+                    pusher.once( 'disconnect', () =>
                     {
                         this.emit( 'workerError', 'Disconnect', 'Lost connection' );
 
@@ -121,13 +134,19 @@ class EventArchiver
                         ccm.close();
                     } );
 
-                    ccm.iface( 'pusher' ).registerConsumer( as, options.component );
-                    ccm.iface( 'pusher' ).readyToReceive( as, options.component );
+                    if ( component !== 'LIVE' )
+                    {
+                        pusher.registerConsumer( as, component );
+                    }
+
+                    pusher.readyToReceive( as, component, want );
                 } );
                 as.add( ( as ) =>
                 {
                     if ( wait_as )
                     {
+                        this.emit( 'ready' );
+
                         wait_as = as;
                         as.waitExternal();
                     }
@@ -180,4 +199,9 @@ module.exports = EventArchiver;
 /**
  * Emitted after new events being pushed to DWH
  * @event EventArchiver#newEvents
+ */
+
+/**
+ * Emitted after event receiver is ready
+ * @event EventArchiver#ready
  */
