@@ -9,6 +9,7 @@
     "specs/",
     "common.js",
     "main.js",
+    "*App.js",
     "*Archiver.js",
     "*Discarder.js",
     "*Face.js",

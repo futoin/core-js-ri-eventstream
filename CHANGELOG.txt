@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: missing DBServiceApp in package
+
 === 0.9.99 (2018-05-30) ===
 NEW: DBServiceApp helper support
 NEW: ReliableEventReceiver helper
