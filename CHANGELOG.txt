@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.0.0 (2018-05-31) ===
 FIXED: missing DBServiceApp in package
 
 === 0.9.99 (2018-05-30) ===
