@@ -9,14 +9,15 @@
 
 # About
 
+FutoIn EventStream is fundamental part for efficient global state update in
+distributed systems. It is used for reliable event delivery, decentralized cache
+invalidation, efficient online segregation of active and warehouse data.
+
 Unlike various message/event brokers, the focus of FutoIn Event Stream is integration
 with database transactions for reliable efficient event recording and delivery.
 
 The design is not focused on high throughput as the primary reason is reliable association of events
 with database changes. Please consider using pure message brokers for throughput-intensive cases.
-
-It may not be immediately obvious how to use this FutoIn sub-project, but it's a fundamental part
-for asynchronous state distribution and interaction in large microservice systems.
 
 **Documentation** --> [FutoIn Guide](https://futoin.org/docs/eventstream/)
 
@@ -27,18 +28,20 @@ Reference implementation of:
     
 * Spec: [FTN18: FutoIn Interface - Event Stream v1.x](http://specs.futoin.org/final/preview/ftn18_if_eventstream-1.html)
 
-# Supported database types
+## Features
+
+* Database transaction-bound event generation.
+* Standalone event generation.
+* Event polling for simple, but less efficient solutions.
+* Event pushing for advanced efficient cases.
+
+## Supported database types
 
 * MySQL
 * PostgreSQL
 * SQLite
 * Potentially, any other SQL-compliant supported by `futoin-database`
 
-
-# Stability Warning
-
-The code is fully covered in tests, including many edge cases. However, the software is still
-considered to be in Beta stage.
 
 # Installation for Node.js
 
