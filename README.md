@@ -6,16 +6,6 @@
 
   [![NPM](https://nodei.co/npm/futoin-eventstream.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/futoin-eventstream/)
 
-# FutoIn reference implementation
-
-Reference implementation of:
- 
-    FTN18: FutoIn Interface - Event Stream
-    Version: 1.1
-    
-* Spec: [FTN18: FutoIn Interface - Event Stream v1.x](http://specs.futoin.org/final/preview/ftn18_if_eventstream-1.html)
-
-[Web Site](http://futoin.org/)
 
 # About
 
@@ -28,7 +18,14 @@ with database changes. Please consider using pure message brokers for throughput
 It may not be immediately obvious how to use this FutoIn sub-project, but it's a fundamental part
 for asynchronous state distribution and interaction in large microservice systems.
 
-**You should really understand the concepts to properly use it.**
+**Documentation** --> [FutoIn Guide](https://futoin.org/docs/eventstream/)
+
+Reference implementation of:
+ 
+    FTN18: FutoIn Interface - Event Stream
+    Version: 1.1
+    
+* Spec: [FTN18: FutoIn Interface - Event Stream v1.x](http://specs.futoin.org/final/preview/ftn18_if_eventstream-1.html)
 
 # Supported database types
 
