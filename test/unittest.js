@@ -1696,38 +1696,14 @@ describe( 'PushService', function()
     } );
 } );
 
-describe( 'EventArchiver', function()
+describe( 'ReliableReceiver', function()
 {
-    const EventArchiver = require( '../EventArchiver' );
-
-    it( 'should throw error on failed setup', function( done )
-    {
-        const ccm = new AdvancedCCM();
-        const archiver = new EventArchiver( ccm );
-        archiver.once( 'workerError', ( err ) =>
-        {
-            try
-            {
-                expect( err ).to.equal( 'NotImplemented' );
-            }
-            catch ( e )
-            {
-                done( e );
-            }
-
-            setTimeout( () =>
-            {
-                archiver.stop();
-                done();
-            }, 0 );
-        } );
-        archiver.start( 'wss://127.0.0.1:12345/api', 'login:pass' );
-    } );
+    const ReliableReceiver = require( '../ReliableReceiver' );
 
     it( 'should handle disconnects', function( done )
     {
         const ccm = new AdvancedCCM();
-        const archiver = new class extends EventArchiver
+        const archiver = new class extends ReliableReceiver
         {
             constructor()
             {
@@ -1737,7 +1713,6 @@ describe( 'EventArchiver', function()
             _registerReceiver( as, _executor )
             {
                 const res = {};
-                $asyncevent( res, [ 'newEvents' ] );
                 return res;
             }
         };
@@ -1751,6 +1726,7 @@ describe( 'EventArchiver', function()
             catch ( e )
             {
                 done( e );
+                return;
             }
 
             setTimeout( () =>
@@ -1883,7 +1859,11 @@ describe( 'ReliableReceiverService', function()
                 done( as.state.last_exception || 'Fail' );
             }
         );
-        as.add( ( as ) => done() );
+        as.add( ( as ) =>
+        {
+            ccm.close();
+            done();
+        } );
         as.execute();
     } );
 
@@ -1929,7 +1909,11 @@ describe( 'ReliableReceiverService', function()
                 done( as.state.last_exception || 'Fail' );
             }
         );
-        as.add( ( as ) => done() );
+        as.add( ( as ) =>
+        {
+            ccm.close();
+            done();
+        } );
         as.execute();
     } );
 } );

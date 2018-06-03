@@ -25,15 +25,16 @@ const Executor = require( 'futoin-executor/Executor' );
 const $asyncevent = require( 'futoin-asyncevent' );
 
 const PushFace = require( './PushFace' );
+const ReliableReceiverService = require( './ReliableReceiverService' );
 
 /**
- * Base storage neutral class for event archiving
+ * Reliable Event Receiver helper to minimize boilerplate code in projects.
  */
-class EventArchiver
+class ReliableReceiver
 {
     static get COMPONENT()
     {
-        return 'ARCHIVER';
+        return 'LIVE';
     }
 
     /**
@@ -43,7 +44,7 @@ class EventArchiver
      */
     constructor( executor_ccm )
     {
-        this._executor_ccm = executor_ccm;
+        this._executor_ccm = executor_ccm || new AdvancedCCM();
         this._worker_as = null;
 
         $asyncevent( this, [
@@ -60,6 +61,8 @@ class EventArchiver
      * @param {*} endpoint - see PushFace
      * @param {*} [credentials=null] - see PushFace
      * @param {*} [options={}] - see PushFace
+     * @param {string} [options.component] - component name
+     * @param {array} [options.want] - "want" parameter for event filtering
      *
      * @note options.executor is overridden
      */
@@ -67,7 +70,7 @@ class EventArchiver
     {
         if ( this._worker_as )
         {
-            return;
+            throw new Error( 'Already started!' );
         }
 
         options = Object.assign( {}, options );
@@ -86,25 +89,28 @@ class EventArchiver
             {
                 //---
                 const executor = new Executor( executor_ccm );
-                executor_ccm.once( 'close', () => executor.close() );
                 executor.on( 'notExpected', ( ...args ) => this.emit( 'receiverError', ...args ) );
                 options.executor = executor;
 
                 //---
                 const ccm = new AdvancedCCM();
                 ccm.once( 'close', () => executor.close() );
-                executor_ccm.once( 'close', () => ccm.close() );
+
+                executor_ccm.once( 'close', () =>
+                {
+                    ccm.close();
+                    executor.close();
+                } );
 
                 //---
                 as.setCancel( ( as ) =>
                 {
-                    executor.close();
                     ccm.close();
+                    executor.close();
                 } );
 
                 //---
-                const receiver = this._registerReceiver( as, executor );
-                receiver.on( 'newEvents', ( ...args ) => this.emit( 'newEvents', ...args ) );
+                this._registerReceiver( as, executor, options );
 
                 PushFace.register(
                     as, ccm, 'pusher',
@@ -130,8 +136,8 @@ class EventArchiver
                             wait_as.success();
                         }
 
-                        executor.close();
                         ccm.close();
+                        executor.close();
                     } );
 
                     if ( component !== 'LIVE' )
@@ -173,35 +179,63 @@ class EventArchiver
         }
     }
 
-    _registerReceiver( as, _executor )
-    {
-        as.error( 'NotImplemented' );
-    }
-
     _onWorkerError( as, err )
     {
         this.emit( 'workerError', err, as.state.error_info, as.state.last_exception );
     }
+
+    /**
+     * Override to register custom instance of ReliableReceiverService.
+     *
+     * @param {AsyncSteps} as - async steps interface
+     * @param {Executor} executor - Internal Executor instance
+     * @param {object} options - passed options
+     *
+     * @returns {ReliableReceiverService} instance of service
+     */
+    _registerReceiver( as, executor, options )
+    {
+        const receiver = this;
+        const svc_class = class extends ReliableReceiverService
+        {
+            _onEvents( as, _reqinfo, events )
+            {
+                receiver._onEvents( as, events );
+            }
+        };
+
+        return svc_class.register( as, executor, options );
+    }
+
+    /**
+     * Override to catch new events here instead of using `newEvents` event handler.
+     * @param {AsyncSteps} as - async steps interface
+     * @param {array} events - array of events
+     */
+    _onEvents( as, events )
+    {
+        this.emit( 'newEvents', events );
+    }
 }
 
-module.exports = EventArchiver;
+module.exports = ReliableReceiver;
 
 /**
  * Emitted on not expected receiver errors
- * @event EventArchiver#receiverError
+ * @event ReliableReceiver#receiverError
  */
 
 /**
  * Emitted on worker errors
- * @event EventArchiver#workerError
+ * @event ReliableReceiver#workerError
  */
 
 /**
- * Emitted after new events being pushed to DWH
- * @event EventArchiver#newEvents
+ * Emitted on new events
+ * @event ReliableReceiver#newEvents
  */
 
 /**
  * Emitted after event receiver is ready
- * @event EventArchiver#ready
+ * @event ReliableReceiver#ready
  */

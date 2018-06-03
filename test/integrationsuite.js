@@ -14,7 +14,7 @@ const DBPushService = require( '../DBPushService' );
 const DBEventArchiver = require( '../DBEventArchiver' );
 const DBServiceApp = require( '../DBServiceApp' );
 const ReceiverFace = require( '../ReceiverFace' );
-const ReliableEventReceiver = require( '../ReliableEventReceiver' );
+const ReliableReceiver = require( '../ReliableReceiver' );
 const main = require( '../main' );
 
 const receiver_face = `futoin.evt.receiver:${ReceiverFace.LATEST_VERSION}`;
@@ -617,6 +617,14 @@ module.exports = function( describe, it, vars )
                         }
                     } );
 
+
+                    // Give some time for receiver to complete
+                    as.add( ( as ) =>
+                    {
+                        as.waitExternal();
+                        setTimeout( () => as.success(), 100 );
+                    } );
+
                     as.add( ( as ) =>
                     {
                         clientExecutor.close();
@@ -652,6 +660,9 @@ module.exports = function( describe, it, vars )
                 console.dir( arguments );
             } );
 
+            //executor.on( 'request', (_, req) => console.log(req) );
+            //executor.on( 'response', (_, rsp) => console.log(rsp) );
+
             as.add(
                 ( as ) =>
                 {
@@ -682,7 +693,7 @@ module.exports = function( describe, it, vars )
 
         it( 'should archive events', function( done )
         {
-            this.timeout( 5e3 );
+            this.timeout( 10e3 );
 
             as.add(
                 ( as ) =>
@@ -702,10 +713,12 @@ module.exports = function( describe, it, vars )
                     } );
 
                     let push_count = 0;
+                    let event_count = 0;
                     let push_cb = null;
-                    archiver.on( 'newEvents', () =>
+                    archiver.on( 'processedEvents', ( count ) =>
                     {
                         push_count++;
+                        event_count += count;
 
                         if ( push_cb )
                         {
@@ -714,14 +727,18 @@ module.exports = function( describe, it, vars )
                     } );
 
                     archiver.start( executor );
-                    archiver.start( executor );
+                    expect( () => archiver.start( executor ) ).to.throw( 'Already started!' );
 
-                    ccm.db( 'evt' ).select( 'evt_queue' )
+                    const dbact = ccm.db( 'evt' );
+                    const dbdwh = ccm.db( 'evtdwh' );
+
+                    dbact.select( 'evt_queue' )
                         .get( 'c', 'COUNT(*)' ).execute( as );
 
                     as.add( ( as, res_orig ) =>
                     {
                         as.state.res_orig = parseInt( res_orig.rows[0][0] );
+                        as.state.event_count_expect = as.state.res_orig;
                         as.state.push_count_expect =
                             ~~( ( parseInt( `${res_orig.rows[0][0]}` ) + 100 ) / 100 );
 
@@ -730,6 +747,8 @@ module.exports = function( describe, it, vars )
                             as.waitExternal();
                             push_cb = () =>
                             {
+                                // console.log( push_count, as.state.push_count_expect );
+
                                 if ( push_count === as.state.push_count_expect )
                                 {
                                     push_cb = null;
@@ -739,45 +758,56 @@ module.exports = function( describe, it, vars )
                         }
                     } );
 
-                    ccm.db( 'evtdwh' ).select( 'evt_history' )
+                    dbdwh.select( 'evt_history' )
                         .get( 'c', 'COUNT(*)' ).execute( as );
 
                     as.add( ( as, res ) =>
                     {
                         expect( parseInt( res.rows[0][0] ) ).to.equal( as.state.res_orig );
                         expect( push_count ).to.equal( as.state.push_count_expect );
+                        expect( event_count ).to.equal( as.state.event_count_expect );
                         archiver.stop();
                         archiver.start( executor );
 
-                        const db = ccm.db( 'evtdwh' );
                         ccm.iface( 'evtgen' ).addEvent( as, 'NEW_EVT', 123 );
                         as.state.push_count_expect++;
+                        as.state.event_count_expect++;
 
                         as.loop( ( as ) =>
                         {
-                            db.select( 'evt_history' )
+                            dbdwh.select( 'evt_history' )
                                 .get( 'c', 'COUNT(*)' ).execute( as );
 
                             as.add( ( as, res ) =>
                             {
-                                if ( parseInt( res.rows[0][0] ) === as.state.res_orig + 1 )
+                                // console.log( res.rows[0][0], as.state.event_count_expect );
+
+                                if ( parseInt( res.rows[0][0] ) === as.state.event_count_expect )
                                 {
+                                    expect( event_count ).to.equal( as.state.event_count_expect );
+                                    expect( push_count ).to.equal( as.state.push_count_expect );
                                     as.break();
                                 }
                             } );
                         } );
+                    } );
 
-                        db.insert( 'evt_history' )
+                    as.add( ( as ) =>
+                    {
+                        // duplicate event case
+                        dbdwh.insert( 'evt_history' )
                             .set( {
-                                id : as.state.res_orig + 2,
+                                id : as.state.event_count_expect + 1,
                                 type: 'NEW_EVT',
                                 data: JSON.stringify( 234 ),
-                                ts: db.helpers().now(),
+                                ts: dbdwh.helpers().now(),
                             } )
                             .execute( as );
 
                         ccm.iface( 'evtgen' ).addEvent( as, 'NEW_EVT', 234 );
+                        as.state.event_count_expect++;
                         ccm.iface( 'evtgen' ).addEvent( as, 'NEW_EVT', 345 );
+                        as.state.event_count_expect++;
                         as.state.push_count_expect++;
                     } );
 
@@ -788,6 +818,8 @@ module.exports = function( describe, it, vars )
                             as.waitExternal();
                             push_cb = () =>
                             {
+                                // console.log( push_count, as.state.push_count_expect );
+
                                 if ( push_count >= as.state.push_count_expect )
                                 {
                                     push_cb = null;
@@ -797,19 +829,46 @@ module.exports = function( describe, it, vars )
                         }
                     } );
 
-                    ccm.db( 'evtdwh' ).select( 'evt_history' )
+                    dbdwh.select( 'evt_history' )
                         .get( 'c', 'COUNT(*)' ).execute( as );
 
                     as.add( ( as, res ) =>
                     {
-                        expect( parseInt( res.rows[0][0] ) ).to.equal( as.state.res_orig + 3 );
+                        expect( parseInt( res.rows[0][0] ) ).to.equal( as.state.event_count_expect );
+                        // One event is duplicate
+                        expect( event_count ).to.equal( as.state.event_count_expect - 1 );
+                    } );
+
+
+                    as.loop( ( as ) =>
+                    {
+                        dbact.select( 'evt_consumers' )
+                            .get( 'last_evt_id' )
+                            .where( 'ident', '-internal:ARCHIVER' )
+                            .execute( as );
+
+                        as.add( ( as, res ) =>
+                        {
+                            // console.log( res.rows[0][0], as.state.event_count_expect );
+
+                            if ( parseInt( res.rows[0][0] ) === as.state.event_count_expect )
+                            {
+                                as.break();
+                            }
+                        } );
+                    } );
+
+                    as.add( ( as ) =>
+                    {
+                        as.waitExternal();
+                        ccm.once( 'close', () => as.success() );
                         ccm.close();
                     } );
                 },
                 ( as, err ) =>
                 {
-                    console.log( err );
-                    console.log( as.state.error_info );
+                    console.log( err, as.state.error_info );
+                    console.log( as.state.last_exception );
                     done( as.state.last_exception );
                 }
             );
@@ -870,7 +929,8 @@ module.exports = function( describe, it, vars )
                         as.waitExternal();
                         discared.start( ccm, { limit_at_once: 100,
                             poll_period_ms: 30 } );
-                        discared.start();
+
+                        expect( () => discared.start() ).to.throw( 'Already started!' );
                     } );
 
                     db.select( 'evt_queue' ).get( 'c', 'COUNT(*)' ).execute( as );
@@ -912,7 +972,7 @@ module.exports = function( describe, it, vars )
         } ) );
     } );
 
-    describe( 'ReliableEventReceiver', function()
+    describe( 'ReliableReceiver', function()
     {
         let as;
         let ccm;
@@ -964,16 +1024,19 @@ module.exports = function( describe, it, vars )
             as.add(
                 ( as ) =>
                 {
-                    const receiver = new class extends ReliableEventReceiver
+                    const receiver = new class extends ReliableReceiver
                     {
                         constructor()
                         {
                             super( ccm );
                             this.count = 0;
+                            this.on_count = 0;
+                            this.on( 'newEvents', ( events ) => this.on_count += events.length );
                         }
 
                         _onEvents( as, events )
                         {
+                            super._onEvents( as, events );
                             this.count += events.length;
                         }
                     };
@@ -991,7 +1054,8 @@ module.exports = function( describe, it, vars )
                     } );
 
                     receiver.start( executor, null, { want: [ 'RER_EVT' ] } );
-                    receiver.start( executor );
+
+                    expect( () => receiver.start( executor ) ).to.throw( 'Already started!' );
 
                     as.add( ( as ) =>
                     {
@@ -1011,7 +1075,9 @@ module.exports = function( describe, it, vars )
 
                     as.loop( ( as ) =>
                     {
-                        if ( receiver.count === ITERATIONS )
+                        if ( receiver.count === ITERATIONS &&
+                             receiver.on_count === ITERATIONS
+                        )
                         {
                             as.break();
                         }

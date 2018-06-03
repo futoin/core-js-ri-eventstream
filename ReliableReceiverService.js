@@ -21,7 +21,9 @@
 
 const PushFace = require( './PushFace' );
 const main = require( './main' );
-const $asyncevent = require( 'futoin-asyncevent' );
+
+const NEXT_SEQ_ID = Symbol( 'NEXT_SEQ_ID' );
+const OUT_OF_ORDER = Symbol( 'OUT_OF_ORDER' );
 
 /**
  * Base implementation for reliable receiver side
@@ -49,13 +51,12 @@ class ReliableReceiverService
     constructor( executor, _options )
     {
         this._reset( executor );
-        $asyncevent( this, [ 'newEvents' ] );
     }
 
     _reset( executor )
     {
-        this._next_seq_id = 0;
-        this._out_of_order = new Map();
+        this[NEXT_SEQ_ID] = 0;
+        this[OUT_OF_ORDER] = new Map();
         executor.once( 'close', () => this._reset( executor ) );
     }
 
@@ -65,15 +66,15 @@ class ReliableReceiverService
         let seq_id = p.seq;
 
         // extra "if" is cheaper than empty step
-        if ( this._next_seq_id !== seq_id )
+        if ( this[NEXT_SEQ_ID] !== seq_id )
         {
             as.add( ( as ) =>
             {
                 // check again due to race condition
-                if ( this._next_seq_id !== seq_id )
+                if ( this[NEXT_SEQ_ID] !== seq_id )
                 {
-                    as.setCancel( ( as ) => this._out_of_order.delete( seq_id ) );
-                    this._out_of_order.set( seq_id, as );
+                    as.setCancel( ( as ) => this[OUT_OF_ORDER].delete( seq_id ) );
+                    this[OUT_OF_ORDER].set( seq_id, as );
                     as.waitExternal();
                 }
             } );
@@ -86,21 +87,21 @@ class ReliableReceiverService
 
         as.add( ( as ) =>
         {
-            this._out_of_order.delete( seq_id );
-            this._next_seq_id = ++seq_id;
+            this[OUT_OF_ORDER].delete( seq_id );
+            this[NEXT_SEQ_ID] = ++seq_id;
 
-            if ( this._out_of_order.has( seq_id ) )
+            if ( this[OUT_OF_ORDER].has( seq_id ) )
             {
                 try
                 {
-                    this._out_of_order.get( seq_id ).success();
+                    this[OUT_OF_ORDER].get( seq_id ).success();
                 }
                 catch ( e )
                 {
                     // ignore
                 }
 
-                this._out_of_order.delete( seq_id );
+                this[OUT_OF_ORDER].delete( seq_id );
             }
 
             reqinfo.result( true );
@@ -114,9 +115,3 @@ class ReliableReceiverService
 }
 
 module.exports = ReliableReceiverService;
-
-
-/**
- * Emitted after new events being pushed to DWH
- * @event ReliableReceiverService#newEvents
- */
