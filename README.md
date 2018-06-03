@@ -90,7 +90,7 @@ evtgen.addEvent(as, 'OBJECT_EVENT', { a: 1, b: 2, c: 3 });
 ## 2. Adding events in database transaction
 
 For more advanced cases, you can check source code of DBGenFace#addXferEvent()
-to build more tailored statemented.
+to build more tailored statements.
 
 ```javascript
 DBGenFace.register(as, ccm, 'evtgen', endpoint );
@@ -278,9 +278,6 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dt><a href="#DBServiceApp">DBServiceApp</a></dt>
 <dd><p>All-in-one DB EventStream initialization</p>
 </dd>
-<dt><a href="#EventArchiver">EventArchiver</a></dt>
-<dd><p>Base storage neutral class for event archiving</p>
-</dd>
 <dt><a href="#GenFace">GenFace</a></dt>
 <dd><p>Event Stream - Generator Face</p>
 </dd>
@@ -302,7 +299,7 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dt><a href="#ReceiverFace">ReceiverFace</a></dt>
 <dd><p>Event Stream - Receiver Face</p>
 </dd>
-<dt><a href="#ReliableEventReceiver">ReliableEventReceiver</a></dt>
+<dt><a href="#ReliableReceiver">ReliableReceiver</a></dt>
 <dd><p>Reliable Event Receiver helper to minimize boilerplate code in projects.</p>
 </dd>
 <dt><a href="#ReliableReceiverService">ReliableReceiverService</a></dt>
@@ -535,76 +532,6 @@ Shutdown of app and related instances
 | --- | --- | --- | --- |
 | [done] | <code>callable</code> | <code></code> | done callback |
 
-<a name="EventArchiver"></a>
-
-## EventArchiver
-Base storage neutral class for event archiving
-
-**Kind**: global class  
-
-* [EventArchiver](#EventArchiver)
-    * [new EventArchiver(executor_ccm)](#new_EventArchiver_new)
-    * [.start(endpoint, [credentials], [options])](#EventArchiver+start)
-    * [.stop()](#EventArchiver+stop)
-    * ["receiverError"](#EventArchiver+event_receiverError)
-    * ["workerError"](#EventArchiver+event_workerError)
-    * ["newEvents"](#EventArchiver+event_newEvents)
-    * ["ready"](#EventArchiver+event_ready)
-
-<a name="new_EventArchiver_new"></a>
-
-### new EventArchiver(executor_ccm)
-Initialize event archiver.
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| executor_ccm | <code>AdvancedCCM</code> | CCM for executor |
-
-<a name="EventArchiver+start"></a>
-
-### eventArchiver.start(endpoint, [credentials], [options])
-Start receiving events for archiving
-
-**Kind**: instance method of [<code>EventArchiver</code>](#EventArchiver)  
-**Note**: options.executor is overridden  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| endpoint | <code>\*</code> |  | see PushFace |
-| [credentials] | <code>\*</code> | <code></code> | see PushFace |
-| [options] | <code>\*</code> | <code>{}</code> | see PushFace |
-
-<a name="EventArchiver+stop"></a>
-
-### eventArchiver.stop()
-Stop receiving events
-
-**Kind**: instance method of [<code>EventArchiver</code>](#EventArchiver)  
-<a name="EventArchiver+event_receiverError"></a>
-
-### "receiverError"
-Emitted on not expected receiver errors
-
-**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
-<a name="EventArchiver+event_workerError"></a>
-
-### "workerError"
-Emitted on worker errors
-
-**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
-<a name="EventArchiver+event_newEvents"></a>
-
-### "newEvents"
-Emitted after new events being pushed to DWH
-
-**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
-<a name="EventArchiver+event_ready"></a>
-
-### "ready"
-Emitted after event receiver is ready
-
-**Kind**: event emitted by [<code>EventArchiver</code>](#EventArchiver)  
 <a name="GenFace"></a>
 
 ## GenFace
@@ -829,46 +756,119 @@ CCM registration helper
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 
-<a name="ReliableEventReceiver"></a>
+<a name="ReliableReceiver"></a>
 
-## ReliableEventReceiver
+## ReliableReceiver
 Reliable Event Receiver helper to minimize boilerplate code in projects.
 
 **Kind**: global class  
-**Note**: No more than one instance should run at once.  
-**Todo**
 
-- [ ] Refactor to be based for EventArchiver, but not vice-versa.
+* [ReliableReceiver](#ReliableReceiver)
+    * [new ReliableReceiver(executor_ccm)](#new_ReliableReceiver_new)
+    * [.start(endpoint, [credentials], [options])](#ReliableReceiver+start)
+    * [.stop()](#ReliableReceiver+stop)
+    * [._registerReceiver(as, executor, options)](#ReliableReceiver+_registerReceiver) ⇒ [<code>ReliableReceiverService</code>](#ReliableReceiverService)
+    * [._onEvents(as, events)](#ReliableReceiver+_onEvents)
+    * ["processedEvents"](#ReliableReceiver+event_processedEvents)
+    * ["receiverError"](#ReliableReceiver+event_receiverError)
+    * ["workerError"](#ReliableReceiver+event_workerError)
+    * ["newEvents"](#ReliableReceiver+event_newEvents)
+    * ["ready"](#ReliableReceiver+event_ready)
 
-<a name="new_ReliableEventReceiver_new"></a>
+<a name="new_ReliableReceiver_new"></a>
 
-### new ReliableEventReceiver(db_ccm)
-C-tor
+### new ReliableReceiver(executor_ccm)
+Initialize event archiver.
 
 
 | Param | Type | Description |
 | --- | --- | --- |
-| db_ccm | <code>AdvancedCCM</code> | CCM instance with registered '#db.evtdwh' interface |
+| executor_ccm | <code>AdvancedCCM</code> | CCM for executor |
 
+<a name="ReliableReceiver+start"></a>
+
+### reliableReceiver.start(endpoint, [credentials], [options])
+Start receiving events for archiving
+
+**Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
+**Note**: options.executor is overridden  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| endpoint | <code>\*</code> |  | see PushFace |
+| [credentials] | <code>\*</code> | <code></code> | see PushFace |
+| [options] | <code>\*</code> | <code>{}</code> | see PushFace |
+| [options.component] | <code>string</code> |  | component name |
+| [options.want] | <code>array</code> |  | "want" parameter for event filtering |
+
+<a name="ReliableReceiver+stop"></a>
+
+### reliableReceiver.stop()
+Stop receiving events
+
+**Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
+<a name="ReliableReceiver+_registerReceiver"></a>
+
+### reliableReceiver._registerReceiver(as, executor, options) ⇒ [<code>ReliableReceiverService</code>](#ReliableReceiverService)
+Override to register custom instance of ReliableReceiverService.
+
+**Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
+**Returns**: [<code>ReliableReceiverService</code>](#ReliableReceiverService) - instance of service  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | async steps interface |
+| executor | <code>Executor</code> | Internal Executor instance |
+| options | <code>object</code> | passed options |
+
+<a name="ReliableReceiver+_onEvents"></a>
+
+### reliableReceiver._onEvents(as, events)
+Override to catch new events here instead of using `newEvents` event handler.
+
+**Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | async steps interface |
+| events | <code>array</code> | array of events |
+
+<a name="ReliableReceiver+event_processedEvents"></a>
+
+### "processedEvents"
+Emitted for count of archived events in each iteration.
+
+**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
+<a name="ReliableReceiver+event_receiverError"></a>
+
+### "receiverError"
+Emitted on not expected receiver errors
+
+**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
+<a name="ReliableReceiver+event_workerError"></a>
+
+### "workerError"
+Emitted on worker errors
+
+**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
+<a name="ReliableReceiver+event_newEvents"></a>
+
+### "newEvents"
+Emitted on new events
+
+**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
+<a name="ReliableReceiver+event_ready"></a>
+
+### "ready"
+Emitted after event receiver is ready
+
+**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
 <a name="ReliableReceiverService"></a>
 
 ## ReliableReceiverService
 Base implementation for reliable receiver side
 
 **Kind**: global class  
-
-* [ReliableReceiverService](#ReliableReceiverService)
-    * _instance_
-        * ["newEvents"](#ReliableReceiverService+event_newEvents)
-    * _static_
-        * [.register(as, executor, options)](#ReliableReceiverService.register) ⇒ [<code>PushService</code>](#PushService)
-
-<a name="ReliableReceiverService+event_newEvents"></a>
-
-### "newEvents"
-Emitted after new events being pushed to DWH
-
-**Kind**: event emitted by [<code>ReliableReceiverService</code>](#ReliableReceiverService)  
 <a name="ReliableReceiverService.register"></a>
 
 ### ReliableReceiverService.register(as, executor, options) ⇒ [<code>PushService</code>](#PushService)

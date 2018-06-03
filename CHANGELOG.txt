@@ -5,6 +5,7 @@ CHANGED: removed newEvents from ReliableReceiverService
 CHANGED: DBEventArchiver to emit "processedEvents" instead of "newEvents"
 CHANGED: DBEventArchiver to fail on restart without stop
 CHANGED: DBEventDiscarder to fail on restart without stop
+CHANGED: to gracefully shutdown PushService workers
 FIXED: incorrect attempt to save NULL last_id in some edge cases
 
 === 1.0.0 (2018-05-31) ===

@@ -27,6 +27,8 @@ const ReceiverFace = require( './ReceiverFace' );
 const $asyncevent = require( 'futoin-asyncevent' );
 const { cmpIds } = require( './common' );
 
+const WORKER_STATE = Symbol( 'WORKER_STATE' );
+
 class EventChannel
 {
     static want2key( want )
@@ -209,10 +211,10 @@ class PushService extends PollService
                     Object.seal( state );
 
                     const worker_as = $as();
-                    worker_as.state.worker = state;
+                    worker_as.state[WORKER_STATE] = state;
                     channel.onInvokerAbort( () =>
                     {
-                        worker_as.cancel();
+                        worker_as.state[WORKER_STATE] = null;
                         this._cleanupChannel( echan_key, echan, iface );
                     } );
 
@@ -382,17 +384,21 @@ class PushService extends PollService
 
     _reliableWorker( as )
     {
-        const state = as.state.worker;
-        const CHUNK_SIZE = state.chunk_size;
         const evt_stats = this._stats;
 
-        const sendEvents = ( as, events ) =>
+        const sendEvents = ( as, state, events ) =>
         {
+            if ( !events.length )
+            {
+                return;
+            }
+
             const last_id = events[events.length - 1].id;
 
             state.iface.onEvents( as, state.seq_id, events );
             evt_stats.reliable_calls++;
 
+            as.add( ( as ) => this._recordLastId( as, state.ident, last_id ) );
             as.add( ( as ) =>
             {
                 state.seq_id++;
@@ -403,6 +409,14 @@ class PushService extends PollService
         as.loop( ( as ) => as.add(
             ( as ) =>
             {
+                const state = as.state[WORKER_STATE];
+
+                if ( !state )
+                {
+                    // graceful shutdown
+                    as.break();
+                }
+
                 const queue = state.queue;
                 const history_push = state.history_push;
 
@@ -418,7 +432,7 @@ class PushService extends PollService
                             as.continue();
                         }
 
-                        sendEvents( as, history_push );
+                        sendEvents( as, state, history_push );
 
                         as.add( ( as ) =>
                         {
@@ -448,7 +462,7 @@ class PushService extends PollService
                             }
                             else
                             {
-                                state.history_push = ( history_push.length >= CHUNK_SIZE );
+                                state.history_push = ( history_push.length >= state.chunk_size );
                             }
                         } );
                     }
@@ -476,22 +490,11 @@ class PushService extends PollService
                 else if ( queue.length )
                 {
                     const chunk = PushService._mergeQueue( state );
-                    const last_id = chunk[chunk.length - 1].id;
 
                     as.loop( ( as ) => as.add(
                         ( as ) =>
                         {
-                            // in case of attempt after _recordLastId failure
-                            if ( state.last_id !== last_id )
-                            {
-                                sendEvents( as, chunk );
-                            }
-
-                            as.add( ( as ) =>
-                            {
-                                state.last_id = last_id;
-                                this._recordLastId( as, state.ident, last_id );
-                            } );
+                            sendEvents( as, state, chunk );
                             as.add( ( as ) => as.break() );
                         },
                         ( as, err ) =>
@@ -512,6 +515,11 @@ class PushService extends PollService
             },
             ( as, err ) =>
             {
+                if ( err === 'LoopBreak' )
+                {
+                    return;
+                }
+
                 if ( err !== 'LoopCont' )
                 {
                     this._onPushError( as, err );
