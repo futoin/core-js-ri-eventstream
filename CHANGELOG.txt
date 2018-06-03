@@ -4,6 +4,7 @@ CHANGED: renamed EventArchiver base to ReliableReceiver
 CHANGED: removed newEvents from ReliableReceiverService
 CHANGED: DBEventArchiver to emit "processedEvents" instead of "newEvents"
 CHANGED: DBEventArchiver to fail on restart without stop
+CHANGED: DBEventDiscarder to fail on restart without stop
 
 === 1.0.0 (2018-05-31) ===
 FIXED: missing DBServiceApp in package

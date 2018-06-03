@@ -62,7 +62,7 @@ class DBEventDiscarder
     {
         if ( this._worker_as )
         {
-            return;
+            throw new Error( 'Already started!' );
         }
 
         ccm.assertIface( '#db.evt', DB_IFACEVER );
@@ -99,11 +99,11 @@ class DBEventDiscarder
                 // console.log(del_events._toQuery());
                 del_events.execute( as );
 
-                as.add( ( as, res ) =>
+                as.add( ( as, { affected } ) =>
                 {
-                    if ( res.affected )
+                    if ( affected > 0 )
                     {
-                        this.emit( 'eventDiscard', res.affected );
+                        this.emit( 'eventDiscard', affected );
                     }
                     else
                     {
