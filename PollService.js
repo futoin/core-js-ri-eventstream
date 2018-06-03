@@ -124,7 +124,7 @@ class PollService extends PingService
         const component = params.component;
         const user_id = reqinfo.info.USER_INFO.localID();
         const ident = `${user_id}:${component}`;
-        let last_id = params.last_id || '0';
+        const last_id = params.last_id || '0';
         const want = params.want;
         const is_reliable = ( component !== 'LIVE' );
 

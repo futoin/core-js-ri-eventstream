@@ -111,6 +111,10 @@ class DBPollService extends PollService
                 .get( 'last_evt_id' )
                 .where( { ident } );
         }
+        else
+        {
+            last_id = parseInt( last_id );
+        }
 
         // Actual select
         const s = xfer.select( this._evt_table, { result: true } )
@@ -138,8 +142,11 @@ class DBPollService extends PollService
                     {
                         const xfer = db.newXfer( db.SERIALIZABLE );
 
-                        const sq = xfer.select( this._evt_table )
-                            .get( 'max_id', 'MAX(id)' );
+                        const sq = xfer.select(
+                            [ db.select( this._evt_table )
+                                .get( 'max_id', 'MAX(id)' ), 'ETM' ],
+                            { selected: 1 }
+                        ).where( 'max_id IS NOT NULL' );
 
                         xfer.select(
                             this._evt_table,

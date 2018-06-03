@@ -184,7 +184,7 @@ class PushService extends PollService
                     {
                         executor,
                         ident,
-                        last_id: null,
+                        last_id: '0',
                         want,
                         is_reliable: true,
                         chunk_size,
