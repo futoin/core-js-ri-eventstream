@@ -1,4 +1,7 @@
 
+=== (next) ===
+CHANGED: to use performance-enhanced futoin-asyncsteps v2
+
 === 1.1.0 (2018-06-03) ===
 CHANGED: renamed EventArchiver base to ReliableReceiver
 CHANGED: removed newEvents from ReliableReceiverService
