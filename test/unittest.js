@@ -69,7 +69,7 @@ describe( 'PollService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -123,7 +123,7 @@ describe( 'PollService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -177,7 +177,7 @@ describe( 'PollService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -500,7 +500,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -538,6 +538,10 @@ describe( 'PushService', function()
 
                 const push_svc = MockPushService.register( as, executor );
                 push_svc.on( 'pushError', function()
+                {
+                    console.log( arguments );
+                } );
+                push_svc.on( 'queueOverflow', function()
                 {
                     console.log( arguments );
                 } );
@@ -580,6 +584,7 @@ describe( 'PushService', function()
                 as.setTimeout( 10e3 );
                 as.setCancel( ( as ) =>
                 {
+                    console.log( push_svc );
                     console.log( live_rcv_svc );
                     console.log( reliable_rcv_svc );
                 } );
@@ -593,6 +598,9 @@ describe( 'PushService', function()
 
                     as.repeat( call_count, ( as, i ) =>
                     {
+                        reliable_rcv_svc._inter_as = as;
+                        as.waitExternal();
+
                         const events = [];
 
                         for ( let j = 0; j < ( ( i + 1 ) * ( 1000 / call_count ) ); ++j )
@@ -607,8 +615,6 @@ describe( 'PushService', function()
 
                         events_expected += events.length;
                         push_svc._onEvents( events );
-                        reliable_rcv_svc._inter_as = as;
-                        as.waitExternal();
                     } );
                     as.add( ( as ) =>
                     {
@@ -644,7 +650,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -659,9 +665,12 @@ describe( 'PushService', function()
             {
                 const push_svc = PushService.register( as, executor );
                 let push_error = null;
+                let wait_as = null;
                 push_svc.on( 'pushError', function()
                 {
                     push_error = Array.from( arguments );
+                    wait_as.success();
+                    wait_as = null;
                 } );
 
                 expect( () => push_svc._pokeWorker() )
@@ -675,7 +684,11 @@ describe( 'PushService', function()
                     ( as, err ) =>
                     {
                         push_svc._onPushError( as, err );
-                        as.success();
+                        as.add( ( as ) =>
+                        {
+                            as.waitExternal();
+                            wait_as = as;
+                        } );
                     }
                 );
 
@@ -697,7 +710,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -847,7 +860,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -901,6 +914,7 @@ describe( 'PushService', function()
                     queue_count: 0,
                     chunk_size: 1000 };
                 let events_expected = 0;
+                let expected_live_events = 0;
                 const call_count = 20;
 
                 as.repeat( 2, ( as, i ) =>
@@ -929,9 +943,10 @@ describe( 'PushService', function()
                     _count: 0,
                     _call_count: 0,
                     _as: null,
-                    _inter_as: null,
+                    _ident: 'LIVE',
                     onEvents: function( as, reqinfo )
                     {
+                        const { seq, events } = reqinfo.params();
                         this._call_count += 1;
 
                         this._count += reqinfo.params().events.length;
@@ -942,17 +957,11 @@ describe( 'PushService', function()
                             this._as = null;
                         }
 
-                        if ( this._inter_as )
-                        {
-                            this._inter_as.success();
-                            this._inter_as = null;
-                        }
-
                         reqinfo.result( true );
                     },
                 };
                 const reliable_rcv_svc = {};
-                Object.assign( reliable_rcv_svc, live_rcv_svc );
+                Object.assign( reliable_rcv_svc, live_rcv_svc, { _ident: 'RLB' } );
                 liveExecutor.register( as, receiver_face, live_rcv_svc );
                 reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
@@ -989,6 +998,7 @@ describe( 'PushService', function()
                         if ( !events.length ) return;
 
                         events_expected += events.length;
+                        expected_live_events += events.length;
                         push_svc._onEvents( events );
                     } );
                     as.add( ( as ) =>
@@ -1003,7 +1013,7 @@ describe( 'PushService', function()
                 as.add( ( as ) =>
                 {
                     expect( live_rcv_svc._count )
-                        .to.be.below( events_expected );
+                        .to.equal( expected_live_events );
                     expect( reliable_rcv_svc._count )
                         .to.equal( events_expected );
                     expect( live_rcv_svc._call_count )
@@ -1025,7 +1035,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -1107,23 +1117,16 @@ describe( 'PushService', function()
                         _count: 0,
                         _call_count: 0,
                         _as: null,
-                        _inter_as: null,
                         onEvents: function( as, reqinfo )
                         {
                             this._call_count += 1;
 
                             this._count += reqinfo.params().events.length;
 
-                            if ( this._count >= ( events_expected + event_gap ) && this._as )
+                            if ( ( this._count >= events_expected ) && this._as )
                             {
                                 this._as.success();
                                 this._as = null;
-                            }
-
-                            if ( this._inter_as )
-                            {
-                                this._inter_as.success();
-                                this._inter_as = null;
                             }
 
                             reqinfo.result( true );
@@ -1135,6 +1138,7 @@ describe( 'PushService', function()
                     as.setTimeout( 10e3 );
                     as.setCancel( ( as ) =>
                     {
+                        console.log( events_expected );
                         console.log( reliable_rcv_svc );
                     } );
 
@@ -1194,7 +1198,7 @@ describe( 'PushService', function()
                     as.add( ( as ) =>
                     {
                         expect( reliable_rcv_svc._count )
-                            .to.equal( events_expected + event_gap );
+                            .to.equal( events_expected );
                         expect( reliable_rcv_svc._call_count )
                             .to.be.below( call_count + 2 );
 
@@ -1212,7 +1216,7 @@ describe( 'PushService', function()
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
         } ).execute();
@@ -1375,7 +1379,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -1624,7 +1628,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );
@@ -1690,7 +1694,7 @@ describe( 'PushService', function()
             {
                 console.log( err );
                 console.log( as.state.error_info );
-                done( as.state.last_exception );
+                done( as.state.last_exception || 'Fail' );
             }
         ).execute();
     } );

@@ -293,9 +293,20 @@ class PushService extends PollService
                 const c_queue = state.queue;
                 const chunk_limit = state.chunk_size;
                 const is_reliable = state.ident !== null;
-                const filt_len = filtered.length;
+                let chunk = filtered;
 
-                state.queue_count += filt_len;
+                if ( is_reliable && ( cmpIds( chunk[0].id, state.last_id ) <= 0 ) )
+                {
+                    chunk = PushService._trimChunk( chunk, state.last_id );
+
+                    if ( !chunk )
+                    {
+                        continue;
+                    }
+                }
+
+                const chunk_len = chunk.length;
+                state.queue_count += chunk_len;
 
                 // removed oldest queue chunks on reach of limit
                 while ( state.queue_count > QUEUE_MAX )
@@ -322,18 +333,18 @@ class PushService extends PollService
                 }
 
                 // Add new chunk, splitting, if needed
-                if ( filt_len > chunk_limit )
+                if ( chunk_len > chunk_limit )
                 {
-                    for ( let s = 0; s < filt_len; )
+                    for ( let s = 0; s < chunk_len; )
                     {
-                        const clen = Math.min( filt_len - s, chunk_limit );
-                        c_queue.push( filtered.slice( s, s + clen ) );
+                        const clen = Math.min( chunk_len - s, chunk_limit );
+                        c_queue.push( chunk.slice( s, s + clen ) );
                         s += clen;
                     }
                 }
                 else
                 {
-                    c_queue.push( filtered );
+                    c_queue.push( chunk );
                 }
 
                 if ( is_reliable )

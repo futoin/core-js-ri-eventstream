@@ -1,6 +1,8 @@
 
 === (next) ===
 FIXED: PushService to split chunks, if their size is greater then per-receiver max
+FIXED: PushService not to send duplicates in rare cases
+- when duplicate queue items are pushed after history processing
 
 === 1.2.0 (2018-06-06) ===
 CHANGED: to use performance-enhanced futoin-asyncsteps v2

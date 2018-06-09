@@ -48,7 +48,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    console.log( as.state.last_exception );
+                    console.log( as.state.last_exception || 'Fail' );
                 }
             );
         } );
@@ -114,7 +114,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
             as.add( ( as ) => done() );
@@ -166,7 +166,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
             as.add( ( as ) => done() );
@@ -203,7 +203,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    console.log( as.state.last_exception );
+                    console.log( as.state.last_exception || 'Fail' );
                 }
             );
         } );
@@ -304,7 +304,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
             as.add( ( as ) => done() );
@@ -331,7 +331,7 @@ module.exports = function( describe, it, vars )
                     {
                         console.log( err );
                         console.log( as.state.error_info );
-                        done( as.state.last_exception );
+                        done( as.state.last_exception || 'Fail' );
                     }
                 }
             );
@@ -359,7 +359,7 @@ module.exports = function( describe, it, vars )
                     {
                         console.log( err );
                         console.log( as.state.error_info );
-                        done( as.state.last_exception );
+                        done( as.state.last_exception || 'Fail' );
                     }
                 }
             );
@@ -405,7 +405,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
             as.add( ( as ) => done() );
@@ -442,7 +442,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
             as.add( ( as ) => done() );
@@ -491,7 +491,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    console.log( as.state.last_exception );
+                    console.log( as.state.last_exception || 'Fail' );
                 }
             );
         } );
@@ -635,7 +635,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
             as.add( ( as ) => done() );
@@ -681,7 +681,7 @@ module.exports = function( describe, it, vars )
                 {
                     console.log( err );
                     console.log( as.state.error_info );
-                    console.log( as.state.last_exception );
+                    console.log( as.state.last_exception || 'Fail' );
                 }
             );
         } );
