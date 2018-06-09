@@ -30,7 +30,7 @@ module.exports = {
     POLL_FACE : '#evtpoll',
     PUSH_FACE : '#evtpush',
 
-    cmpIds: function( a, b )
+    cmpIds: ( a, b ) =>
     {
         const a_len = a.length;
         const b_len = b.length;
