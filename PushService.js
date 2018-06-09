@@ -291,10 +291,11 @@ class PushService extends PollService
             for ( let state of consumers.values() )
             {
                 const c_queue = state.queue;
+                const chunk_limit = state.chunk_size;
                 const is_reliable = state.ident !== null;
+                const filt_len = filtered.length;
 
-                c_queue.push( filtered );
-                state.queue_count += filtered.length;
+                state.queue_count += filt_len;
 
                 // removed oldest queue chunks on reach of limit
                 while ( state.queue_count > QUEUE_MAX )
@@ -318,6 +319,21 @@ class PushService extends PollService
                         stats.skip_on_live++;
                         state.seq_id++; // indicate skip
                     }
+                }
+
+                // Add new chunk, splitting, if needed
+                if ( filt_len > chunk_limit )
+                {
+                    for ( let s = 0; s < filt_len; )
+                    {
+                        const clen = Math.min( filt_len - s, chunk_limit );
+                        c_queue.push( filtered.slice( s, s + clen ) );
+                        s += clen;
+                    }
+                }
+                else
+                {
+                    c_queue.push( filtered );
                 }
 
                 if ( is_reliable )
@@ -372,9 +388,9 @@ class PushService extends PollService
                 },
                 ( as, err ) =>
                 {
-                    this._onPushError( as, err );
                     state.req_count--;
                     stats.live_fails++;
+                    this._onPushError( as, err );
                 }
             ).execute();
 

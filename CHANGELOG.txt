@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: PushService to split chunks, if their size is greater then per-receiver max
+
 === 1.2.0 (2018-06-06) ===
 CHANGED: to use performance-enhanced futoin-asyncsteps v2
 
