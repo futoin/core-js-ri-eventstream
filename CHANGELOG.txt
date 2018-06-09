@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.2.1 (2018-06-09) ===
 CHANGED: upgraded to support futoin-asyncsteps burst-execute in tests
 FIXED: PushService to split chunks, if their size is greater then per-receiver max
 FIXED: PushService not to send duplicates in rare cases
