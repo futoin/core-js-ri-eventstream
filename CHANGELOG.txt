@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.2.2 (2018-06-13) ===
 NEW: futoin-invoker & futoin-executor v2 support
 
 === 1.2.1 (2018-06-09) ===
