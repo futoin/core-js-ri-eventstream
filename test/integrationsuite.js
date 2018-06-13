@@ -376,9 +376,12 @@ module.exports = function( describe, it, vars )
                     const db = ccm.db( 'evt' );
                     let first = true;
 
-                    db.newXfer = function()
+                    const proto = db.constructor.prototype;
+                    const orig_newXfer = proto.newXfer;
+
+                    proto.newXfer = function()
                     {
-                        const xfer = this.constructor.prototype.newXfer.apply( this, arguments );
+                        const xfer = orig_newXfer.apply( this, arguments );
 
                         if ( first )
                         {
@@ -386,7 +389,7 @@ module.exports = function( describe, it, vars )
                             return xfer;
                         }
 
-                        delete db.newXfer;
+                        proto.newXfer = orig_newXfer;
                         xfer.execute = function( as )
                         {
                             ccm.iface( 'evtgen' ).addEvent( as, 'EVT_MIDDLE', 'dt' );
@@ -1053,15 +1056,24 @@ module.exports = function( describe, it, vars )
                         }
                     } );
 
+                    // give chance receiver to setup
+                    let ready_as = true;
+                    receiver.once( 'ready', () =>
+                    {
+                        ready_as && ready_as.success();
+                        ready_as = false;
+                    } );
                     receiver.start( executor, null, { want: [ 'RER_EVT' ] } );
 
                     expect( () => receiver.start( executor ) ).to.throw( 'Already started!' );
 
                     as.add( ( as ) =>
                     {
-                        // give chance receiver to setup
-                        as.waitExternal();
-                        receiver.once( 'ready', () => as.success() );
+                        if ( ready_as )
+                        {
+                            ready_as = as;
+                            as.waitExternal();
+                        }
                     } );
 
                     const ITERATIONS = 1234;

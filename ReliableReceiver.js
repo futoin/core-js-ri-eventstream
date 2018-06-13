@@ -149,10 +149,10 @@ class ReliableReceiver
                 } );
                 as.add( ( as ) =>
                 {
+                    this.emit( 'ready' );
+
                     if ( wait_as )
                     {
-                        this.emit( 'ready' );
-
                         wait_as = as;
                         as.waitExternal();
                     }
