@@ -8,9 +8,8 @@ const $asyncevent = require( 'futoin-asyncevent' );
 
 const main = require( '../main' );
 const Executor = require( 'futoin-executor/Executor' );
-const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
+const { AdvancedCCM, SpecTools } = require( 'futoin-invoker' );
 const $as = require( 'futoin-asyncsteps' );
-const SpecTools = require( 'futoin-invoker/SpecTools' );
 const { cmpIds } = require( '../common' );
 
 const ReceiverFace = require( '../ReceiverFace' );

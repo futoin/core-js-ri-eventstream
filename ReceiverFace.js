@@ -21,7 +21,7 @@
 
 const _defaults = require( 'lodash/defaults' );
 const path = require( 'path' );
-const NativeIface = require( 'futoin-invoker/NativeIface' );
+const { NativeIface } = require( 'futoin-invoker' );
 const { FTN18_VERSION } = require( './common' );
 
 

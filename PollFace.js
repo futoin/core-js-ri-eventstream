@@ -21,7 +21,7 @@
 
 const _defaults = require( 'lodash/defaults' );
 const path = require( 'path' );
-const PingFace = require( 'futoin-invoker/PingFace' );
+const { PingFace } = require( 'futoin-invoker' );
 const { FTN18_VERSION, PING_VERSION } = require( './common' );
 
 

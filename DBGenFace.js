@@ -20,7 +20,7 @@
  */
 
 const GenFace = require( './GenFace' );
-const SpecTools = require( 'futoin-invoker/SpecTools' );
+const { SpecTools } = require( 'futoin-invoker' );
 const { DB_EVTTABLE } = require( './common' );
 
 /**
@@ -48,7 +48,7 @@ class DBGenFace extends GenFace
      */
     addXferEvent( xb, type, data, table=DB_EVTTABLE )
     {
-        const check = SpecTools.checkType( this._raw_info, 'EventType', type );
+        const check = SpecTools.checkCompiledType( null, this._raw_info, 'EventType', type );
 
         if ( !check )
         {

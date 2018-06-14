@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
-const Executor = require( 'futoin-executor/Executor' );
+const { AdvancedCCM } = require( 'futoin-invoker' );
+const { Executor } = require( 'futoin-executor' );
 const DBAutoConfig = require( 'futoin-database/AutoConfig' );
 
 const DBGenFace = require( './DBGenFace' );

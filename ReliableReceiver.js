@@ -20,8 +20,8 @@
  */
 
 const $as = require( 'futoin-asyncsteps' );
-const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
-const Executor = require( 'futoin-executor/Executor' );
+const { AdvancedCCM } = require( 'futoin-invoker' );
+const { Executor } = require( 'futoin-executor' );
 const $asyncevent = require( 'futoin-asyncevent' );
 
 const PushFace = require( './PushFace' );
@@ -44,15 +44,17 @@ class ReliableReceiver
      */
     constructor( executor_ccm )
     {
-        this._executor_ccm = executor_ccm || new AdvancedCCM();
-        this._worker_as = null;
-
         $asyncevent( this, [
             'receiverError',
             'workerError',
             'newEvents',
             'ready',
         ] );
+        
+        this._executor_ccm = executor_ccm || new AdvancedCCM();
+        this._worker_as = null;
+
+        executor_ccm.once( 'close', () => this.stop() );
     }
 
     /**
@@ -80,7 +82,6 @@ class ReliableReceiver
         } = options;
 
         const executor_ccm = this._executor_ccm;
-        executor_ccm.once( 'close', () => this.stop() );
 
         const was = $as();
         this._worker_as = was;
@@ -95,12 +96,6 @@ class ReliableReceiver
                 //---
                 const ccm = new AdvancedCCM();
                 ccm.once( 'close', () => executor.close() );
-
-                executor_ccm.once( 'close', () =>
-                {
-                    ccm.close();
-                    executor.close();
-                } );
 
                 //---
                 as.setCancel( ( as ) =>

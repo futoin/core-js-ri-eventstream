@@ -4,7 +4,7 @@ require( './prepare' );
 
 const child_process = require( 'child_process' );
 const $as = require( 'futoin-asyncsteps' );
-const AdvancedCCM = require( 'futoin-invoker/AdvancedCCM' );
+const { AdvancedCCM } = require( 'futoin-invoker' );
 const DBAutoConfig = require( 'futoin-database/AutoConfig' );
 const integration_suite = require( './integrationsuite' );
 const fs = require( 'fs' );
