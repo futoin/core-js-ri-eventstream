@@ -1102,12 +1102,12 @@ module.exports = function( describe, it, vars )
 
                     as.loop( ( as ) =>
                     {
-                        if ( receiver.count === ITERATIONS &&
-                             receiver.on_count === ITERATIONS
+                        if ( ( receiver.count === ITERATIONS ) &&
+                             ( receiver.on_count === ITERATIONS ) &&
+                             ( live_receiver1.on_count === ( ITERATIONS * 2 ) ) &&
+                             ( live_receiver2.on_count === ITERATIONS )
                         )
                         {
-                            expect( live_receiver1.on_count ).to.equal( ITERATIONS * 2 );
-                            expect( live_receiver2.on_count ).to.equal( ITERATIONS );
                             as.break();
                         }
 
