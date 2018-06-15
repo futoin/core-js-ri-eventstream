@@ -15,6 +15,7 @@ const DBEventArchiver = require( '../DBEventArchiver' );
 const DBServiceApp = require( '../DBServiceApp' );
 const ReceiverFace = require( '../ReceiverFace' );
 const ReliableReceiver = require( '../ReliableReceiver' );
+const LiveReceiver = require( '../LiveReceiver' );
 const main = require( '../main' );
 
 const receiver_face = `futoin.evt.receiver:${ReceiverFace.LATEST_VERSION}`;
@@ -1027,6 +1028,18 @@ module.exports = function( describe, it, vars )
             as.add(
                 ( as ) =>
                 {
+                    const LiveClass = class extends LiveReceiver
+                    {
+                        constructor()
+                        {
+                            super( ccm );
+                            this.on_count = 0;
+                            this.on( 'newEvents', ( events ) => this.on_count += events.length );
+                        }
+                    };
+                    const live_receiver1 = new LiveClass;
+                    const live_receiver2 = new LiveClass;
+
                     const receiver = new class extends ReliableReceiver
                     {
                         constructor()
@@ -1063,6 +1076,8 @@ module.exports = function( describe, it, vars )
                         ready_as && ready_as.success();
                         ready_as = false;
                     } );
+                    live_receiver1.start( executor );
+                    live_receiver2.start( executor, null, { want: [ 'RER_EVT' ] } );
                     receiver.start( executor, null, { want: [ 'RER_EVT' ] } );
 
                     expect( () => receiver.start( executor ) ).to.throw( 'Already started!' );
@@ -1091,6 +1106,8 @@ module.exports = function( describe, it, vars )
                              receiver.on_count === ITERATIONS
                         )
                         {
+                            expect( live_receiver1.on_count ).to.equal( ITERATIONS * 2 );
+                            expect( live_receiver2.on_count ).to.equal( ITERATIONS );
                             as.break();
                         }
 

@@ -19,166 +19,14 @@
  * limitations under the License.
  */
 
-const $as = require( 'futoin-asyncsteps' );
-const { AdvancedCCM } = require( 'futoin-invoker' );
-const { Executor } = require( 'futoin-executor' );
-const $asyncevent = require( 'futoin-asyncevent' );
-
-const PushFace = require( './PushFace' );
+const LiveReceiver = require( './LiveReceiver' );
 const ReliableReceiverService = require( './ReliableReceiverService' );
 
 /**
  * Reliable Event Receiver helper to minimize boilerplate code in projects.
  */
-class ReliableReceiver
+class ReliableReceiver extends LiveReceiver
 {
-    static get COMPONENT()
-    {
-        return 'LIVE';
-    }
-
-    /**
-     * Initialize event archiver.
-     *
-     * @param {AdvancedCCM} executor_ccm - CCM for executor
-     */
-    constructor( executor_ccm )
-    {
-        $asyncevent( this, [
-            'receiverError',
-            'workerError',
-            'newEvents',
-            'ready',
-        ] );
-        
-        this._executor_ccm = executor_ccm || new AdvancedCCM();
-        this._worker_as = null;
-
-        executor_ccm.once( 'close', () => this.stop() );
-    }
-
-    /**
-     * Start receiving events for archiving
-     *
-     * @param {*} endpoint - see PushFace
-     * @param {*} [credentials=null] - see PushFace
-     * @param {*} [options={}] - see PushFace
-     * @param {string} [options.component] - component name
-     * @param {array} [options.want] - "want" parameter for event filtering
-     *
-     * @note options.executor is overridden
-     */
-    start( endpoint, credentials=null, options={} )
-    {
-        if ( this._worker_as )
-        {
-            throw new Error( 'Already started!' );
-        }
-
-        options = Object.assign( {}, options );
-        const {
-            component = this.constructor.COMPONENT,
-            want = null,
-        } = options;
-
-        const executor_ccm = this._executor_ccm;
-
-        const was = $as();
-        this._worker_as = was;
-        was.loop( ( as ) => as.add(
-            ( as ) =>
-            {
-                //---
-                const executor = new Executor( executor_ccm );
-                executor.on( 'notExpected', ( ...args ) => this.emit( 'receiverError', ...args ) );
-                options.executor = executor;
-
-                //---
-                const ccm = new AdvancedCCM();
-                ccm.once( 'close', () => executor.close() );
-
-                //---
-                as.setCancel( ( as ) =>
-                {
-                    ccm.close();
-                    executor.close();
-                } );
-
-                //---
-                this._registerReceiver( as, executor, options );
-
-                PushFace.register(
-                    as, ccm, 'pusher',
-                    endpoint, credentials, options );
-
-                //---
-                let wait_as = true;
-
-                as.add( ( as ) =>
-                {
-                    const pusher = ccm.iface( 'pusher' );
-
-                    pusher.once( 'disconnect', () =>
-                    {
-                        this.emit( 'workerError', 'Disconnect', 'Lost connection' );
-
-                        if ( wait_as === true )
-                        {
-                            wait_as = false;
-                        }
-                        else if ( wait_as.state )
-                        {
-                            wait_as.success();
-                        }
-
-                        ccm.close();
-                        executor.close();
-                    } );
-
-                    if ( component !== 'LIVE' )
-                    {
-                        pusher.registerConsumer( as, component );
-                    }
-
-                    pusher.readyToReceive( as, component, want );
-                } );
-                as.add( ( as ) =>
-                {
-                    this.emit( 'ready' );
-
-                    if ( wait_as )
-                    {
-                        wait_as = as;
-                        as.waitExternal();
-                    }
-                } );
-            },
-            ( as, err ) =>
-            {
-                this._onWorkerError( as, err );
-                as.success();
-            }
-        ) );
-        was.execute();
-    }
-
-    /**
-     * Stop receiving events
-     */
-    stop()
-    {
-        if ( this._worker_as )
-        {
-            this._worker_as.cancel();
-            this._worker_as = null;
-        }
-    }
-
-    _onWorkerError( as, err )
-    {
-        this.emit( 'workerError', err, as.state.error_info, as.state.last_exception );
-    }
-
     /**
      * Override to register custom instance of ReliableReceiverService.
      *
@@ -201,36 +49,7 @@ class ReliableReceiver
 
         return svc_class.register( as, executor, options );
     }
-
-    /**
-     * Override to catch new events here instead of using `newEvents` event handler.
-     * @param {AsyncSteps} as - async steps interface
-     * @param {array} events - array of events
-     */
-    _onEvents( as, events )
-    {
-        this.emit( 'newEvents', events );
-    }
 }
 
 module.exports = ReliableReceiver;
 
-/**
- * Emitted on not expected receiver errors
- * @event ReliableReceiver#receiverError
- */
-
-/**
- * Emitted on worker errors
- * @event ReliableReceiver#workerError
- */
-
-/**
- * Emitted on new events
- * @event ReliableReceiver#newEvents
- */
-
-/**
- * Emitted after event receiver is ready
- * @event ReliableReceiver#ready
- */

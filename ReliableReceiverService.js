@@ -19,37 +19,21 @@
  * limitations under the License.
  */
 
-const PushFace = require( './PushFace' );
-const main = require( './main' );
+const ReceiverService = require( './ReceiverService' );
 
 const NEXT_SEQ_ID = Symbol( 'NEXT_SEQ_ID' );
 const OUT_OF_ORDER = Symbol( 'OUT_OF_ORDER' );
 
 /**
- * Base implementation for reliable receiver side
+ * Base implementation for reliable receiver side.
+ *
+ * @note Unlike ReceiverService, it restores proper order of events.
  */
-class ReliableReceiverService
+class ReliableReceiverService extends ReceiverService
 {
-    /**
-     * Register futoin.evt.receiver interface with Executor
-     * @param {AsyncSteps} as - steps interface
-     * @param {Executor} executor - executor instance
-     * @param {object} options - implementation defined options
-     * @returns {PushService} instance
-     */
-    static register( as, executor, options={} )
+    constructor( executor, options )
     {
-        const ifacever = 'futoin.evt.receiver:' + PushFace.LATEST_VERSION;
-        const impl = new this( executor, options );
-        const spec_dirs = main.specDirs;
-
-        executor.register( as, ifacever, impl, spec_dirs );
-
-        return impl;
-    }
-
-    constructor( executor, _options )
-    {
+        super( executor, options );
         this._reset( executor );
     }
 
@@ -106,11 +90,6 @@ class ReliableReceiverService
 
             reqinfo.result( true );
         } );
-    }
-
-    _onEvents( as, _reqinfo, _events )
-    {
-        as.error( 'NotImplemented' );
     }
 }
 

@@ -2,6 +2,7 @@
 === (next) ===
 CHANGED: MySQL to use utf8mb4 instead of fake utf8 for event data
 CHANGED: upgrade to futoin-invoker & futoin-executore v2.1
+NEW: LiveReceiver & ReceiverService with unordered delivery
 
 === 1.2.2 (2018-06-13) ===
 NEW: futoin-invoker & futoin-executor v2 support

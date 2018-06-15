@@ -284,6 +284,9 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dt><a href="#GenService">GenService</a></dt>
 <dd><p>Event Stream - Generator Service Base</p>
 </dd>
+<dt><a href="#LiveReceiver">LiveReceiver</a></dt>
+<dd><p>Reliable Event Receiver helper to minimize boilerplate code in projects.</p>
+</dd>
 <dt><a href="#PollFace">PollFace</a></dt>
 <dd><p>Event Stream - Poll Face</p>
 </dd>
@@ -299,11 +302,14 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dt><a href="#ReceiverFace">ReceiverFace</a></dt>
 <dd><p>Event Stream - Receiver Face</p>
 </dd>
+<dt><a href="#ReceiverService">ReceiverService</a></dt>
+<dd><p>Base implementation for receiver side</p>
+</dd>
 <dt><a href="#ReliableReceiver">ReliableReceiver</a></dt>
 <dd><p>Reliable Event Receiver helper to minimize boilerplate code in projects.</p>
 </dd>
 <dt><a href="#ReliableReceiverService">ReliableReceiverService</a></dt>
-<dd><p>Base implementation for reliable receiver side</p>
+<dd><p>Base implementation for reliable receiver side.</p>
 </dd>
 </dl>
 
@@ -593,6 +599,106 @@ Register futoin.evt.gen interface with Executor
 | executor | <code>Executor</code> | executor instance |
 | options | <code>object</code> | implementation defined options |
 
+<a name="LiveReceiver"></a>
+
+## LiveReceiver
+Reliable Event Receiver helper to minimize boilerplate code in projects.
+
+**Kind**: global class  
+
+* [LiveReceiver](#LiveReceiver)
+    * [new LiveReceiver(executor_ccm)](#new_LiveReceiver_new)
+    * [.start(endpoint, [credentials], [options])](#LiveReceiver+start)
+    * [.stop()](#LiveReceiver+stop)
+    * [._registerReceiver(as, executor, options)](#LiveReceiver+_registerReceiver) ⇒ [<code>ReceiverService</code>](#ReceiverService)
+    * [._onEvents(as, events)](#LiveReceiver+_onEvents)
+    * ["receiverError"](#LiveReceiver+event_receiverError)
+    * ["workerError"](#LiveReceiver+event_workerError)
+    * ["newEvents"](#LiveReceiver+event_newEvents)
+    * ["ready"](#LiveReceiver+event_ready)
+
+<a name="new_LiveReceiver_new"></a>
+
+### new LiveReceiver(executor_ccm)
+Initialize event archiver.
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| executor_ccm | <code>AdvancedCCM</code> | CCM for executor |
+
+<a name="LiveReceiver+start"></a>
+
+### liveReceiver.start(endpoint, [credentials], [options])
+Start receiving events for archiving
+
+**Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
+**Note**: options.executor is overridden  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| endpoint | <code>\*</code> |  | see PushFace |
+| [credentials] | <code>\*</code> | <code></code> | see PushFace |
+| [options] | <code>\*</code> | <code>{}</code> | see PushFace |
+| [options.component] | <code>string</code> |  | component name |
+| [options.want] | <code>array</code> |  | "want" parameter for event filtering |
+
+<a name="LiveReceiver+stop"></a>
+
+### liveReceiver.stop()
+Stop receiving events
+
+**Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
+<a name="LiveReceiver+_registerReceiver"></a>
+
+### liveReceiver._registerReceiver(as, executor, options) ⇒ [<code>ReceiverService</code>](#ReceiverService)
+Override to register custom instance of ReceiverService.
+
+**Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
+**Returns**: [<code>ReceiverService</code>](#ReceiverService) - instance of service  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | async steps interface |
+| executor | <code>Executor</code> | Internal Executor instance |
+| options | <code>object</code> | passed options |
+
+<a name="LiveReceiver+_onEvents"></a>
+
+### liveReceiver._onEvents(as, events)
+Override to catch new events here instead of using `newEvents` event handler.
+
+**Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | async steps interface |
+| events | <code>array</code> | array of events |
+
+<a name="LiveReceiver+event_receiverError"></a>
+
+### "receiverError"
+Emitted on not expected receiver errors
+
+**Kind**: event emitted by [<code>LiveReceiver</code>](#LiveReceiver)  
+<a name="LiveReceiver+event_workerError"></a>
+
+### "workerError"
+Emitted on worker errors
+
+**Kind**: event emitted by [<code>LiveReceiver</code>](#LiveReceiver)  
+<a name="LiveReceiver+event_newEvents"></a>
+
+### "newEvents"
+Emitted on new events
+
+**Kind**: event emitted by [<code>LiveReceiver</code>](#LiveReceiver)  
+<a name="LiveReceiver+event_ready"></a>
+
+### "ready"
+Emitted after event receiver is ready
+
+**Kind**: event emitted by [<code>LiveReceiver</code>](#LiveReceiver)  
 <a name="PollFace"></a>
 
 ## PollFace
@@ -756,6 +862,46 @@ CCM registration helper
 | [options] | <code>object</code> | <code>{}</code> | interface options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
 
+<a name="ReceiverService"></a>
+
+## ReceiverService
+Base implementation for receiver side
+
+**Kind**: global class  
+
+* [ReceiverService](#ReceiverService)
+    * _instance_
+        * [._onEvents(as, reqinfo, events)](#ReceiverService+_onEvents)
+    * _static_
+        * [.register(as, executor, options)](#ReceiverService.register) ⇒ [<code>PushService</code>](#PushService)
+
+<a name="ReceiverService+_onEvents"></a>
+
+### receiverService._onEvents(as, reqinfo, events)
+Member to override to handle vents.
+
+**Kind**: instance method of [<code>ReceiverService</code>](#ReceiverService)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | AsyncSteps interface |
+| reqinfo | <code>RequestInfo</code> | request info object |
+| events | <code>array</code> | list of events |
+
+<a name="ReceiverService.register"></a>
+
+### ReceiverService.register(as, executor, options) ⇒ [<code>PushService</code>](#PushService)
+Register futoin.evt.receiver interface with Executor
+
+**Kind**: static method of [<code>ReceiverService</code>](#ReceiverService)  
+**Returns**: [<code>PushService</code>](#PushService) - instance  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | steps interface |
+| executor | <code>Executor</code> | executor instance |
+| options | <code>object</code> | implementation defined options |
+
 <a name="ReliableReceiver"></a>
 
 ## ReliableReceiver
@@ -764,49 +910,9 @@ Reliable Event Receiver helper to minimize boilerplate code in projects.
 **Kind**: global class  
 
 * [ReliableReceiver](#ReliableReceiver)
-    * [new ReliableReceiver(executor_ccm)](#new_ReliableReceiver_new)
-    * [.start(endpoint, [credentials], [options])](#ReliableReceiver+start)
-    * [.stop()](#ReliableReceiver+stop)
     * [._registerReceiver(as, executor, options)](#ReliableReceiver+_registerReceiver) ⇒ [<code>ReliableReceiverService</code>](#ReliableReceiverService)
-    * [._onEvents(as, events)](#ReliableReceiver+_onEvents)
     * ["processedEvents"](#ReliableReceiver+event_processedEvents)
-    * ["receiverError"](#ReliableReceiver+event_receiverError)
-    * ["workerError"](#ReliableReceiver+event_workerError)
-    * ["newEvents"](#ReliableReceiver+event_newEvents)
-    * ["ready"](#ReliableReceiver+event_ready)
 
-<a name="new_ReliableReceiver_new"></a>
-
-### new ReliableReceiver(executor_ccm)
-Initialize event archiver.
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| executor_ccm | <code>AdvancedCCM</code> | CCM for executor |
-
-<a name="ReliableReceiver+start"></a>
-
-### reliableReceiver.start(endpoint, [credentials], [options])
-Start receiving events for archiving
-
-**Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
-**Note**: options.executor is overridden  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| endpoint | <code>\*</code> |  | see PushFace |
-| [credentials] | <code>\*</code> | <code></code> | see PushFace |
-| [options] | <code>\*</code> | <code>{}</code> | see PushFace |
-| [options.component] | <code>string</code> |  | component name |
-| [options.want] | <code>array</code> |  | "want" parameter for event filtering |
-
-<a name="ReliableReceiver+stop"></a>
-
-### reliableReceiver.stop()
-Stop receiving events
-
-**Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
 <a name="ReliableReceiver+_registerReceiver"></a>
 
 ### reliableReceiver._registerReceiver(as, executor, options) ⇒ [<code>ReliableReceiverService</code>](#ReliableReceiverService)
@@ -821,68 +927,19 @@ Override to register custom instance of ReliableReceiverService.
 | executor | <code>Executor</code> | Internal Executor instance |
 | options | <code>object</code> | passed options |
 
-<a name="ReliableReceiver+_onEvents"></a>
-
-### reliableReceiver._onEvents(as, events)
-Override to catch new events here instead of using `newEvents` event handler.
-
-**Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | async steps interface |
-| events | <code>array</code> | array of events |
-
 <a name="ReliableReceiver+event_processedEvents"></a>
 
 ### "processedEvents"
 Emitted for count of archived events in each iteration.
 
 **Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
-<a name="ReliableReceiver+event_receiverError"></a>
-
-### "receiverError"
-Emitted on not expected receiver errors
-
-**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
-<a name="ReliableReceiver+event_workerError"></a>
-
-### "workerError"
-Emitted on worker errors
-
-**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
-<a name="ReliableReceiver+event_newEvents"></a>
-
-### "newEvents"
-Emitted on new events
-
-**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
-<a name="ReliableReceiver+event_ready"></a>
-
-### "ready"
-Emitted after event receiver is ready
-
-**Kind**: event emitted by [<code>ReliableReceiver</code>](#ReliableReceiver)  
 <a name="ReliableReceiverService"></a>
 
 ## ReliableReceiverService
-Base implementation for reliable receiver side
+Base implementation for reliable receiver side.
 
 **Kind**: global class  
-<a name="ReliableReceiverService.register"></a>
-
-### ReliableReceiverService.register(as, executor, options) ⇒ [<code>PushService</code>](#PushService)
-Register futoin.evt.receiver interface with Executor
-
-**Kind**: static method of [<code>ReliableReceiverService</code>](#ReliableReceiverService)  
-**Returns**: [<code>PushService</code>](#PushService) - instance  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | steps interface |
-| executor | <code>Executor</code> | executor instance |
-| options | <code>object</code> | implementation defined options |
-
+**Note**: Unlike ReceiverService, it restores proper order of events.  
 
 
 *documented by [jsdoc-to-markdown](https://github.com/75lb/jsdoc-to-markdown)*.
