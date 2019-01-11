@@ -1,6 +1,6 @@
 {
   "name": "futoin-eventstream",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Neutral event stream interface",
   "main": "main.js",
   "files": [
