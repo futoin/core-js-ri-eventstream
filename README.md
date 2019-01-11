@@ -398,7 +398,7 @@ The only difference to original GenFace is native DB-specific API.
 
 <a name="DBGenFace+DB_EVENT_TABLE"></a>
 
-### dbGenFace.DB_EVENT_TABLE ⇒ <code>string</code>
+### dbGenFace.DB\_EVENT\_TABLE ⇒ <code>string</code>
 Easy access to DB event table name
 
 **Kind**: instance property of [<code>DBGenFace</code>](#DBGenFace)  
@@ -552,13 +552,13 @@ Event Stream - Generator Face
 
 <a name="GenFace.LATEST_VERSION"></a>
 
-### GenFace.LATEST_VERSION
+### GenFace.LATEST\_VERSION
 Latest supported FTN17 version
 
 **Kind**: static property of [<code>GenFace</code>](#GenFace)  
 <a name="GenFace.PING_VERSION"></a>
 
-### GenFace.PING_VERSION
+### GenFace.PING\_VERSION
 Latest supported FTN4 version
 
 **Kind**: static property of [<code>GenFace</code>](#GenFace)  
@@ -651,7 +651,7 @@ Stop receiving events
 **Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
 <a name="LiveReceiver+_registerReceiver"></a>
 
-### liveReceiver._registerReceiver(as, executor, options) ⇒ [<code>ReceiverService</code>](#ReceiverService)
+### liveReceiver.\_registerReceiver(as, executor, options) ⇒ [<code>ReceiverService</code>](#ReceiverService)
 Override to register custom instance of ReceiverService.
 
 **Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
@@ -665,7 +665,7 @@ Override to register custom instance of ReceiverService.
 
 <a name="LiveReceiver+_onEvents"></a>
 
-### liveReceiver._onEvents(as, events)
+### liveReceiver.\_onEvents(as, events)
 Override to catch new events here instead of using `newEvents` event handler.
 
 **Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
@@ -713,13 +713,13 @@ Event Stream - Poll Face
 
 <a name="PollFace.LATEST_VERSION"></a>
 
-### PollFace.LATEST_VERSION
+### PollFace.LATEST\_VERSION
 Latest supported FTN17 version
 
 **Kind**: static property of [<code>PollFace</code>](#PollFace)  
 <a name="PollFace.PING_VERSION"></a>
 
-### PollFace.PING_VERSION
+### PollFace.PING\_VERSION
 Latest supported FTN4 version
 
 **Kind**: static property of [<code>PollFace</code>](#PollFace)  
@@ -843,7 +843,7 @@ Event Stream - Receiver Face
 
 <a name="ReceiverFace.LATEST_VERSION"></a>
 
-### ReceiverFace.LATEST_VERSION
+### ReceiverFace.LATEST\_VERSION
 Latest supported FTN17 version
 
 **Kind**: static property of [<code>ReceiverFace</code>](#ReceiverFace)  
@@ -877,7 +877,7 @@ Base implementation for receiver side
 
 <a name="ReceiverService+_onEvents"></a>
 
-### receiverService._onEvents(as, reqinfo, events)
+### receiverService.\_onEvents(as, reqinfo, events)
 Member to override to handle vents.
 
 **Kind**: instance method of [<code>ReceiverService</code>](#ReceiverService)  
@@ -915,7 +915,7 @@ Reliable Event Receiver helper to minimize boilerplate code in projects.
 
 <a name="ReliableReceiver+_registerReceiver"></a>
 
-### reliableReceiver._registerReceiver(as, executor, options) ⇒ [<code>ReliableReceiverService</code>](#ReliableReceiverService)
+### reliableReceiver.\_registerReceiver(as, executor, options) ⇒ [<code>ReliableReceiverService</code>](#ReliableReceiverService)
 Override to register custom instance of ReliableReceiverService.
 
 **Kind**: instance method of [<code>ReliableReceiver</code>](#ReliableReceiver)  
