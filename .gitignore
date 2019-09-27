@@ -5,3 +5,4 @@ dist/
 .vagrant
 *.tgz
 test/*.db
+.nyc_output
