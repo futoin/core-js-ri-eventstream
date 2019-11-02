@@ -103,7 +103,7 @@
   resolved "https://registry.yarnpkg.com/@futoin/jsbn/-/jsbn-1.1.1.tgz#c74cfc8b4a667f2d670b0b9238db0083109a8545"
   integrity sha512-HG65/jlfLOygdqSW0NJpqxzqg6Z3O9WQ9V45SxWw6nYqrGRtcHOzl8mofk+2SPJ19HXYUuoGK3MbJZTDlTlOEQ==
 
-"@futoin/specs@>=2019.1102.4":
+"@futoin/specs@>=2019.1102.4", "@futoin/specs@^2019.1102.4":
   version "2019.1102.4"
   resolved "https://registry.yarnpkg.com/@futoin/specs/-/specs-2019.1102.4.tgz#b13685ece194b95f14cd8eaaf9ce7d9d6d5bdcc2"
   integrity sha512-R0XsNZTYE0Io95/xwFCegncmA05brNm4hqm820Kcu0x2to6HmXyl4ZJQdOLfJ0ywFXTLpJkM3emqsDvNrQN3pg==

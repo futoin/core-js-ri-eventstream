@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-const path = require( 'path' );
+const { SPEC_DIRS } = require( '@futoin/specs' );
 
 module.exports = {
-    specDirs : [ path.resolve( __dirname, 'specs' ) ],
+    specDirs : SPEC_DIRS,
     GEN_FACE : '#evtgen',
     POLL_FACE : '#evtpoll',
     PUSH_FACE : '#evtpush',

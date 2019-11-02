@@ -57,6 +57,7 @@
     "moment": "^2.24.0"
   },
   "dependencies": {
+    "@futoin/specs": "^2019.1102.4",
     "futoin-asyncevent": "^2.3.2"
   },
   "peerDependencies": {

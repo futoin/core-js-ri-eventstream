@@ -20,7 +20,8 @@
  */
 
 const _defaults = require( 'lodash/defaults' );
-const path = require( 'path' );
+
+const { SPEC_DIRS } = require( '@futoin/specs' );
 const { NativeIface } = require( 'futoin-invoker' );
 const { FTN18_VERSION } = require( './common' );
 
@@ -55,7 +56,7 @@ class ReceiverFace extends NativeIface
 
         _defaults( options, {
             nativeImpl: this,
-            specDirs: [ path.resolve( __dirname, 'specs' ) ],
+            specDirs: SPEC_DIRS,
             sendOnBehalfOf: false,
         } );
 

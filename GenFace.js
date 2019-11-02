@@ -20,7 +20,8 @@
  */
 
 const _defaults = require( 'lodash/defaults' );
-const path = require( 'path' );
+
+const { SPEC_DIRS } = require( '@futoin/specs' );
 const { PingFace } = require( 'futoin-invoker' );
 const { FTN18_VERSION, PING_VERSION } = require( './common' );
 
@@ -79,10 +80,7 @@ class GenFace extends PingFace
 
     static spec()
     {
-        return [
-            path.resolve( __dirname, 'specs' ),
-            PingFace.spec( this.PING_VERSION ),
-        ];
+        return SPEC_DIRS;
     }
 }
 
