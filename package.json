@@ -43,22 +43,22 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^6.6.0",
+    "eslint": "^6.8.0",
     "futoin-asyncsteps": "^2.4.3",
-    "futoin-database": "^1.9.5",
+    "futoin-database": "^1.9.7",
     "futoin-executor": "^2.3.2",
     "futoin-invoker": "^2.4.1",
     "grunt": "^1.0.4",
     "grunt-eslint": "^22.0.0",
     "grunt-jsdoc-to-markdown": "^5.0.0",
-    "grunt-simple-nyc": "^3.0.0",
+    "grunt-simple-nyc": "^3.0.1",
     "grunt-text-replace": "^0.4.0",
-    "mocha": "^6.2.2",
+    "mocha": "^7.0.0",
     "moment": "^2.24.0"
   },
   "dependencies": {
-    "@futoin/specs": ">=2019.1102.4",
-    "futoin-asyncevent": "^2.3.2"
+    "@futoin/specs": ">=2019.1104.0",
+    "futoin-asyncevent": "^2.3.3"
   },
   "peerDependencies": {
     "futoin-asyncsteps": "^2.3.1",
