@@ -42,23 +42,23 @@
     "email": "support@futoin.org"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "eslint": "^7.19.0",
-    "futoin-asyncsteps": "^2.5.2",
-    "futoin-database": "^1.9.10",
-    "futoin-executor": "^2.3.5",
-    "futoin-invoker": "^2.4.6",
-    "grunt": "^1.3.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.32.0",
+    "futoin-asyncsteps": "^2.5.3",
+    "futoin-database": "^1.9.11",
+    "futoin-executor": "^2.3.6",
+    "futoin-invoker": "^2.4.8",
+    "grunt": "^1.4.1",
     "grunt-eslint": "^23.0.0",
-    "grunt-jsdoc-to-markdown": "^5.0.0",
+    "grunt-jsdoc-to-markdown": "^6.0.0",
     "grunt-simple-nyc": "^3.0.1",
     "grunt-text-replace": "^0.4.0",
-    "mocha": "^8.2.1",
+    "mocha": "^9.0.3",
     "moment": "^2.29.1"
   },
   "dependencies": {
     "@futoin/specs": ">=2019.1104.0",
-    "futoin-asyncevent": "^2.3.5"
+    "futoin-asyncevent": "^2.3.6"
   },
   "peerDependencies": {
     "futoin-asyncsteps": "^2.3.1",
