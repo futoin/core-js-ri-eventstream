@@ -8,7 +8,7 @@ const { AdvancedCCM } = require( 'futoin-invoker' );
 const DBAutoConfig = require( 'futoin-database/AutoConfig' );
 const integration_suite = require( './integrationsuite' );
 
-const DB_PORT = process.env.MYSQL_PORT || '3307';
+const DB_PORT = process.env.MYSQL_PORT || '3306';
 
 describe( 'MySQL', function()
 {
