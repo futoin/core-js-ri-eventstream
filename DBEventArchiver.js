@@ -29,80 +29,64 @@ const MAX_XFER_EVENTS = 100;
 
 /**
  * Database Event Archiver service.
- *
- * @note No more than one instance should run at once.
+ * No more than one instance should run at once.
  */
-class DBEventArchiver extends ReliableReceiver
-{
-    static get COMPONENT()
-    {
+class DBEventArchiver extends ReliableReceiver {
+    static get COMPONENT() {
         return 'ARCHIVER';
     }
 
     /**
      * C-tor
-     *
      * @param {AdvancedCCM} db_ccm - CCM instance with registered '#db.evtdwh' interface
      */
-    constructor( db_ccm )
-    {
+    constructor( db_ccm ) {
         super( db_ccm );
         $asyncevent( this, [ 'processedEvents' ] );
         db_ccm.assertIface( '#db.evtdwh', DB_IFACEVER );
     }
 
-    _registerReceiver( as, executor, options )
-    {
+    _registerReceiver( as, executor, options ) {
         const archiver = this;
         const SYM_LAST_ID = Symbol( 'LAST_ID' );
         const SYM_HISTORY_TABLE = Symbol( 'SYM_HISTORY_TABLE' );
-        const receiver = class extends ReliableReceiverService
-        {
-            constructor( executor, options )
-            {
+        const receiver = class extends ReliableReceiverService {
+            constructor( executor, options ) {
                 super( executor, options );
                 this[SYM_LAST_ID] = null;
                 this[SYM_HISTORY_TABLE] = options.history_table || DB_EVTHISTORY;
             }
 
-            _onEvents( as, reqinfo, events )
-            {
+            _onEvents( as, reqinfo, events ) {
                 const ccm = reqinfo.executor().ccm();
                 const db = ccm.db( 'evtdwh' );
                 const history_table = this[SYM_HISTORY_TABLE];
 
                 // startup & error recovery
-                if ( !this[SYM_LAST_ID] )
-                {
-                    as.add( ( as ) =>
-                    {
+                if ( !this[SYM_LAST_ID] ) {
+                    as.add( ( as ) => {
                         db.select( history_table )
                             .get( 'last_id', 'MAX(id)' )
                             .execute( as );
-                        as.add( ( as, res ) =>
-                        {
+                        as.add( ( as, res ) => {
                             this[SYM_LAST_ID] = `${res.rows[0][0] || 0}`;
                         } );
                     } );
                 }
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const iter = events[Symbol.iterator]();
                     let last_id = this[SYM_LAST_ID];
                     let c = iter.next();
 
                     // Skip already archived
                     //---
-                    for ( ;; )
-                    {
-                        if ( c.done )
-                        {
+                    for ( ;; ) {
+                        if ( c.done ) {
                             return;
                         }
 
-                        if ( cmpIds( c.value.id, last_id ) > 0 )
-                        {
+                        if ( cmpIds( c.value.id, last_id ) > 0 ) {
                             break;
                         }
 
@@ -111,21 +95,18 @@ class DBEventArchiver extends ReliableReceiver
 
                     // Push to DB
                     //---
-                    as.setCancel( ( as ) =>
-                    {
+                    as.setCancel( ( as ) => {
                         // make sure to re-read Last ID on any error
                         this[SYM_LAST_ID] = null;
                     } );
 
-                    while ( !c.done )
-                    {
+                    while ( !c.done ) {
                         const q = db.insert( history_table );
                         const helpers = q.helpers();
                         let next_last_id = last_id;
                         let j;
 
-                        for ( j = 0; j < MAX_XFER_EVENTS && !c.done; ++j )
-                        {
+                        for ( j = 0; j < MAX_XFER_EVENTS && !c.done; ++j ) {
                             const v = c.value;
 
                             q.set( {
@@ -142,8 +123,7 @@ class DBEventArchiver extends ReliableReceiver
 
                         q.execute( as );
 
-                        as.add( ( as ) =>
-                        {
+                        as.add( ( as ) => {
                             this[SYM_LAST_ID] = next_last_id;
                             archiver.emit( 'processedEvents', j );
                         } );

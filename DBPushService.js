@@ -29,22 +29,19 @@ const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
 /**
  * Database-specific Push Service
  */
-class DBPushService extends PushService
-{
+class DBPushService extends PushService {
     /**
      * Please use DBPushService,register()
-     *
      * @param {AsyncSteps} as - async step interface
      * @param {Executor} executor - related Executor
-     * @param {object} [options={}] - options
-     * @param {string} [options.event_table=default] - events table
-     * @param {string} [options.consumer_table=default] - consumers table
-     * @param {integer} [options.sleep_min=100] - minimal sleep on lack of events
-     * @param {integer} [options.sleep_max=3000] - maximal sleep on lack of events
-     * @param {integer} [options.sleep_step=100] - sleep time increase on lack of events
+     * @param {object} [options] - options
+     * @param {string} [options.event_table] - events table
+     * @param {string} [options.consumer_table] - consumers table
+     * @param {number} [options.sleep_min] - minimal sleep on lack of events
+     * @param {number} [options.sleep_max] - maximal sleep on lack of events
+     * @param {number} [options.sleep_step] - sleep time increase on lack of events
      */
-    constructor( as, executor, options )
-    {
+    constructor( as, executor, options ) {
         super( as, executor, options );
 
         _defaults(
@@ -55,7 +52,7 @@ class DBPushService extends PushService
                 sleep_step: 100,
                 event_table: DB_EVTTABLE,
                 consumer_table: DB_EVTCONSUMERS,
-            }
+            },
         );
 
 
@@ -76,10 +73,8 @@ class DBPushService extends PushService
         this._sleep_prev = 0;
     }
 
-    _close()
-    {
-        if ( this._worker_as )
-        {
+    _close() {
+        if ( this._worker_as ) {
             this._worker_as.cancel();
             this._worker_as = null;
         }
@@ -87,8 +82,7 @@ class DBPushService extends PushService
         super._close();
     }
 
-    _recordLastId( as, ident, last_id )
-    {
+    _recordLastId( as, ident, last_id ) {
         const db = this._ccm.db( 'evt' );
         const qb = db.update( this._consumer_table );
         qb
@@ -103,10 +97,8 @@ class DBPushService extends PushService
             .execute( as );
     }
 
-    _pokeWorker()
-    {
-        if ( this._worker_as )
-        {
+    _pokeWorker() {
+        if ( this._worker_as ) {
             return;
         }
 
@@ -114,37 +106,31 @@ class DBPushService extends PushService
 
         // startup
         was.loop( ( as ) => as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const db = this._ccm.db( 'evt' );
 
                 db.select( this._evt_table )
                     .get( 'last_id', 'MAX(id)' )
                     .execute( as );
 
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     const state = as.state;
                     state.last_id = `${res.rows[0][0] || 0}`;
                     as.break();
                 } );
             },
-            ( as, err ) =>
-            {
-                if ( err !== 'LoopBreak' )
-                {
+            ( as, err ) => {
+                if ( err !== 'LoopBreak' ) {
                     this._onPushError( as, err );
                     as.success();
                 }
-            }
+            },
         ) );
 
         // main loop
         was.loop( ( as ) => as.add(
-            ( as ) =>
-            {
-                if ( !this._echannels.size )
-                {
+            ( as ) => {
+                if ( !this._echannels.size ) {
                     this._worker_as = null;
                     as.break();
                 }
@@ -160,55 +146,43 @@ class DBPushService extends PushService
                     .limit( MAX_EVENTS );
                 xfer.execute( as );
 
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     const events = this._res2events( res[0].rows, db.helpers() );
                     const elen = events.length;
 
-                    if ( elen )
-                    {
+                    if ( elen ) {
                         this._onEvents( events );
                         as.state.last_id = events[events.length - 1].id;
                     }
 
-                    if ( elen >= MAX_EVENTS )
-                    {
+                    if ( elen >= MAX_EVENTS ) {
                         let curr = this._sleep_curr - this._sleep_step;
 
-                        if ( curr < this._sleep_min )
-                        {
+                        if ( curr < this._sleep_min ) {
                             curr = this._sleep_min;
                         }
 
                         this._sleep_curr = curr;
                         this._sleep_prev = 0;
-                    }
-                    else
-                    {
+                    } else {
                         let curr;
 
                         // only if previous sleep was not enough
-                        if ( this._sleep_prev === this._sleep_curr )
-                        {
+                        if ( this._sleep_prev === this._sleep_curr ) {
                             curr = this._sleep_curr + this._sleep_step;
 
-                            if ( curr > this._sleep_max )
-                            {
+                            if ( curr > this._sleep_max ) {
                                 curr = this._sleep_max;
                             }
 
                             this._sleep_curr = curr;
-                        }
-                        else
-                        {
+                        } else {
                             curr = this._sleep_curr;
                         }
 
                         as.waitExternal();
-                        setTimeout( () =>
-                        {
-                            if ( this._worker_as === was )
-                            {
+                        setTimeout( () => {
+                            if ( this._worker_as === was ) {
                                 as.success();
                             }
                         }, curr );
@@ -216,22 +190,19 @@ class DBPushService extends PushService
                     }
                 } );
             },
-            ( as, err ) =>
-            {
-                if ( err !== 'LoopBreak' )
-                {
+            ( as, err ) => {
+                if ( err !== 'LoopBreak' ) {
                     this._onPushError( as, err );
                     as.success();
                 }
-            }
+            },
         ) );
         was.execute();
         this._worker_as = was;
     }
 }
 
-for ( let f of [ '_registerConsumer', '_pollEvents', '_res2events' ] )
-{
+for ( let f of [ '_registerConsumer', '_pollEvents', '_res2events' ] ) {
     DBPushService.prototype[f] = DBPollService.prototype[f];
 }
 

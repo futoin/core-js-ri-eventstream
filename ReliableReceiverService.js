@@ -26,37 +26,29 @@ const OUT_OF_ORDER = Symbol( 'OUT_OF_ORDER' );
 
 /**
  * Base implementation for reliable receiver side.
- *
- * @note Unlike ReceiverService, it restores proper order of events.
+ * Unlike ReceiverService, it restores proper order of events.
  */
-class ReliableReceiverService extends ReceiverService
-{
-    constructor( executor, options )
-    {
+class ReliableReceiverService extends ReceiverService {
+    constructor( executor, options ) {
         super( executor, options );
         this._reset( executor );
     }
 
-    _reset( executor )
-    {
+    _reset( executor ) {
         this[NEXT_SEQ_ID] = 0;
         this[OUT_OF_ORDER] = new Map();
         executor.once( 'close', () => this._reset( executor ) );
     }
 
-    onEvents( as, reqinfo )
-    {
+    onEvents( as, reqinfo ) {
         const p = reqinfo.params();
         let seq_id = p.seq;
 
         // extra "if" is cheaper than empty step
-        if ( this[NEXT_SEQ_ID] !== seq_id )
-        {
-            as.add( ( as ) =>
-            {
+        if ( this[NEXT_SEQ_ID] !== seq_id ) {
+            as.add( ( as ) => {
                 // check again due to race condition
-                if ( this[NEXT_SEQ_ID] !== seq_id )
-                {
+                if ( this[NEXT_SEQ_ID] !== seq_id ) {
                     as.setCancel( ( as ) => this[OUT_OF_ORDER].delete( seq_id ) );
                     this[OUT_OF_ORDER].set( seq_id, as );
                     as.waitExternal();
@@ -64,24 +56,18 @@ class ReliableReceiverService extends ReceiverService
             } );
         }
 
-        as.add( ( as ) =>
-        {
+        as.add( ( as ) => {
             this._onEvents( as, reqinfo, p.events );
         } );
 
-        as.add( ( as ) =>
-        {
+        as.add( ( as ) => {
             this[OUT_OF_ORDER].delete( seq_id );
             this[NEXT_SEQ_ID] = ++seq_id;
 
-            if ( this[OUT_OF_ORDER].has( seq_id ) )
-            {
-                try
-                {
+            if ( this[OUT_OF_ORDER].has( seq_id ) ) {
+                try {
                     this[OUT_OF_ORDER].get( seq_id ).success();
-                }
-                catch ( e )
-                {
+                } catch ( e ) {
                     // ignore
                 }
 

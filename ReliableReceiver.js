@@ -25,24 +25,18 @@ const ReliableReceiverService = require( './ReliableReceiverService' );
 /**
  * Reliable Event Receiver helper to minimize boilerplate code in projects.
  */
-class ReliableReceiver extends LiveReceiver
-{
+class ReliableReceiver extends LiveReceiver {
     /**
      * Override to register custom instance of ReliableReceiverService.
-     *
      * @param {AsyncSteps} as - async steps interface
      * @param {Executor} executor - Internal Executor instance
      * @param {object} options - passed options
-     *
      * @returns {ReliableReceiverService} instance of service
      */
-    _registerReceiver( as, executor, options )
-    {
+    _registerReceiver( as, executor, options ) {
         const receiver = this;
-        const svc_class = class extends ReliableReceiverService
-        {
-            _onEvents( as, _reqinfo, events )
-            {
+        const svc_class = class extends ReliableReceiverService {
+            _onEvents( as, _reqinfo, events ) {
                 receiver._onEvents( as, events );
             }
         };

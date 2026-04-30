@@ -9,28 +9,22 @@ const DBAutoConfig = require( 'futoin-database/AutoConfig' );
 const integration_suite = require( './integrationsuite' );
 const fs = require( 'fs' );
 
-describe( 'SQLite', function()
-{
+describe( 'SQLite', function() {
     const evt_active_db = `${__dirname}/evtactive.db`;
     const evt_history_db = `${__dirname}/evthistory.db`;
 
-    before( function( done )
-    {
+    before( function( done ) {
         this.timeout( 30e3 );
         const ccm = new AdvancedCCM();
 
         $as().add(
-            ( as ) =>
-            {
-                as.add( ( as ) =>
-                {
+            ( as ) => {
+                as.add( ( as ) => {
                     const Executor = require( 'futoin-executor/Executor' );
                     const SQLiteService = require( 'futoin-database/SQLiteService' );
 
-                    for ( let f of [ evt_active_db, evt_history_db ] )
-                    {
-                        if ( fs.existsSync( f ) )
-                        {
+                    for ( let f of [ evt_active_db, evt_history_db ] ) {
+                        if ( fs.existsSync( f ) ) {
                             fs.unlinkSync( f );
                         }
 
@@ -42,8 +36,7 @@ describe( 'SQLite', function()
                         as.add( ( as ) => executor.close() );
                     }
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     ccm.close();
 
                     let res;
@@ -57,11 +50,10 @@ describe( 'SQLite', function()
                             '-user=fake',
                             '-password=fake',
                             `-locations=filesystem:${__dirname}/../sql/active/sqlite`,
-                        ]
+                        ],
                     );
 
-                    if ( res.status )
-                    {
+                    if ( res.status ) {
                         console.log( res.stderr.toString() );
                         as.error( 'Fail' );
                     }
@@ -75,22 +67,20 @@ describe( 'SQLite', function()
                             '-user=fake',
                             '-password=fake',
                             `-locations=filesystem:${__dirname}/../sql/dwh/sqlite`,
-                        ]
+                        ],
                     );
 
-                    if ( res.status )
-                    {
+                    if ( res.status ) {
                         console.log( res.stderr.toString() );
                         as.error( 'Fail' );
                     }
                 } );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).add( ( as ) => done() )
             .execute();
     } );
@@ -100,8 +90,7 @@ describe( 'SQLite', function()
         ccm: null,
     };
 
-    beforeEach( 'specific', function()
-    {
+    beforeEach( 'specific', function() {
         const ccm = new AdvancedCCM();
         const as = $as();
         vars.ccm = ccm;
@@ -114,33 +103,28 @@ describe( 'SQLite', function()
         };
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 DBAutoConfig( as, ccm, {
                     evt: {},
                     evtdwh: {},
                 }, vars.dbcfg );
-                as.add( ( as ) =>
-                {
-                    [ 'evt', 'evtdwh' ].forEach( ( v ) =>
-                    {
+                as.add( ( as ) => {
+                    [ 'evt', 'evtdwh' ].forEach( ( v ) => {
                         const db = ccm.db( v );
                         db.query( as, 'PRAGMA synchronous = OFF' );
                         db.query( as, 'PRAGMA journal_mode = MEMORY' );
                     } );
                 } );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 console.log( as.state.last_exception );
-            }
+            },
         );
     } );
 
-    afterEach( function()
-    {
+    afterEach( function() {
         vars.ccm.close();
         vars.ccm = null;
     } );

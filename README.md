@@ -253,7 +253,8 @@ The concept is described in FutoIn specification: [FTN18: FutoIn Interface - Eve
 
 <dl>
 <dt><a href="#DBEventArchiver">DBEventArchiver</a></dt>
-<dd><p>Database Event Archiver service.</p>
+<dd><p>Database Event Archiver service.
+No more than one instance should run at once.</p>
 </dd>
 <dt><a href="#DBEventDiscarder">DBEventDiscarder</a></dt>
 <dd><p>DB-specific event discarding.</p>
@@ -309,7 +310,8 @@ may affect performance of realtime processes and break some DB clusters like Gal
 <dd><p>Reliable Event Receiver helper to minimize boilerplate code in projects.</p>
 </dd>
 <dt><a href="#ReliableReceiverService">ReliableReceiverService</a></dt>
-<dd><p>Base implementation for reliable receiver side.</p>
+<dd><p>Base implementation for reliable receiver side.
+Unlike ReceiverService, it restores proper order of events.</p>
 </dd>
 </dl>
 
@@ -317,9 +319,9 @@ may affect performance of realtime processes and break some DB clusters like Gal
 
 ## DBEventArchiver
 Database Event Archiver service.
+No more than one instance should run at once.
 
 **Kind**: global class  
-**Note**: No more than one instance should run at once.  
 <a name="new_DBEventArchiver_new"></a>
 
 ### new DBEventArchiver(db_ccm)
@@ -356,14 +358,14 @@ Start event discarding
 
 **Kind**: instance method of [<code>DBEventDiscarder</code>](#DBEventDiscarder)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| ccm | <code>AdvancedCCM</code> |  | CCM with registered #db.evt interface |
-| [options] | <code>object</code> | <code>{}</code> | options |
-| [options.poll_period_ms] | <code>integer</code> | <code>600e3</code> | poll interval |
-| [options.limit_at_once] | <code>integer</code> | <code>1000</code> | events to delete at once |
-| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
-| [options.consumer_table] | <code>string</code> | <code>&quot;default&quot;</code> | consumers table |
+| Param | Type | Description |
+| --- | --- | --- |
+| ccm | <code>AdvancedCCM</code> | CCM with registered #db.evt interface |
+| [options] | <code>object</code> | options |
+| [options.poll_period_ms] | <code>number</code> | poll interval |
+| [options.limit_at_once] | <code>number</code> | events to delete at once |
+| [options.event_table] | <code>string</code> | events table |
+| [options.consumer_table] | <code>string</code> | consumers table |
 
 <a name="DBEventDiscarder+stop"></a>
 
@@ -410,12 +412,12 @@ Helper to add event generation into DB transaction
 
 **Kind**: instance method of [<code>DBGenFace</code>](#DBGenFace)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| xb | <code>XferBuilder</code> |  | instance of transaction builder |
-| type | <code>string</code> |  | event type |
-| data | <code>\*</code> |  | any data |
-| [table] | <code>string</code> | <code>&quot;evt_queue&quot;</code> | event queue |
+| Param | Type | Description |
+| --- | --- | --- |
+| xb | <code>XferBuilder</code> | instance of transaction builder |
+| type | <code>string</code> | event type |
+| data | <code>any</code> | any data |
+| [table] | <code>string</code> | event queue |
 
 <a name="DBGenService"></a>
 
@@ -429,12 +431,12 @@ Database-specific event generation service
 Please use DBGenService.regster()
 
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| _as | <code>AsyncSteps</code> |  | async step interface |
-| executor | <code>Executor</code> |  | related Executor |
-| [options] | <code>object</code> | <code>{}</code> | options |
-| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
+| Param | Type | Description |
+| --- | --- | --- |
+| _as | <code>AsyncSteps</code> | async step interface |
+| executor | <code>Executor</code> | related Executor |
+| [options] | <code>object</code> | options |
+| [options.event_table] | <code>string</code> | events table |
 
 <a name="DBPollService"></a>
 
@@ -448,13 +450,13 @@ Database-based Poll Service
 Please use DBPollService,register()
 
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | async step interface |
-| executor | <code>Executor</code> |  | related Executor |
-| [options] | <code>object</code> | <code>{}</code> | options |
-| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
-| [options.consumer_table] | <code>string</code> | <code>&quot;default&quot;</code> | consumers table |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | async step interface |
+| executor | <code>Executor</code> | related Executor |
+| [options] | <code>object</code> | options |
+| [options.event_table] | <code>string</code> | events table |
+| [options.consumer_table] | <code>string</code> | consumers table |
 
 <a name="DBPushService"></a>
 
@@ -468,16 +470,16 @@ Database-specific Push Service
 Please use DBPushService,register()
 
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | async step interface |
-| executor | <code>Executor</code> |  | related Executor |
-| [options] | <code>object</code> | <code>{}</code> | options |
-| [options.event_table] | <code>string</code> | <code>&quot;default&quot;</code> | events table |
-| [options.consumer_table] | <code>string</code> | <code>&quot;default&quot;</code> | consumers table |
-| [options.sleep_min] | <code>integer</code> | <code>100</code> | minimal sleep on lack of events |
-| [options.sleep_max] | <code>integer</code> | <code>3000</code> | maximal sleep on lack of events |
-| [options.sleep_step] | <code>integer</code> | <code>100</code> | sleep time increase on lack of events |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | async step interface |
+| executor | <code>Executor</code> | related Executor |
+| [options] | <code>object</code> | options |
+| [options.event_table] | <code>string</code> | events table |
+| [options.consumer_table] | <code>string</code> | consumers table |
+| [options.sleep_min] | <code>number</code> | minimal sleep on lack of events |
+| [options.sleep_max] | <code>number</code> | maximal sleep on lack of events |
+| [options.sleep_step] | <code>number</code> | sleep time increase on lack of events |
 
 <a name="DBServiceApp"></a>
 
@@ -487,31 +489,31 @@ All-in-one DB EventStream initialization
 **Kind**: global class  
 
 * [DBServiceApp](#DBServiceApp)
-    * [new DBServiceApp(as, options)](#new_DBServiceApp_new)
+    * [new DBServiceApp(as, [options])](#new_DBServiceApp_new)
     * [.ccm()](#DBServiceApp+ccm) ⇒ <code>AdvancedCCM</code>
     * [.executor()](#DBServiceApp+executor) ⇒ <code>Executor</code>
     * [.close([done])](#DBServiceApp+close)
 
 <a name="new_DBServiceApp_new"></a>
 
-### new DBServiceApp(as, options)
+### new DBServiceApp(as, [options])
 C-tor
 
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | AsyncSteps interface |
-| options | <code>object</code> | <code>{}</code> | options |
-| [options.ccm] | <code>AdvancedCCM</code> |  | external CCM instance |
-| [options.executor] | <code>Executor</code> |  | external private executor instance |
-| [options.ccmOptions] | <code>object</code> |  | auto-CCM options |
-| [options.notExpectedHandler] | <code>callable</code> |  | 'notExpected' error handler |
-| [options.executorOptions] | <code>object</code> |  | private auto-Executor options |
-| [options.evtOptions] | <code>object</code> |  | eventstream options |
-| [options.discarderOptions] | <code>object</code> |  | discarder options |
-| [options.enableDiscarder] | <code>boolean</code> |  | enable discarder, if true |
-| [options.archiverOptions] | <code>object</code> |  | discarder options |
-| [options.enableArchiver] | <code>boolean</code> |  | enable archiver, if true |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | AsyncSteps interface |
+| [options] | <code>object</code> | options |
+| [options.ccm] | <code>AdvancedCCM</code> | external CCM instance |
+| [options.executor] | <code>Executor</code> | external private executor instance |
+| [options.ccmOptions] | <code>object</code> | auto-CCM options |
+| [options.notExpectedHandler] | <code>function</code> | 'notExpected' error handler |
+| [options.executorOptions] | <code>object</code> | private auto-Executor options |
+| [options.evtOptions] | <code>object</code> | eventstream options |
+| [options.discarderOptions] | <code>object</code> | discarder options |
+| [options.enableDiscarder] | <code>boolean</code> | enable discarder, if true |
+| [options.archiverOptions] | <code>object</code> | discarder options |
+| [options.enableArchiver] | <code>boolean</code> | enable archiver, if true |
 
 <a name="DBServiceApp+ccm"></a>
 
@@ -536,7 +538,7 @@ Shutdown of app and related instances
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| [done] | <code>callable</code> | <code></code> | done callback |
+| [done] | <code>function</code> | <code></code> | done callback |
 
 <a name="GenFace"></a>
 
@@ -574,10 +576,10 @@ CCM registration helper
 | as | <code>AsyncSteps</code> |  | steps interface |
 | ccm | <code>AdvancedCCM</code> |  | CCM instance |
 | name | <code>string</code> |  | CCM registration name |
-| endpoint | <code>\*</code> |  | see AdvancedCCM#register |
-| [credentials] | <code>\*</code> | <code></code> | see AdvancedCCM#register |
-| [options] | <code>object</code> | <code>{}</code> | interface options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+| endpoint | <code>any</code> |  | see AdvancedCCM#register |
+| [credentials] | <code>any</code> | <code></code> | see AdvancedCCM#register |
+| [options] | <code>object</code> |  | interface options |
+| [options.version] | <code>string</code> |  | interface version to use |
 
 <a name="GenService"></a>
 
@@ -633,15 +635,14 @@ Initialize event archiver.
 Start receiving events for archiving
 
 **Kind**: instance method of [<code>LiveReceiver</code>](#LiveReceiver)  
-**Note**: options.executor is overridden  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| endpoint | <code>\*</code> |  | see PushFace |
-| [credentials] | <code>\*</code> | <code></code> | see PushFace |
-| [options] | <code>\*</code> | <code>{}</code> | see PushFace |
+| endpoint | <code>any</code> |  | see PushFace |
+| [credentials] | <code>any</code> | <code></code> | see PushFace |
+| [options] | <code>any</code> |  | see PushFace |
 | [options.component] | <code>string</code> |  | component name |
-| [options.want] | <code>array</code> |  | "want" parameter for event filtering |
+| [options.want] | <code>Array</code> |  | "want" parameter for event filtering `options.executor` is overridden |
 
 <a name="LiveReceiver+stop"></a>
 
@@ -673,7 +674,7 @@ Override to catch new events here instead of using `newEvents` event handler.
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | async steps interface |
-| events | <code>array</code> | array of events |
+| events | <code>Array</code> | array of events |
 
 <a name="LiveReceiver+event_receiverError"></a>
 
@@ -735,10 +736,10 @@ CCM registration helper
 | as | <code>AsyncSteps</code> |  | steps interface |
 | ccm | <code>AdvancedCCM</code> |  | CCM instance |
 | name | <code>string</code> |  | CCM registration name |
-| endpoint | <code>\*</code> |  | see AdvancedCCM#register |
-| [credentials] | <code>\*</code> | <code></code> | see AdvancedCCM#register |
-| [options] | <code>object</code> | <code>{}</code> | interface options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+| endpoint | <code>any</code> |  | see AdvancedCCM#register |
+| [credentials] | <code>any</code> | <code></code> | see AdvancedCCM#register |
+| [options] | <code>object</code> |  | interface options |
+| [options.version] | <code>string</code> |  | interface version to use |
 
 <a name="PollService"></a>
 
@@ -752,18 +753,18 @@ Event Stream - Poll Service Base
 Register futoin.evt.poll interface with Executor
 
 **Kind**: static method of [<code>PollService</code>](#PollService)  
-**Returns**: [<code>PollService</code>](#PollService) - instance  
-**Note**: Chunk event count is lower then protocol permits by default as there is
-      a typical amount 64K futoin message limit.  
+**Returns**: [<code>PollService</code>](#PollService) - instance
+Chunk event count is lower then protocol permits by default as there is
+      a typical amount 64K FutoIn message limit.  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | steps interface |
-| executor | <code>Executor</code> |  | executor instance |
-| options | <code>object</code> |  | implementation defined options |
-| [options.allow_reliable] | <code>boolean</code> | <code>true</code> | allow reliable consumers |
-| [options.allow_polling] | <code>boolean</code> | <code>true</code> | allow polling calls |
-| [options.max_chunk_events] | <code>integer</code> | <code>100</code> | maxium events per request |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | steps interface |
+| executor | <code>Executor</code> | executor instance |
+| options | <code>object</code> | implementation defined options |
+| [options.allow_reliable] | <code>boolean</code> | allow reliable consumers |
+| [options.allow_polling] | <code>boolean</code> | allow polling calls |
+| [options.max_chunk_events] | <code>number</code> | maxium events per request |
 
 <a name="PushFace"></a>
 
@@ -783,10 +784,10 @@ CCM registration helper
 | as | <code>AsyncSteps</code> |  | steps interface |
 | ccm | <code>AdvancedCCM</code> |  | CCM instance |
 | name | <code>string</code> |  | CCM registration name |
-| endpoint | <code>\*</code> |  | see AdvancedCCM#register |
-| [credentials] | <code>\*</code> | <code></code> | see AdvancedCCM#register |
-| [options] | <code>object</code> | <code>{}</code> | interface options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+| endpoint | <code>any</code> |  | see AdvancedCCM#register |
+| [credentials] | <code>any</code> | <code></code> | see AdvancedCCM#register |
+| [options] | <code>object</code> |  | interface options |
+| [options.version] | <code>string</code> |  | interface version to use |
 
 <a name="PushService"></a>
 
@@ -822,13 +823,13 @@ Register futoin.evt.push interface with Executor
 **Kind**: static method of [<code>PushService</code>](#PushService)  
 **Returns**: [<code>PushService</code>](#PushService) - instance  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | steps interface |
-| executor | <code>Executor</code> |  | executor instance |
-| options | <code>object</code> |  | implementation defined options |
-| [options.allow_reliable] | <code>boolean</code> | <code>true</code> | allow reliable consumers |
-| [options.allow_polling] | <code>boolean</code> | <code>true</code> | allow polling calls |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | steps interface |
+| executor | <code>Executor</code> | executor instance |
+| options | <code>object</code> | implementation defined options |
+| [options.allow_reliable] | <code>boolean</code> | allow reliable consumers |
+| [options.allow_polling] | <code>boolean</code> | allow polling calls |
 
 <a name="ReceiverFace"></a>
 
@@ -855,12 +856,12 @@ CCM registration helper
 **Kind**: static method of [<code>ReceiverFace</code>](#ReceiverFace)  
 **Returns**: <code>string</code> - - iface:ver of registered interface  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | steps interface |
-| channel | <code>ChannelContext</code> |  | Bi-Direction channel instance |
-| [options] | <code>object</code> | <code>{}</code> | interface options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | interface version to use |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | steps interface |
+| channel | <code>ChannelContext</code> | Bi-Direction channel instance |
+| [options] | <code>object</code> | interface options |
+| [options.version] | <code>string</code> | interface version to use |
 
 <a name="ReceiverService"></a>
 
@@ -886,7 +887,7 @@ Member to override to handle vents.
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | AsyncSteps interface |
 | reqinfo | <code>RequestInfo</code> | request info object |
-| events | <code>array</code> | list of events |
+| events | <code>Array</code> | list of events |
 
 <a name="ReceiverService.register"></a>
 
@@ -937,9 +938,9 @@ Emitted for count of archived events in each iteration.
 
 ## ReliableReceiverService
 Base implementation for reliable receiver side.
+Unlike ReceiverService, it restores proper order of events.
 
 **Kind**: global class  
-**Note**: Unlike ReceiverService, it restores proper order of events.  
 
 
 *documented by [jsdoc-to-markdown](https://github.com/75lb/jsdoc-to-markdown)*.

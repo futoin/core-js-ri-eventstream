@@ -16,227 +16,183 @@ const ReceiverFace = require( '../ReceiverFace' );
 const receiver_face = `futoin.evt.receiver:${ReceiverFace.LATEST_VERSION}`;
 
 
-describe( 'PollService', function()
-{
+describe( 'PollService', function() {
     const PollService = require( '../PollService' );
     const PollFace = require( '../PollFace' );
 
-    it( 'should throw NotImplemented', function( done )
-    {
+    it( 'should throw NotImplemented', function( done ) {
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 PollService.register( as, executor );
                 PollFace.register( as, ccm, 'pf', executor );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 'pf' ).registerConsumer( as, 'SC' );
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         if ( err === 'NotImplemented' &&
-                             as.state.error_info === 'Please override PollService#_registerConsumer' )
-                        {
+                             as.state.error_info === 'Please override PollService#_registerConsumer' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 'pf' ).pollEvents( as, 'SC', null, null );
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         if ( err === 'NotImplemented' &&
-                             as.state.error_info === 'Please override PollService#_pollEvents' )
-                        {
+                             as.state.error_info === 'Please override PollService#_pollEvents' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
 
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should allow only live events, if configured', function( done )
-    {
+    it( 'should allow only live events, if configured', function( done ) {
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 PollService.register( as, executor, { allow_reliable: false } );
                 PollFace.register( as, ccm, 'pf', executor );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 'pf' ).registerConsumer( as, 'SC' );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         if ( err === 'SecurityError' &&
-                             as.state.error_info === 'Registration is not allowed' )
-                        {
+                             as.state.error_info === 'Registration is not allowed' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 'pf' ).pollEvents( as, 'SC', null, null );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         if ( err === 'SecurityError' &&
-                             as.state.error_info === 'Reliable delivery is disabled' )
-                        {
+                             as.state.error_info === 'Reliable delivery is disabled' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
 
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should forbid polling, if configured', function( done )
-    {
+    it( 'should forbid polling, if configured', function( done ) {
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 PollService.register( as, executor, { allow_polling: false } );
                 PollFace.register( as, ccm, 'pf', executor );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 'pf' ).pollEvents( as, 'PLT', null, null );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         if ( err === 'SecurityError' &&
-                             as.state.error_info === 'Only event push is allowed' )
-                        {
+                             as.state.error_info === 'Only event push is allowed' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 'pf' ).pollEvents( as, 'LIVE', null, null );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         if ( err === 'SecurityError' &&
-                             as.state.error_info === 'Only event push is allowed' )
-                        {
+                             as.state.error_info === 'Only event push is allowed' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
 
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 } );
 
-describe( 'PushService', function()
-{
+describe( 'PushService', function() {
     const PushService = require( '../PushService' );
     const PushFace = require( '../PushFace' );
 
-    class MockPushService extends PushService
-    {
-        _pokeWorker()
-        {
+    class MockPushService extends PushService {
+        _pokeWorker() {
         }
 
-        _recordLastId( as, ident, _last_id )
-        {
-            as.add( ( as ) =>
-            {
-                if ( ident !== '-internal:RLB' )
-                {
+        _recordLastId( as, ident, _last_id ) {
+            as.add( ( as ) => {
+                if ( ident !== '-internal:RLB' ) {
                     as.error( 'InternalError' );
                 }
             } );
         }
 
-        _registerConsumer( as, _executor, _ident )
-        {
+        _registerConsumer( as, _executor, _ident ) {
         }
 
-        _pollEvents( as, executor, ident, last_id, want, is_reliable )
-        {
-            as.add( ( as ) =>
-            {
-                if ( this._event_history && this._event_history.queue.length )
-                {
+        _pollEvents( as, executor, ident, last_id, want, is_reliable ) {
+            as.add( ( as ) => {
+                if ( this._event_history && this._event_history.queue.length ) {
                     as.success( PushService._mergeQueue( this._event_history ) );
-                }
-                else
-                {
+                } else {
                     as.success( [] );
                 }
             } );
         }
     }
 
-    afterEach( function()
-    {
+    afterEach( function() {
         //require( 'event-emitter/all-off' )( SpecTools );
     } );
 
-    it( 'should properly compare event IDs', function()
-    {
-        const test = ( a, b, req ) =>
-        {
+    it( 'should properly compare event IDs', function() {
+        const test = ( a, b, req ) => {
             const res = cmpIds( a, b );
 
-            switch ( req )
-            {
+            switch ( req ) {
             case -1: expect( res ).to.be.below( 0 ); break;
             case 1: expect( res ).to.be.above( 0 ); break;
             case 0: expect( res ).to.equal( 0 ); break;
@@ -256,10 +212,8 @@ describe( 'PushService', function()
         test( '111', '110', 1 );
     } );
 
-    it( 'should properly trim chunks by last ID', function()
-    {
-        const test = ( chunk, last_id, after ) =>
-        {
+    it( 'should properly trim chunks by last ID', function() {
+        const test = ( chunk, last_id, after ) => {
             const before = chunk.slice();
             const res = PushService._trimChunk( chunk, last_id );
             expect( chunk ).to.eql( before );
@@ -269,71 +223,69 @@ describe( 'PushService', function()
         test(
             [ { id: '1' } ],
             '0',
-            [ { id: '1' } ]
+            [ { id: '1' } ],
         );
         test(
             [ { id: '1' }, { id: '2' } ],
             '2',
-            null
+            null,
         );
         test(
             [ { id: '1' }, { id: '2' } ],
             '3',
-            null
+            null,
         );
 
         test(
             [ { id: '2' }, { id: '3' } ],
             '2',
-            [ { id: '3' } ]
+            [ { id: '3' } ],
         );
         test(
             [ { id: '2' }, { id: '3' }, { id: '4' } ],
             '2',
-            [ { id: '3' }, { id: '4' } ]
+            [ { id: '3' }, { id: '4' } ],
         );
 
         test(
             [ { id:'2' }, { id:'3' }, { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
             '10',
-            [ { id:'20' }, { id:'30' }, { id:'31' } ]
+            [ { id:'20' }, { id:'30' }, { id:'31' } ],
         );
         test(
             [ { id:'2' }, { id:'3' }, { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
             '11',
-            [ { id:'20' }, { id:'30' }, { id:'31' } ]
+            [ { id:'20' }, { id:'30' }, { id:'31' } ],
         );
         test(
             [ { id:'2' }, { id:'3' }, { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
             '19',
-            [ { id:'20' }, { id:'30' }, { id:'31' } ]
+            [ { id:'20' }, { id:'30' }, { id:'31' } ],
         );
         test(
             [ { id:'2' }, { id:'3' }, { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
             '20',
-            [ { id:'30' }, { id:'31' } ]
+            [ { id:'30' }, { id:'31' } ],
         );
         test(
             [ { id:'2' }, { id:'3' }, { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
             '21',
-            [ { id:'30' }, { id:'31' } ]
+            [ { id:'30' }, { id:'31' } ],
         );
         test(
             [ { id:'2' }, { id:'3' }, { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
             '3',
-            [ { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ]
+            [ { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
         );
         test(
             [ { id:'2' }, { id:'3' }, { id:'4' }, { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
             '7',
-            [ { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ]
+            [ { id:'10' }, { id:'20' }, { id:'30' }, { id:'31' } ],
         );
     } );
 
-    it( 'should combine chunks in queue', function()
-    {
-        const test = ( queue, chunk, after ) =>
-        {
+    it( 'should combine chunks in queue', function() {
+        const test = ( queue, chunk, after ) => {
             const queue_count = queue.reduce( ( m, v ) => m + v.length, 0 );
             const state = { queue,
                 queue_count,
@@ -342,72 +294,66 @@ describe( 'PushService', function()
             expect( res ).to.eql( chunk );
             expect( queue ).to.eql( after );
             expect( state.queue_count ).to.eql(
-                queue.reduce( ( m, v ) => m + v.length, 0 )
+                queue.reduce( ( m, v ) => m + v.length, 0 ),
             );
         };
 
         const arr = [];
 
-        for ( let i = 0; i < 1000; ++i )
-        {
+        for ( let i = 0; i < 1000; ++i ) {
             arr.push( i );
         }
 
         test(
             [ [ 1, 2 ] ],
             [ 1, 2 ],
-            []
+            [],
         );
 
         test(
             [ [ 1, 2 ], [ 4, 8 ], [ 10, 20 ] ],
             [ 1, 2, 4, 8, 10, 20 ],
-            []
+            [],
         );
 
         test(
             [ arr, [ 1, 2 ] ],
             arr,
-            [ [ 1, 2 ] ]
+            [ [ 1, 2 ] ],
         );
 
         test(
             [ [ 1, 2 ], arr ],
             [ 1, 2 ],
-            [ arr ]
+            [ arr ],
         );
     } );
 
-    it( 'should process live events', function( done )
-    {
+    it( 'should process live events', function( done ) {
         this.timeout( 15e3 );
 
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
         const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( 'executor' );
             console.dir( arguments );
         } );
-        liveExecutor.on( 'notExpected', function()
-        {
+        liveExecutor.on( 'notExpected', function() {
             console.log( 'liveExecutor' );
             console.dir( arguments );
         } );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const call_count = 100;
                 SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                 const push_svc = MockPushService.register( as, executor, {
                     request_max : call_count,
                 } );
-                push_svc.on( 'pushError', function()
-                {
+                push_svc.on( 'pushError', function() {
                     console.log( arguments );
                 } );
                 PushFace.register( as, ccm, 'pfl', executor, null, { executor: liveExecutor } );
@@ -419,19 +365,16 @@ describe( 'PushService', function()
                     _call_count: 0,
                     _as: null,
                     _inter_as: null,
-                    onEvents: function( as, reqinfo )
-                    {
+                    onEvents: function( as, reqinfo ) {
                         this._count += reqinfo.params().events.length;
                         this._call_count += 1;
 
-                        if ( this._count === events_expected && this._as )
-                        {
+                        if ( this._count === events_expected && this._as ) {
                             this._as.success();
                             this._as = null;
                         }
 
-                        if ( this._inter_as )
-                        {
+                        if ( this._inter_as ) {
                             this._inter_as.success();
                             this._inter_as = null;
                         }
@@ -443,22 +386,18 @@ describe( 'PushService', function()
                 liveExecutor.register( as, receiver_face, live_rcv_svc );
 
                 as.setTimeout( 10e3 );
-                as.setCancel( ( as ) =>
-                {
+                as.setCancel( ( as ) => {
                     console.log( live_rcv_svc );
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const pfl = ccm.iface( 'pfl' );
                     pfl.readyToReceive( as, 'LIVE' );
 
-                    as.repeat( call_count, ( as, i ) =>
-                    {
+                    as.repeat( call_count, ( as, i ) => {
                         const events = [];
 
-                        for ( let j = 0; j < ( ( i + 1 ) * ( 1000 / call_count ) ); ++j )
-                        {
+                        for ( let j = 0; j < ( ( i + 1 ) * ( 1000 / call_count ) ); ++j ) {
                             events.push( {
                                 id: `${i * 1000 + j + 1}`,
                                 type: 'EVT',
@@ -470,17 +409,14 @@ describe( 'PushService', function()
                         events_expected += events.length;
                         push_svc._onEvents( events );
                     } );
-                    as.add( ( as ) =>
-                    {
-                        if ( live_rcv_svc._count !== events_expected )
-                        {
+                    as.add( ( as ) => {
+                        if ( live_rcv_svc._count !== events_expected ) {
                             as.waitExternal();
                             live_rcv_svc._as = as;
                         }
                     } );
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( live_rcv_svc._count )
                         .to.equal( events_expected );
                     expect( live_rcv_svc._call_count )
@@ -495,17 +431,15 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should process events', function( done )
-    {
+    it( 'should process events', function( done ) {
         this.timeout( 15e3 );
 
         const ccm = new AdvancedCCM();
@@ -513,35 +447,29 @@ describe( 'PushService', function()
         const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
         const reliableExecutor = new Executor( ccm, { specDirs: main.specDirs } );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( 'executor' );
             console.dir( arguments );
         } );
-        liveExecutor.on( 'notExpected', function()
-        {
+        liveExecutor.on( 'notExpected', function() {
             console.log( 'liveExecutor' );
             console.dir( arguments );
         } );
-        reliableExecutor.on( 'notExpected', function()
-        {
+        reliableExecutor.on( 'notExpected', function() {
             console.log( 'reliableExecutor' );
             console.dir( arguments );
         } );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const call_count = 10;
                 SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                 const push_svc = MockPushService.register( as, executor );
-                push_svc.on( 'pushError', function()
-                {
+                push_svc.on( 'pushError', function() {
                     console.log( arguments );
                 } );
-                push_svc.on( 'queueOverflow', function()
-                {
+                push_svc.on( 'queueOverflow', function() {
                     console.log( arguments );
                 } );
 
@@ -555,19 +483,16 @@ describe( 'PushService', function()
                     _call_count: 0,
                     _as: null,
                     _inter_as: null,
-                    onEvents: function( as, reqinfo )
-                    {
+                    onEvents: function( as, reqinfo ) {
                         this._count += reqinfo.params().events.length;
                         this._call_count += 1;
 
-                        if ( this._count === events_expected && this._as )
-                        {
+                        if ( this._count === events_expected && this._as ) {
                             this._as.success();
                             this._as = null;
                         }
 
-                        if ( this._inter_as )
-                        {
+                        if ( this._inter_as ) {
                             this._inter_as.success();
                             this._inter_as = null;
                         }
@@ -581,29 +506,25 @@ describe( 'PushService', function()
                 reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
-                as.setCancel( ( as ) =>
-                {
+                as.setCancel( ( as ) => {
                     console.log( push_svc );
                     console.log( live_rcv_svc );
                     console.log( reliable_rcv_svc );
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const pfl = ccm.iface( 'pfl' );
                     pfl.readyToReceive( as, 'LIVE' );
                     const pfr = ccm.iface( 'pfr' );
                     pfr.readyToReceive( as, 'RLB' );
 
-                    as.repeat( call_count, ( as, i ) =>
-                    {
+                    as.repeat( call_count, ( as, i ) => {
                         reliable_rcv_svc._inter_as = as;
                         as.waitExternal();
 
                         const events = [];
 
-                        for ( let j = 0; j < ( ( i + 1 ) * ( 1000 / call_count ) ); ++j )
-                        {
+                        for ( let j = 0; j < ( ( i + 1 ) * ( 1000 / call_count ) ); ++j ) {
                             events.push( {
                                 id: `${i * 1000 + j + 1}`,
                                 type: 'EVT',
@@ -615,17 +536,14 @@ describe( 'PushService', function()
                         events_expected += events.length;
                         push_svc._onEvents( events );
                     } );
-                    as.add( ( as ) =>
-                    {
-                        if ( reliable_rcv_svc._count !== events_expected )
-                        {
+                    as.add( ( as ) => {
+                        if ( reliable_rcv_svc._count !== events_expected ) {
                             as.waitExternal();
                             reliable_rcv_svc._as = as;
                         }
                     } );
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( live_rcv_svc._count )
                         .to.equal( events_expected );
                     expect( reliable_rcv_svc._count )
@@ -645,28 +563,24 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should throw placeholder errors', function( done )
-    {
+    it( 'should throw placeholder errors', function( done ) {
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const push_svc = PushService.register( as, executor );
                 let push_error = null;
                 let wait_as = null;
-                push_svc.on( 'pushError', function()
-                {
+                push_svc.on( 'pushError', function() {
                     push_error = Array.from( arguments );
                     wait_as.success();
                     wait_as = null;
@@ -680,19 +594,16 @@ describe( 'PushService', function()
 
                 as.add(
                     ( as ) => as.error( 'MyError', 'My Info' ),
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         push_svc._onPushError( as, err );
-                        as.add( ( as ) =>
-                        {
+                        as.add( ( as ) => {
                             as.waitExternal();
                             wait_as = as;
                         } );
-                    }
+                    },
                 );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( push_error[0] ).to.equal( 'MyError' );
                     expect( push_error[1] ).to.equal( 'My Info' );
                     expect( push_error[2] ).to.be.instanceof( Error );
@@ -705,17 +616,15 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should deliver with failures', function( done )
-    {
+    it( 'should deliver with failures', function( done ) {
         this.timeout( 15e3 );
 
         const ccm = new AdvancedCCM();
@@ -723,25 +632,21 @@ describe( 'PushService', function()
         const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
         const reliableExecutor = new Executor( ccm, { specDirs: main.specDirs } );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( 'executor' );
             console.dir( arguments );
         } );
-        liveExecutor.on( 'notExpected', function()
-        {
+        liveExecutor.on( 'notExpected', function() {
             console.log( 'liveExecutor' );
             console.dir( arguments );
         } );
-        reliableExecutor.on( 'notExpected', function()
-        {
+        reliableExecutor.on( 'notExpected', function() {
             console.log( 'reliableExecutor' );
             console.dir( arguments );
         } );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                 const push_svc = MockPushService.register( as, executor );
@@ -758,26 +663,22 @@ describe( 'PushService', function()
                     _as: null,
                     _inter_as: null,
                     _fail: false,
-                    onEvents: function( as, reqinfo )
-                    {
+                    onEvents: function( as, reqinfo ) {
                         this._fail = !this._fail;
                         this._call_count += 1;
 
-                        if ( this._fail )
-                        {
+                        if ( this._fail ) {
                             as.error( 'InternalError' );
                         }
 
                         this._count += reqinfo.params().events.length;
 
-                        if ( this._count === events_expected && this._as )
-                        {
+                        if ( this._count === events_expected && this._as ) {
                             this._as.success();
                             this._as = null;
                         }
 
-                        if ( this._inter_as )
-                        {
+                        if ( this._inter_as ) {
                             this._inter_as.success();
                             this._inter_as = null;
                         }
@@ -791,27 +692,23 @@ describe( 'PushService', function()
                 reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
-                as.setCancel( ( as ) =>
-                {
+                as.setCancel( ( as ) => {
                     console.log( live_rcv_svc );
                     console.log( reliable_rcv_svc );
                 } );
 
                 const call_count = 8;
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const pfl = ccm.iface( 'pfl' );
                     pfl.readyToReceive( as, 'LIVE' );
                     const pfr = ccm.iface( 'pfr' );
                     pfr.readyToReceive( as, 'RLB' );
 
-                    as.repeat( call_count, ( as, i ) =>
-                    {
+                    as.repeat( call_count, ( as, i ) => {
                         const events = [];
 
-                        for ( let j = 0; j < ( ( ( i + 1 ) * ( 1000 / ( call_count - 3 ) ) ) % 1000 ); ++j )
-                        {
+                        for ( let j = 0; j < ( ( ( i + 1 ) * ( 1000 / ( call_count - 3 ) ) ) % 1000 ); ++j ) {
                             events.push( {
                                 id: `${i * 1000 + j + 1}`,
                                 type: 'EVT',
@@ -825,17 +722,14 @@ describe( 'PushService', function()
                         events_expected += events.length;
                         push_svc._onEvents( events );
                     } );
-                    as.add( ( as ) =>
-                    {
-                        if ( reliable_rcv_svc._count !== events_expected )
-                        {
+                    as.add( ( as ) => {
+                        if ( reliable_rcv_svc._count !== events_expected ) {
                             as.waitExternal();
                             reliable_rcv_svc._as = as;
                         }
                     } );
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( live_rcv_svc._count )
                         .to.be.below( events_expected );
                     expect( reliable_rcv_svc._count )
@@ -855,17 +749,15 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should deliver with history', function( done )
-    {
+    it( 'should deliver with history', function( done ) {
         this.timeout( 15e3 );
 
         const ccm = new AdvancedCCM();
@@ -873,36 +765,30 @@ describe( 'PushService', function()
         const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
         const reliableExecutor = new Executor( ccm, { specDirs: main.specDirs } );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( 'executor' );
             console.dir( arguments );
         } );
-        liveExecutor.on( 'notExpected', function()
-        {
+        liveExecutor.on( 'notExpected', function() {
             console.log( 'liveExecutor' );
             console.dir( arguments );
         } );
-        reliableExecutor.on( 'notExpected', function()
-        {
+        reliableExecutor.on( 'notExpected', function() {
             console.log( 'reliableExecutor' );
             console.dir( arguments );
         } );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                 const push_svc = MockPushService.register( as, executor, {
                     queue_max: 100e3,
                 } );
-                push_svc.on( 'pushError', function()
-                {
+                push_svc.on( 'pushError', function() {
                     console.log( arguments );
                 } );
-                push_svc.on( 'queueOverflow', function()
-                {
+                push_svc.on( 'queueOverflow', function() {
                     console.log( arguments );
                 } );
 
@@ -916,13 +802,11 @@ describe( 'PushService', function()
                 let expected_live_events = 0;
                 const call_count = 20;
 
-                as.repeat( 2, ( as, i ) =>
-                {
+                as.repeat( 2, ( as, i ) => {
                     const events = [];
                     const max = i ? 700 : 1000;
 
-                    for ( let j = 0; j < max; ++j )
-                    {
+                    for ( let j = 0; j < max; ++j ) {
                         events.push( {
                             id: `${events_expected + j + 1}`,
                             type: 'EVT',
@@ -943,15 +827,13 @@ describe( 'PushService', function()
                     _call_count: 0,
                     _as: null,
                     _ident: 'LIVE',
-                    onEvents: function( as, reqinfo )
-                    {
+                    onEvents: function( as, reqinfo ) {
                         const { seq, events } = reqinfo.params();
                         this._call_count += 1;
 
                         this._count += reqinfo.params().events.length;
 
-                        if ( this._count >= events_expected && this._as )
-                        {
+                        if ( this._count >= events_expected && this._as ) {
                             this._as.success();
                             this._as = null;
                         }
@@ -965,14 +847,12 @@ describe( 'PushService', function()
                 reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
-                as.setCancel( ( as ) =>
-                {
+                as.setCancel( ( as ) => {
                     console.log( live_rcv_svc );
                     console.log( reliable_rcv_svc );
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     events_expected /= 2;
                     const shift = events_expected;
                     const pfl = ccm.iface( 'pfl' );
@@ -980,12 +860,10 @@ describe( 'PushService', function()
                     const pfr = ccm.iface( 'pfr' );
                     pfr.readyToReceive( as, 'RLB' );
 
-                    as.repeat( call_count, ( as, i ) =>
-                    {
+                    as.repeat( call_count, ( as, i ) => {
                         const events = [];
 
-                        for ( let j = 0; j < ( ( ( i + 1 ) * ( 1000 / call_count * 2 ) ) % 1000 ); ++j )
-                        {
+                        for ( let j = 0; j < ( ( ( i + 1 ) * ( 1000 / call_count * 2 ) ) % 1000 ); ++j ) {
                             events.push( {
                                 id: `${events_expected + j + 1}`,
                                 type: 'EVT',
@@ -1000,17 +878,14 @@ describe( 'PushService', function()
                         expected_live_events += events.length;
                         push_svc._onEvents( events );
                     } );
-                    as.add( ( as ) =>
-                    {
-                        if ( reliable_rcv_svc._count < events_expected )
-                        {
+                    as.add( ( as ) => {
+                        if ( reliable_rcv_svc._count < events_expected ) {
                             as.waitExternal();
                             reliable_rcv_svc._as = as;
                         }
                     } );
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( live_rcv_svc._count )
                         .to.equal( expected_live_events );
                     expect( reliable_rcv_svc._count )
@@ -1030,54 +905,45 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should deliver from history', function( done )
-    {
+    it( 'should deliver from history', function( done ) {
         this.timeout( 15e3 );
 
-        $as().repeat( 2, ( as, global_iter ) =>
-        {
+        $as().repeat( 2, ( as, global_iter ) => {
             const ccm = new AdvancedCCM();
             const executor = new Executor( ccm );
             const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
             const reliableExecutor = new Executor( ccm, { specDirs: main.specDirs } );
 
-            executor.on( 'notExpected', function()
-            {
+            executor.on( 'notExpected', function() {
                 console.log( 'executor' );
                 console.dir( arguments );
             } );
-            liveExecutor.on( 'notExpected', function()
-            {
+            liveExecutor.on( 'notExpected', function() {
                 console.log( 'liveExecutor' );
                 console.dir( arguments );
             } );
-            reliableExecutor.on( 'notExpected', function()
-            {
+            reliableExecutor.on( 'notExpected', function() {
                 console.log( 'reliableExecutor' );
                 console.dir( arguments );
             } );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                     const push_svc = MockPushService.register( as, executor );
-                    push_svc.on( 'pushError', function()
-                    {
+                    push_svc.on( 'pushError', function() {
                         console.log( arguments );
                     } );
-                    push_svc.on( 'queueOverflow', function()
-                    {
+                    push_svc.on( 'queueOverflow', function() {
                         console.log( arguments );
                     } );
 
@@ -1090,13 +956,11 @@ describe( 'PushService', function()
                     let event_gap = 0;
                     const call_count = 3;
 
-                    as.repeat( 2, ( as, i ) =>
-                    {
+                    as.repeat( 2, ( as, i ) => {
                         const events = [];
                         const max = ( global_iter && i ) ? 700 : 1000;
 
-                        for ( let j = 0; j < max; ++j )
-                        {
+                        for ( let j = 0; j < max; ++j ) {
                             events.push( {
                                 id: `${events_expected + j + 1}`,
                                 type: 'EVT',
@@ -1116,14 +980,12 @@ describe( 'PushService', function()
                         _count: 0,
                         _call_count: 0,
                         _as: null,
-                        onEvents: function( as, reqinfo )
-                        {
+                        onEvents: function( as, reqinfo ) {
                             this._call_count += 1;
 
                             this._count += reqinfo.params().events.length;
 
-                            if ( ( this._count >= events_expected ) && this._as )
-                            {
+                            if ( ( this._count >= events_expected ) && this._as ) {
                                 this._as.success();
                                 this._as = null;
                             }
@@ -1135,29 +997,24 @@ describe( 'PushService', function()
                     reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                     as.setTimeout( 10e3 );
-                    as.setCancel( ( as ) =>
-                    {
+                    as.setCancel( ( as ) => {
                         console.log( events_expected );
                         console.log( reliable_rcv_svc );
                     } );
 
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         const shift = events_expected;
                         const pfr = ccm.iface( 'pfr' );
                         pfr.readyToReceive( as, 'RLB' );
 
-                        as.add( ( as ) =>
-                        {
-                            if ( reliable_rcv_svc._count < events_expected )
-                            {
+                        as.add( ( as ) => {
+                            if ( reliable_rcv_svc._count < events_expected ) {
                                 as.waitExternal();
                                 reliable_rcv_svc._as = as;
                             }
                         } );
 
-                        as.add( ( as ) =>
-                        {
+                        as.add( ( as ) => {
                             event_gap = events_expected;
                             events_expected /= 2;
                             event_gap -= events_expected;
@@ -1166,12 +1023,10 @@ describe( 'PushService', function()
                             setTimeout( () => as.success(), 100 );
                         } );
 
-                        as.repeat( call_count, ( as, i ) =>
-                        {
+                        as.repeat( call_count, ( as, i ) => {
                             const events = [];
 
-                            for ( let j = 0; j < ( ( ( i + 1 ) * ( 1000 / call_count * 2 ) ) % 1000 ); ++j )
-                            {
+                            for ( let j = 0; j < ( ( ( i + 1 ) * ( 1000 / call_count * 2 ) ) % 1000 ); ++j ) {
                                 events.push( {
                                     id: `${events_expected + j + 1}`,
                                     type: 'EVT',
@@ -1185,17 +1040,14 @@ describe( 'PushService', function()
                             events_expected += events.length;
                             push_svc._onEvents( events );
                         } );
-                        as.add( ( as ) =>
-                        {
-                            if ( reliable_rcv_svc._count < events_expected )
-                            {
+                        as.add( ( as ) => {
+                            if ( reliable_rcv_svc._count < events_expected ) {
                                 as.waitExternal();
                                 reliable_rcv_svc._as = as;
                             }
                         } );
                     } );
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         expect( reliable_rcv_svc._count )
                             .to.equal( events_expected );
                         expect( reliable_rcv_svc._call_count )
@@ -1211,18 +1063,16 @@ describe( 'PushService', function()
                     } );
                     as.add( ( as ) => global_iter && done() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception || 'Fail' );
-                }
+                },
             );
         } ).execute();
     } );
 
-    it( 'should handle queue overflow', function( done )
-    {
+    it( 'should handle queue overflow', function( done ) {
         this.timeout( 15e3 );
 
         const ccm = new AdvancedCCM();
@@ -1230,39 +1080,33 @@ describe( 'PushService', function()
         const liveExecutor = new Executor( ccm, { specDirs: main.specDirs } );
         const reliableExecutor = new Executor( ccm, { specDirs: main.specDirs } );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( 'executor' );
             console.dir( arguments );
         } );
-        liveExecutor.on( 'notExpected', function()
-        {
+        liveExecutor.on( 'notExpected', function() {
             console.log( 'liveExecutor' );
             console.dir( arguments );
         } );
-        reliableExecutor.on( 'notExpected', function()
-        {
+        reliableExecutor.on( 'notExpected', function() {
             console.log( 'reliableExecutor' );
             console.dir( arguments );
         } );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                 const push_svc = MockPushService.register( as, executor, {
                     queue_max: 1500,
                 } );
-                push_svc.on( 'pushError', function()
-                {
+                push_svc.on( 'pushError', function() {
                     console.log( arguments );
                 } );
 
                 let overflows = { LIVE : 0,
                     '-internal:RLB': 0 };
-                push_svc.on( 'queueOverflow', function( ident, count )
-                {
+                push_svc.on( 'queueOverflow', function( ident, count ) {
                     overflows[ident] += count;
                 } );
 
@@ -1282,22 +1126,19 @@ describe( 'PushService', function()
                     _last_id: '0',
                     _as: null,
                     _inter_as: null,
-                    onEvents: function( as, reqinfo )
-                    {
+                    onEvents: function( as, reqinfo ) {
                         this._call_count += 1;
                         const events = reqinfo.params().events;
 
                         this._count += events.length;
                         this._last_id = events[events.length-1].id;
 
-                        if ( this._last_id === last_id && this._as )
-                        {
+                        if ( this._last_id === last_id && this._as ) {
                             this._as.success();
                             this._as = null;
                         }
 
-                        if ( this._inter_as )
-                        {
+                        if ( this._inter_as ) {
                             this._inter_as.success();
                             this._inter_as = null;
                         }
@@ -1311,25 +1152,21 @@ describe( 'PushService', function()
                 reliableExecutor.register( as, receiver_face, reliable_rcv_svc );
 
                 as.setTimeout( 10e3 );
-                as.setCancel( ( as ) =>
-                {
+                as.setCancel( ( as ) => {
                     console.log( live_rcv_svc );
                     console.log( reliable_rcv_svc );
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const pfl = ccm.iface( 'pfl' );
                     pfl.readyToReceive( as, 'LIVE' );
                     const pfr = ccm.iface( 'pfr' );
                     pfr.readyToReceive( as, 'RLB' );
 
-                    as.repeat( call_count, ( as, i ) =>
-                    {
+                    as.repeat( call_count, ( as, i ) => {
                         const events = [];
 
-                        for ( let j = 0; j < ( 1000 / ( i % 3 + 1 ) ); ++j )
-                        {
+                        for ( let j = 0; j < ( 1000 / ( i % 3 + 1 ) ); ++j ) {
                             last_id = `${events_expected + j + 1}`;
                             events.push( {
                                 id: last_id,
@@ -1344,17 +1181,14 @@ describe( 'PushService', function()
                         events_expected += events.length;
                         push_svc._onEvents( events );
                     } );
-                    as.add( ( as ) =>
-                    {
-                        if ( reliable_rcv_svc._last_id !== last_id )
-                        {
+                    as.add( ( as ) => {
+                        if ( reliable_rcv_svc._last_id !== last_id ) {
                             as.waitExternal();
                             reliable_rcv_svc._as = as;
                         }
                     } );
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( live_rcv_svc._count )
                         .to.be.equal( events_expected - overflows.LIVE );
                     expect( reliable_rcv_svc._count )
@@ -1374,17 +1208,15 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should handle event filters', function( done )
-    {
+    it( 'should handle event filters', function( done ) {
         this.timeout( 15e3 );
 
         const ccm = new AdvancedCCM();
@@ -1392,30 +1224,25 @@ describe( 'PushService', function()
         const execAB = new Executor( ccm, { specDirs: main.specDirs } );
         const execBC = new Executor( ccm, { specDirs: main.specDirs } );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( 'executor' );
             console.dir( arguments );
         } );
-        execAB.on( 'notExpected', function()
-        {
+        execAB.on( 'notExpected', function() {
             console.log( 'execAB' );
             console.dir( arguments );
         } );
-        execBC.on( 'notExpected', function()
-        {
+        execBC.on( 'notExpected', function() {
             console.log( 'execBC' );
             console.dir( arguments );
         } );
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                 const push_svc = MockPushService.register( as, executor );
-                push_svc.on( 'pushError', function()
-                {
+                push_svc.on( 'pushError', function() {
                     console.log( arguments );
                 } );
 
@@ -1423,15 +1250,12 @@ describe( 'PushService', function()
                     _count: 0,
                     _as: null,
 
-                    onEvents: function( as, reqinfo )
-                    {
+                    onEvents: function( as, reqinfo ) {
                         const events = reqinfo.params().events;
                         this._count += events.length;
 
-                        events.forEach( ( v ) =>
-                        {
-                            if ( v.type !== 'AEVT' && v.type !== 'BEVT' )
-                            {
+                        events.forEach( ( v ) => {
+                            if ( v.type !== 'AEVT' && v.type !== 'BEVT' ) {
                                 console.log( v );
                                 as.error( 'Fail' );
                             }
@@ -1439,8 +1263,7 @@ describe( 'PushService', function()
 
                         reqinfo.result( true );
 
-                        if ( this._count >= 10 && this._as )
-                        {
+                        if ( this._count >= 10 && this._as ) {
                             this._as.success();
                             this._as = null;
                         }
@@ -1451,15 +1274,12 @@ describe( 'PushService', function()
                     _count: 0,
                     _as: null,
 
-                    onEvents: function( as, reqinfo )
-                    {
+                    onEvents: function( as, reqinfo ) {
                         const events = reqinfo.params().events;
                         this._count += events.length;
 
-                        events.forEach( ( v ) =>
-                        {
-                            if ( v.type !== 'CEVT' && v.type !== 'BEVT' )
-                            {
+                        events.forEach( ( v ) => {
+                            if ( v.type !== 'CEVT' && v.type !== 'BEVT' ) {
                                 console.log( v );
                                 as.error( 'Fail' );
                             }
@@ -1467,8 +1287,7 @@ describe( 'PushService', function()
 
                         reqinfo.result( true );
 
-                        if ( this._count >= 7 && this._as )
-                        {
+                        if ( this._count >= 7 && this._as ) {
                             this._as.success();
                             this._as = null;
                         }
@@ -1480,15 +1299,13 @@ describe( 'PushService', function()
                 PushFace.register( as, ccm, 'bc', executor, null, { executor: execBC } );
                 PushFace.register( as, ccm, 'ee', executor, null, { executor: execBC } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     ccm.iface( 'ab' ).readyToReceive( as, 'LIVE', [ 'AEVT', 'BEVT' ] );
                     ccm.iface( 'bc' ).readyToReceive( as, 'RLB', [ 'BEVT', 'CEVT' ] );
                     ccm.iface( 'ee' ).readyToReceive( as, 'RLB', [ 'EEVT' ] );
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const data = null;
                     const ts = moment.utc().format();
 
@@ -1537,22 +1354,18 @@ describe( 'PushService', function()
                 } );
 
 
-                as.add( ( as ) =>
-                {
-                    if ( bc_svc._count < 7 )
-                    {
+                as.add( ( as ) => {
+                    if ( bc_svc._count < 7 ) {
                         bc_svc._as = as;
                         as.waitExternal();
                     }
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     execBC.close();
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const data = null;
                     const ts = moment.utc().format();
 
@@ -1600,17 +1413,14 @@ describe( 'PushService', function()
                     ] );
                 } );
 
-                as.add( ( as ) =>
-                {
-                    if ( ab_svc._count < 10 )
-                    {
+                as.add( ( as ) => {
+                    if ( ab_svc._count < 10 ) {
                         ab_svc._as = as;
                         as.waitExternal();
                     }
                 } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( ab_svc._count ).to.equal( 10 );
                     expect( bc_svc._count ).to.equal( 7 );
 
@@ -1623,40 +1433,35 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 
-    it( 'should handle allow only fine tune', function( done )
-    {
+    it( 'should handle allow only fine tune', function( done ) {
         this.timeout( 15e3 );
 
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
         const clientExecutor = new Executor( ccm );
 
-        executor.on( 'notExpected', function()
-        {
+        executor.on( 'notExpected', function() {
             console.log( 'executor' );
             console.dir( arguments );
         } );
 
 
         $as().add(
-            ( as ) =>
-            {
+            ( as ) => {
                 SpecTools.once( 'error', ( err ) => console.log( err ) );
 
                 const push_svc = MockPushService.register( as, executor, {
                     allow_reliable: false,
                 } );
-                push_svc.on( 'pushError', function()
-                {
+                push_svc.on( 'pushError', function() {
                     console.log( arguments );
                 } );
 
@@ -1664,22 +1469,19 @@ describe( 'PushService', function()
                 PushFace.register( as, ccm, 't', executor, null, { executor: clientExecutor } );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 't' ).readyToReceive( as, 'RLB' );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
+                    ( as, err ) => {
                         expect( err ).to.equal( 'SecurityError' );
                         expect( as.state.error_info ).to.equal( 'Only LIVE delivery is allowed' );
                         as.success();
-                    }
+                    },
                 );
                 as.add( ( as ) => ccm.iface( 't' ).readyToReceive( as, 'LIVE' ) );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     ccm.once( 'close', () => as.success() );
                     as.waitExternal();
 
@@ -1689,51 +1491,40 @@ describe( 'PushService', function()
                 } );
                 as.add( ( as ) => done() );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         ).execute();
     } );
 } );
 
-describe( 'ReliableReceiver', function()
-{
+describe( 'ReliableReceiver', function() {
     const ReliableReceiver = require( '../ReliableReceiver' );
 
-    it( 'should handle disconnects', function( done )
-    {
+    it( 'should handle disconnects', function( done ) {
         const ccm = new AdvancedCCM();
-        const archiver = new class extends ReliableReceiver
-        {
-            constructor()
-            {
+        const archiver = new class extends ReliableReceiver {
+            constructor() {
                 super( ccm );
             }
 
-            _registerReceiver( as, _executor )
-            {
+            _registerReceiver( as, _executor ) {
                 const res = {};
                 return res;
             }
         };
 
-        archiver.once( 'workerError', ( err ) =>
-        {
-            try
-            {
+        archiver.once( 'workerError', ( err ) => {
+            try {
                 expect( err ).to.equal( 'Disconnect' );
-            }
-            catch ( e )
-            {
+            } catch ( e ) {
                 done( e );
                 return;
             }
 
-            setTimeout( () =>
-            {
+            setTimeout( () => {
                 archiver.stop();
                 done();
             }, 0 );
@@ -1742,95 +1533,84 @@ describe( 'ReliableReceiver', function()
     } );
 } );
 
-describe( 'ReliableReceiverService', function()
-{
+describe( 'ReliableReceiverService', function() {
     const ReliableReceiverService = require( '../ReliableReceiverService' );
 
-    it( 'should handle out-of-order requests', function( done )
-    {
+    it( 'should handle out-of-order requests', function( done ) {
         const as = $as();
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
 
-        class TestService extends ReliableReceiverService
-        {
-            _onEvents( as, _reqinfo, events )
-            {
+        class TestService extends ReliableReceiverService {
+            _onEvents( as, _reqinfo, events ) {
                 this._received = this._received || [];
                 this._received.push( events[0] );
             }
         }
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const svc = TestService.register( as, executor );
                 ccm.register( as, 'rcvr', receiver_face,
                     executor, null, { specDirs: main.specDirs } );
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     ccm.iface( 'rcvr' ).onEvents(
                         as,
                         0,
                         [ { id: '100',
                             type: 'T',
                             data: null,
-                            ts:'2000-01-01T12:00:00Z' } ]
+                            ts:'2000-01-01T12:00:00Z' } ],
                     );
                 } );
 
                 //---
                 const p = as.parallel();
-                p.add( ( as ) =>
-                {
+                p.add( ( as ) => {
                     ccm.iface( 'rcvr' ).onEvents(
                         as,
                         3,
                         [ { id: '400',
                             type: 'T',
                             data: null,
-                            ts:'2000-01-01T12:00:00Z' } ]
+                            ts:'2000-01-01T12:00:00Z' } ],
                     );
                 } );
-                p.add( ( as ) =>
-                {
+                p.add( ( as ) => {
                     ccm.iface( 'rcvr' ).onEvents(
                         as,
                         1,
                         [ { id: '200',
                             type: 'T',
                             data: null,
-                            ts:'2000-01-01T12:00:00Z' } ]
+                            ts:'2000-01-01T12:00:00Z' } ],
                     );
                 } );
-                p.add( ( as ) =>
-                {
+                p.add( ( as ) => {
                     ccm.iface( 'rcvr' ).onEvents(
                         as,
                         2,
                         [ { id: '300',
                             type: 'T',
                             data: null,
-                            ts:'2000-01-01T12:00:00Z' } ]
+                            ts:'2000-01-01T12:00:00Z' } ],
                     );
                 } );
 
                 //---
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     ccm.iface( 'rcvr' ).onEvents(
                         as,
                         4,
                         [ { id: '500',
                             type: 'T',
                             data: null,
-                            ts:'2000-01-01T12:00:00Z' } ]
+                            ts:'2000-01-01T12:00:00Z' } ],
                     );
                 } );
                 //----
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     expect( svc._received ).to.eql( [
                         { id: '100',
                             type: 'T',
@@ -1855,65 +1635,56 @@ describe( 'ReliableReceiverService', function()
                     ] );
                 } );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         );
-        as.add( ( as ) =>
-        {
+        as.add( ( as ) => {
             ccm.close();
             done();
         } );
         as.execute();
     } );
 
-    it( 'should throw error', function( done )
-    {
+    it( 'should throw error', function( done ) {
         const as = $as();
         const ccm = new AdvancedCCM();
         const executor = new Executor( ccm );
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const svc = ReliableReceiverService.register( as, executor );
                 ccm.register( as, 'rcvr', receiver_face,
                     executor, null, { specDirs: main.specDirs } );
 
                 as.add(
-                    ( as ) =>
-                    {
+                    ( as ) => {
                         ccm.iface( 'rcvr' ).onEvents(
                             as,
                             0,
                             [ { id: '100',
                                 type: 'T',
                                 data: null,
-                                ts:'2000-01-01T12:00:00Z' } ]
+                                ts:'2000-01-01T12:00:00Z' } ],
                         );
                         as.add( ( as ) => as.error( 'Fail' ) );
                     },
-                    ( as, err ) =>
-                    {
-                        if ( err === 'NotImplemented' )
-                        {
+                    ( as, err ) => {
+                        if ( err === 'NotImplemented' ) {
                             as.success();
                         }
-                    }
+                    },
                 );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 console.log( err );
                 console.log( as.state.error_info );
                 done( as.state.last_exception || 'Fail' );
-            }
+            },
         );
-        as.add( ( as ) =>
-        {
+        as.add( ( as ) => {
             ccm.close();
             done();
         } );

@@ -30,17 +30,13 @@ module.exports = {
     POLL_FACE : '#evtpoll',
     PUSH_FACE : '#evtpush',
 
-    cmpIds: ( a, b ) =>
-    {
+    cmpIds: ( a, b ) => {
         const a_len = a.length;
         const b_len = b.length;
 
-        if ( a_len === b_len )
-        {
+        if ( a_len === b_len ) {
             return a.localeCompare( b );
-        }
-        else
-        {
+        } else {
             return a_len - b_len;
         }
     },

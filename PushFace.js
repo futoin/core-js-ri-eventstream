@@ -26,21 +26,18 @@ const PollFace = require( './PollFace' );
 /**
  * Event Stream - Push Face
  */
-class PushFace extends PollFace
-{
+class PushFace extends PollFace {
     /**
      * CCM registration helper
-     *
      * @param {AsyncSteps} as - steps interface
      * @param {AdvancedCCM} ccm - CCM instance
      * @param {string} name - CCM registration name
-     * @param {*} endpoint - see AdvancedCCM#register
-     * @param {*} [credentials=null] - see AdvancedCCM#register
-     * @param {object} [options={}] - interface options
-     * @param {string} [options.version=1.0] - interface version to use
+     * @param {any} endpoint - see AdvancedCCM#register
+     * @param {any} [credentials] - see AdvancedCCM#register
+     * @param {object} [options] - interface options
+     * @param {string} [options.version] - interface version to use
      */
-    static register( as, ccm, name, endpoint, credentials=null, options={} )
-    {
+    static register( as, ccm, name, endpoint, credentials=null, options={} ) {
         const ifacever = options.version || this.LATEST_VERSION;
 
         _defaults( options, {
@@ -55,7 +52,7 @@ class PushFace extends PollFace
             `futoin.evt.push:${ifacever}`,
             endpoint,
             credentials,
-            options
+            options,
         );
     }
 }

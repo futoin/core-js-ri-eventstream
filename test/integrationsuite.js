@@ -20,47 +20,39 @@ const main = require( '../main' );
 
 const receiver_face = `futoin.evt.receiver:${ReceiverFace.LATEST_VERSION}`;
 
-module.exports = function( describe, it, vars )
-{
-    describe( 'DBGenService', function()
-    {
+module.exports = function( describe, it, vars ) {
+    describe( 'DBGenService', function() {
         let as;
         let ccm;
         let executor;
 
-        beforeEach( 'common', function()
-        {
+        beforeEach( 'common', function() {
             ccm = vars.ccm;
             as = vars.as;
             executor = new Executor( ccm );
 
-            executor.on( 'notExpected', function()
-            {
+            executor.on( 'notExpected', function() {
                 console.dir( arguments );
             } );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     DBGenService.register( as, executor );
                     DBGenFace.register( as, ccm, 'evtgen', executor );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception || 'Fail' );
-                }
+                },
             );
         } );
 
-        it( 'should generate events', function( done )
-        {
+        it( 'should generate events', function( done ) {
             this.timeout( 5e3 );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'evtgen' );
 
                     expect( iface.DB_EVENT_TABLE ).to.equal( 'evt_queue' );
@@ -71,8 +63,7 @@ module.exports = function( describe, it, vars )
                     iface.addEvent( as, 'X', 1 );
                     iface.addEvent( as, 'ABCDEFHIJ_KLMN_O', {} );
                     iface.addEvent( as, 'ABCDEFHIJ_KLMN_O', { some: 'data' } );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( res ).to.equal( '6' );
                     } );
 
@@ -81,8 +72,7 @@ module.exports = function( describe, it, vars )
                         .get( [ 'id', 'type', 'data' ] )
                         .order( 'id' )
                         .executeAssoc( as );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         res = res.map( ( v ) => ( {
                             id: parseInt( v.id ),
                             type: v.type,
@@ -111,22 +101,19 @@ module.exports = function( describe, it, vars )
                         executor.close();
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception || 'Fail' );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
 
-        it( 'should generate event in xfer', function( done )
-        {
+        it( 'should generate event in xfer', function( done ) {
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const iface = ccm.iface( 'evtgen' );
                     const db = ccm.db( 'evt' );
 
@@ -134,8 +121,7 @@ module.exports = function( describe, it, vars )
                     iface.addXferEvent( xb, 'XFER_EVT', 123 );
                     iface.addXferEvent( xb, 'XFER_EVT', 321 );
 
-                    expect( function()
-                    {
+                    expect( function() {
                         iface.addXferEvent( xb, 'Invld', 321 );
                     } ).to.throw( 'Invalid event type: Invld' );
                     xb.execute( as );
@@ -146,8 +132,7 @@ module.exports = function( describe, it, vars )
                         .where( 'type', 'XFER_EVT' )
                         .order( 'id' )
                         .executeAssoc( as );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         res = res.map( ( v ) => ( {
                             id: parseInt( v.id ),
                             type: v.type,
@@ -163,57 +148,49 @@ module.exports = function( describe, it, vars )
                         ] );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception || 'Fail' );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
     } );
 
-    describe( 'DBPollFace', function()
-    {
+    describe( 'DBPollFace', function() {
         let as;
         let ccm;
         let executor;
 
-        beforeEach( 'common', function()
-        {
+        beforeEach( 'common', function() {
             ccm = vars.ccm;
             as = vars.as;
             executor = new Executor( ccm );
 
-            executor.on( 'notExpected', function()
-            {
+            executor.on( 'notExpected', function() {
                 console.dir( arguments );
             } );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     DBGenService.register( as, executor );
                     DBPollService.register( as, executor );
                     GenFace.register( as, ccm, 'evtgen', executor );
                     PollFace.register( as, ccm, 'evtpoll', executor );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception || 'Fail' );
-                }
+                },
             );
         } );
 
-        it( 'should poll events', function( done )
-        {
+        it( 'should poll events', function( done ) {
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const poll = ccm.iface( 'evtpoll' );
 
                     poll.registerConsumer( as, 'T1' );
@@ -221,8 +198,7 @@ module.exports = function( describe, it, vars )
 
                     poll.pollEvents( as, 'T1', null, null );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         res = res.map( ( v ) => ( {
                             id: parseInt( v.id ),
                             type: v.type,
@@ -258,8 +234,7 @@ module.exports = function( describe, it, vars )
 
                     poll.pollEvents( as, 'T1', '1', [ 'AB_C' ] );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         res = res.map( ( v ) => ( {
                             id: parseInt( v.id ),
                             type: v.type,
@@ -277,16 +252,14 @@ module.exports = function( describe, it, vars )
 
                     poll.pollEvents( as, 'T1', '3', [ 'AB_C' ] );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( res.length ).to.equal( 0 );
                     } );
 
                     // ensure WAX
                     poll.pollEvents( as, 'T1', '3', [ 'AB_C' ] );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( res.length ).to.equal( 0 );
                     } );
 
@@ -301,78 +274,63 @@ module.exports = function( describe, it, vars )
                     //---
                     as.add( ( as ) => executor.close() );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception || 'Fail' );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
 
-        it( 'must detect not registrated', function( done )
-        {
+        it( 'must detect not registrated', function( done ) {
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const poll = ccm.iface( 'evtpoll' );
 
                     poll.pollEvents( as, 'T2', null, null );
                     as.add( ( as ) => as.error( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'NotRegistered' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'NotRegistered' ) {
                         done();
-                    }
-                    else
-                    {
+                    } else {
                         console.log( err );
                         console.log( as.state.error_info );
                         done( as.state.last_exception || 'Fail' );
                     }
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
 
-        it( 'must not allow LIVE registration', function( done )
-        {
+        it( 'must not allow LIVE registration', function( done ) {
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const poll = ccm.iface( 'evtpoll' );
 
                     poll.registerConsumer( as, 'LIVE' );
                     as.add( ( as ) => as.error( 'Fail' ) );
                 },
-                ( as, err ) =>
-                {
-                    if ( err === 'LiveNotAllowed' )
-                    {
+                ( as, err ) => {
+                    if ( err === 'LiveNotAllowed' ) {
                         done();
-                    }
-                    else
-                    {
+                    } else {
                         console.log( err );
                         console.log( as.state.error_info );
                         done( as.state.last_exception || 'Fail' );
                     }
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
 
-        it( 'should silently cancel skip on new event', function( done )
-        {
+        it( 'should silently cancel skip on new event', function( done ) {
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const poll = ccm.iface( 'evtpoll' );
                     const db = ccm.db( 'evt' );
                     let first = true;
@@ -380,19 +338,16 @@ module.exports = function( describe, it, vars )
                     const proto = db.constructor.prototype;
                     const orig_newXfer = proto.newXfer;
 
-                    proto.newXfer = function()
-                    {
+                    proto.newXfer = function() {
                         const xfer = orig_newXfer.apply( this, arguments );
 
-                        if ( first )
-                        {
+                        if ( first ) {
                             first = false;
                             return xfer;
                         }
 
                         proto.newXfer = orig_newXfer;
-                        xfer.execute = function( as )
-                        {
+                        xfer.execute = function( as ) {
                             ccm.iface( 'evtgen' ).addEvent( as, 'EVT_MIDDLE', 'dt' );
                             as.add( ( as ) => this.constructor.prototype.execute.apply( this, [ as ] ) );
                         };
@@ -405,34 +360,29 @@ module.exports = function( describe, it, vars )
                     poll.pollEvents( as, 'T1', null, [ 'EVT_MIDDLE' ] );
                     as.add( ( as, res ) => expect( res.length ).to.equal( 1 ) );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception || 'Fail' );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
 
-        it( 'should allow LIVE polling', function( done )
-        {
+        it( 'should allow LIVE polling', function( done ) {
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const poll = ccm.iface( 'evtpoll' );
                     const db = ccm.db( 'evt' );
 
                     ccm.iface( 'evtgen' ).addEvent( as, 'EVT_LV', 'lv' );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         as.state.live_id = res;
                     } );
 
                     poll.pollEvents( as, 'LIVE', null, [ 'EVT_LV' ] );
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( res.length ).to.equal( 1 );
 
                         poll.pollEvents( as, 'LIVE', as.state.live_id, [ 'EVT_LV' ] );
@@ -442,40 +392,35 @@ module.exports = function( describe, it, vars )
                         as.add( ( as, res ) => expect( res.length ).to.equal( 1 ) );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception || 'Fail' );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
     } );
 
-    describe( 'DBPushService', function()
-    {
+    describe( 'DBPushService', function() {
         let as;
         let ccm;
         let executor;
         let clientExecutor;
 
-        beforeEach( 'common', function()
-        {
+        beforeEach( 'common', function() {
             ccm = vars.ccm;
             as = vars.as;
             executor = new Executor( ccm, { specDirs: main.specDirs } );
             clientExecutor = new Executor( ccm, { specDirs: main.specDirs } );
 
-            executor.on( 'notExpected', function()
-            {
+            executor.on( 'notExpected', function() {
                 console.dir( arguments );
             } );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     DBGenService.register( as, executor );
                     const push_svc = DBPushService.register( as, executor, {
                         sleep_min: 10,
@@ -486,32 +431,27 @@ module.exports = function( describe, it, vars )
                     PushFace.register( as, ccm, 'evtpush', executor, null, { executor: clientExecutor } );
 
                     as.state.push_svc = push_svc;
-                    push_svc.on( 'pushError', function()
-                    {
+                    push_svc.on( 'pushError', function() {
                         console.log( arguments );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception || 'Fail' );
-                }
+                },
             );
         } );
 
-        afterEach( 'common', function()
-        {
+        afterEach( 'common', function() {
             executor.close();
         } );
 
-        it( 'should push events', function( done )
-        {
+        it( 'should push events', function( done ) {
             this.timeout( 5e3 );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     let expected_events = 0;
 
                     const recv_svc = {
@@ -519,15 +459,13 @@ module.exports = function( describe, it, vars )
                         _as: null,
                         _last_id: '0',
 
-                        onEvents( as, reqinfo )
-                        {
+                        onEvents( as, reqinfo ) {
                             const events = reqinfo.params().events;
                             this._count += events.length;
                             this._last_id = events[events.length - 1].id;
                             reqinfo.result( true );
 
-                            if ( this._count >= expected_events && this._as )
-                            {
+                            if ( this._count >= expected_events && this._as ) {
                                 this._as.success();
                                 this._as = null;
                             }
@@ -543,15 +481,12 @@ module.exports = function( describe, it, vars )
                     as.add( ( as ) => push.readyToReceive( as, 'LIVE' ) );
                     as.add( ( as ) => push.readyToReceive( as, 'LIVE', [ 'INVALID' ] ) );
 
-                    as.repeat( 10, ( as, i ) =>
-                    {
+                    as.repeat( 10, ( as, i ) => {
                         gen.addEvent( as, 'EVT_PUSH', { i } );
                         expected_events += 1;
                     } );
-                    as.add( ( as ) =>
-                    {
-                        if ( recv_svc._count < expected_events )
-                        {
+                    as.add( ( as ) => {
+                        if ( recv_svc._count < expected_events ) {
                             recv_svc._as = as;
                             as.waitExternal();
                         }
@@ -560,22 +495,17 @@ module.exports = function( describe, it, vars )
                     as.add( ( as ) => push.registerConsumer( as, 'RLB' ) );
                     as.add( ( as ) => push.pollEvents( as, 'RLB', null, [ 'EVT_PUSH' ] ) );
                     as.add( ( as, events ) => expect( events.length ).to.equal( expected_events ) );
-                    as.loop( ( as ) =>
-                    {
+                    as.loop( ( as ) => {
                         const push_svc = as.state.push_svc;
 
-                        if ( push_svc._worker_as )
-                        {
+                        if ( push_svc._worker_as ) {
                             as.waitExternal();
                             setTimeout( () => as.success(), push_svc._sleep_curr );
-                        }
-                        else
-                        {
+                        } else {
                             as.break();
                         }
                     } );
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         // Not reliable due to race condition, but
                         // we try to go through all codepaths here
                         // to increase test coverage
@@ -592,19 +522,16 @@ module.exports = function( describe, it, vars )
                         push.readyToReceive( as, 'RLB' );
 
                         // Give some time to enter sleep loop
-                        as.add( ( as ) =>
-                        {
+                        as.add( ( as ) => {
                             as.waitExternal();
                             setTimeout( () => as.success(), 100 );
                         } );
                     } );
 
-                    as.repeat( 11, ( as ) =>
-                    {
+                    as.repeat( 11, ( as ) => {
                         const xfer = db.newXfer();
 
-                        for ( let i = 0; i < 100; ++i )
-                        {
+                        for ( let i = 0; i < 100; ++i ) {
                             gen.addXferEvent( xfer, 'EVT_PUSH', { i } );
                             expected_events += 1;
                         }
@@ -612,10 +539,8 @@ module.exports = function( describe, it, vars )
                         xfer.execute( as );
                     } );
 
-                    as.add( ( as ) =>
-                    {
-                        if ( recv_svc._count < expected_events )
-                        {
+                    as.add( ( as ) => {
+                        if ( recv_svc._count < expected_events ) {
                             recv_svc._as = as;
                             as.waitExternal();
                         }
@@ -623,44 +548,38 @@ module.exports = function( describe, it, vars )
 
 
                     // Give some time for receiver to complete
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         as.waitExternal();
                         setTimeout( () => as.success(), 100 );
                     } );
 
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         clientExecutor.close();
                         executor.close();
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception || 'Fail' );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
     } );
 
-    describe( 'DBEventArchiver', function()
-    {
+    describe( 'DBEventArchiver', function() {
         let as;
         let ccm;
         let executor;
 
-        beforeEach( 'common', function()
-        {
+        beforeEach( 'common', function() {
             ccm = vars.ccm;
             as = vars.as;
             executor = new Executor( ccm, { specDirs: main.specDirs } );
 
-            executor.on( 'notExpected', function()
-            {
+            executor.on( 'notExpected', function() {
                 console.dir( arguments );
             } );
 
@@ -668,8 +587,7 @@ module.exports = function( describe, it, vars )
             //executor.on( 'response', (_, rsp) => console.log(rsp) );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     DBGenService.register( as, executor );
                     const push_svc = DBPushService.register( as, executor, {
                         sleep_min: 10,
@@ -681,37 +599,30 @@ module.exports = function( describe, it, vars )
                     as.state.push_svc = push_svc;
                     //push_svc.on('pushError', function(){ console.log(arguments); });
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception || 'Fail' );
-                }
+                },
             );
         } );
 
-        afterEach( 'common', function()
-        {
+        afterEach( 'common', function() {
             executor.close();
         } );
 
-        it( 'should archive events', function( done )
-        {
+        it( 'should archive events', function( done ) {
             this.timeout( 10e3 );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const archiver = new DBEventArchiver( ccm );
 
-                    archiver.on( 'workerError', function()
-                    {
+                    archiver.on( 'workerError', function() {
                         console.log( arguments );
                     } );
-                    archiver.on( 'receiverError', function()
-                    {
-                        if ( arguments[0] !== 'Duplicate' )
-                        {
+                    archiver.on( 'receiverError', function() {
+                        if ( arguments[0] !== 'Duplicate' ) {
                             console.log( arguments );
                         }
                     } );
@@ -719,13 +630,11 @@ module.exports = function( describe, it, vars )
                     let push_count = 0;
                     let event_count = 0;
                     let push_cb = null;
-                    archiver.on( 'processedEvents', ( count ) =>
-                    {
+                    archiver.on( 'processedEvents', ( count ) => {
                         push_count++;
                         event_count += count;
 
-                        if ( push_cb )
-                        {
+                        if ( push_cb ) {
                             push_cb();
                         }
                     } );
@@ -739,22 +648,18 @@ module.exports = function( describe, it, vars )
                     dbact.select( 'evt_queue' )
                         .get( 'c', 'COUNT(*)' ).execute( as );
 
-                    as.add( ( as, res_orig ) =>
-                    {
+                    as.add( ( as, res_orig ) => {
                         as.state.res_orig = parseInt( res_orig.rows[0][0] );
                         as.state.event_count_expect = as.state.res_orig;
                         as.state.push_count_expect =
                             ~~( ( parseInt( `${res_orig.rows[0][0]}` ) + 100 ) / 100 );
 
-                        if ( push_count < as.state.push_count_expect )
-                        {
+                        if ( push_count < as.state.push_count_expect ) {
                             as.waitExternal();
-                            push_cb = () =>
-                            {
+                            push_cb = () => {
                                 // console.log( push_count, as.state.push_count_expect );
 
-                                if ( push_count === as.state.push_count_expect )
-                                {
+                                if ( push_count === as.state.push_count_expect ) {
                                     push_cb = null;
                                     as.success();
                                 }
@@ -765,8 +670,7 @@ module.exports = function( describe, it, vars )
                     dbdwh.select( 'evt_history' )
                         .get( 'c', 'COUNT(*)' ).execute( as );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( parseInt( res.rows[0][0] ) ).to.equal( as.state.res_orig );
                         expect( push_count ).to.equal( as.state.push_count_expect );
                         expect( event_count ).to.equal( as.state.event_count_expect );
@@ -777,17 +681,14 @@ module.exports = function( describe, it, vars )
                         as.state.push_count_expect++;
                         as.state.event_count_expect++;
 
-                        as.loop( ( as ) =>
-                        {
+                        as.loop( ( as ) => {
                             dbdwh.select( 'evt_history' )
                                 .get( 'c', 'COUNT(*)' ).execute( as );
 
-                            as.add( ( as, res ) =>
-                            {
+                            as.add( ( as, res ) => {
                                 // console.log( res.rows[0][0], as.state.event_count_expect );
 
-                                if ( parseInt( res.rows[0][0] ) === as.state.event_count_expect )
-                                {
+                                if ( parseInt( res.rows[0][0] ) === as.state.event_count_expect ) {
                                     expect( event_count ).to.equal( as.state.event_count_expect );
                                     expect( push_count ).to.equal( as.state.push_count_expect );
                                     as.break();
@@ -796,8 +697,7 @@ module.exports = function( describe, it, vars )
                         } );
                     } );
 
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         // duplicate event case
                         dbdwh.insert( 'evt_history' )
                             .set( {
@@ -815,17 +715,13 @@ module.exports = function( describe, it, vars )
                         as.state.push_count_expect++;
                     } );
 
-                    as.add( ( as ) =>
-                    {
-                        if ( push_count < as.state.push_count_expect )
-                        {
+                    as.add( ( as ) => {
+                        if ( push_count < as.state.push_count_expect ) {
                             as.waitExternal();
-                            push_cb = () =>
-                            {
+                            push_cb = () => {
                                 // console.log( push_count, as.state.push_count_expect );
 
-                                if ( push_count >= as.state.push_count_expect )
-                                {
+                                if ( push_count >= as.state.push_count_expect ) {
                                     push_cb = null;
                                     as.success();
                                 }
@@ -836,65 +732,56 @@ module.exports = function( describe, it, vars )
                     dbdwh.select( 'evt_history' )
                         .get( 'c', 'COUNT(*)' ).execute( as );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( parseInt( res.rows[0][0] ) ).to.equal( as.state.event_count_expect );
                         // One event is duplicate
                         expect( event_count ).to.equal( as.state.event_count_expect - 1 );
                     } );
 
 
-                    as.loop( ( as ) =>
-                    {
+                    as.loop( ( as ) => {
                         dbact.select( 'evt_consumers' )
                             .get( 'last_evt_id' )
                             .where( 'ident', '-internal:ARCHIVER' )
                             .execute( as );
 
-                        as.add( ( as, res ) =>
-                        {
+                        as.add( ( as, res ) => {
                             // console.log( res.rows[0][0], as.state.event_count_expect );
 
-                            if ( parseInt( res.rows[0][0] ) === as.state.event_count_expect )
-                            {
+                            if ( parseInt( res.rows[0][0] ) === as.state.event_count_expect ) {
                                 as.break();
                             }
                         } );
                     } );
 
-                    as.add( ( as ) =>
-                    {
+                    as.add( ( as ) => {
                         as.waitExternal();
                         ccm.once( 'close', () => as.success() );
                         ccm.close();
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err, as.state.error_info );
                     console.log( as.state.last_exception );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
     } );
 
-    describe( 'DBEventDiscarder', function()
-    {
+    describe( 'DBEventDiscarder', function() {
         const DBEventDiscarder = require( '../DBEventDiscarder' );
 
-        it( 'should discard delivered events', function( done )
-        {
+        it( 'should discard delivered events', function( done ) {
             this.timeout( 60e3 );
             const as = vars.as;
             const ccm = vars.ccm;
 
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     const db = ccm.db( 'evt' );
                     db.delete( 'evt_consumers' )
                         .where( 'ident !=', '-internal:ARCHIVER' )
@@ -905,28 +792,23 @@ module.exports = function( describe, it, vars )
                     let wait_as = null;
 
                     const discared = new DBEventDiscarder();
-                    discared.on( 'eventDiscard', ( cnt ) =>
-                    {
+                    discared.on( 'eventDiscard', ( cnt ) => {
                         event_discarded += cnt;
 
-                        if ( event_discarded >= event_count )
-                        {
-                            setTimeout( () =>
-                            {
+                        if ( event_discarded >= event_count ) {
+                            setTimeout( () => {
                                 wait_as.success();
                                 wait_as = null;
                             }, 100 );
                         }
                     } );
-                    discared.on( 'workerError', function()
-                    {
+                    discared.on( 'workerError', function() {
                         console.log( arguments );
                     } );
 
                     db.select( 'evt_queue' ).get( 'c', 'COUNT(*)' ).execute( as );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         event_count = parseInt( res.rows[0][0] );
 
                         wait_as = as;
@@ -939,35 +821,30 @@ module.exports = function( describe, it, vars )
 
                     db.select( 'evt_queue' ).get( 'c', 'COUNT(*)' ).execute( as );
 
-                    as.add( ( as, res ) =>
-                    {
+                    as.add( ( as, res ) => {
                         expect( parseInt( res.rows[0][0] ) ).to.equal( 0 );
                         discared.stop();
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();
         } );
     } );
 
-    describe( 'DBServiceApp', function()
-    {
-        it ( 'should initialize', $as_test( ( as ) =>
-        {
+    describe( 'DBServiceApp', function() {
+        it ( 'should initialize', $as_test( ( as ) => {
             const app = new DBServiceApp( as, {
                 databaseConfig: vars.dbcfg,
                 enableDiscarder: true,
                 enableArchiver: true,
             } );
-            as.add( ( as ) =>
-            {
+            as.add( ( as ) => {
                 app.ccm().iface( '#evtgen' );
                 app.ccm().iface( '#evtpoll' );
                 app.ccm().iface( '#evtpush' );
@@ -976,26 +853,22 @@ module.exports = function( describe, it, vars )
         } ) );
     } );
 
-    describe( 'ReliableReceiver', function()
-    {
+    describe( 'ReliableReceiver', function() {
         let as;
         let ccm;
         let executor;
 
-        beforeEach( 'common', function()
-        {
+        beforeEach( 'common', function() {
             ccm = vars.ccm;
             as = vars.as;
             executor = new Executor( ccm, { specDirs: main.specDirs } );
 
-            executor.on( 'notExpected', function()
-            {
+            executor.on( 'notExpected', function() {
                 console.dir( arguments );
             } );
 
             as.add(
-                ( as ) =>
-                {
+                ( as ) => {
                     DBGenService.register( as, executor );
                     const push_svc = DBPushService.register( as, executor, {
                         sleep_min: 10,
@@ -1007,31 +880,25 @@ module.exports = function( describe, it, vars )
                     as.state.push_svc = push_svc;
                     //push_svc.on('pushError', function(){ console.log(arguments); });
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     console.log( as.state.last_exception );
-                }
+                },
             );
         } );
 
-        afterEach( 'common', function()
-        {
+        afterEach( 'common', function() {
             executor.close();
         } );
 
-        it( 'should receive live events', function( done )
-        {
+        it( 'should receive live events', function( done ) {
             this.timeout( 10e3 );
 
             as.add(
-                ( as ) =>
-                {
-                    const LiveClass = class extends LiveReceiver
-                    {
-                        constructor()
-                        {
+                ( as ) => {
+                    const LiveClass = class extends LiveReceiver {
+                        constructor() {
                             super( ccm );
                             this.on_count = 0;
                             this.on( 'newEvents', ( events ) => this.on_count += events.length );
@@ -1040,39 +907,32 @@ module.exports = function( describe, it, vars )
                     const live_receiver1 = new LiveClass;
                     const live_receiver2 = new LiveClass;
 
-                    const receiver = new class extends ReliableReceiver
-                    {
-                        constructor()
-                        {
+                    const receiver = new class extends ReliableReceiver {
+                        constructor() {
                             super( ccm );
                             this.count = 0;
                             this.on_count = 0;
                             this.on( 'newEvents', ( events ) => this.on_count += events.length );
                         }
 
-                        _onEvents( as, events )
-                        {
+                        _onEvents( as, events ) {
                             super._onEvents( as, events );
                             this.count += events.length;
                         }
                     };
 
-                    receiver.on( 'workerError', function()
-                    {
+                    receiver.on( 'workerError', function() {
                         console.log( arguments );
                     } );
-                    receiver.on( 'receiverError', function()
-                    {
-                        if ( arguments[0] !== 'Duplicate' )
-                        {
+                    receiver.on( 'receiverError', function() {
+                        if ( arguments[0] !== 'Duplicate' ) {
                             console.log( arguments );
                         }
                     } );
 
                     // give chance receiver to setup
                     let ready_as = true;
-                    receiver.once( 'ready', () =>
-                    {
+                    receiver.once( 'ready', () => {
                         ready_as && ready_as.success();
                         ready_as = false;
                     } );
@@ -1082,10 +942,8 @@ module.exports = function( describe, it, vars )
 
                     expect( () => receiver.start( executor ) ).to.throw( 'Already started!' );
 
-                    as.add( ( as ) =>
-                    {
-                        if ( ready_as )
-                        {
+                    as.add( ( as ) => {
+                        if ( ready_as ) {
                             ready_as = as;
                             as.waitExternal();
                         }
@@ -1094,20 +952,17 @@ module.exports = function( describe, it, vars )
                     const ITERATIONS = 1234;
                     const evgen = ccm.iface( 'evtgen' );
 
-                    as.repeat( ITERATIONS, ( as, i ) =>
-                    {
+                    as.repeat( ITERATIONS, ( as, i ) => {
                         evgen.addEvent( as, 'RER_EVT', i );
                         evgen.addEvent( as, 'RER_EVT_O', i );
                     } );
 
-                    as.loop( ( as ) =>
-                    {
+                    as.loop( ( as ) => {
                         if ( ( receiver.count === ITERATIONS ) &&
                              ( receiver.on_count === ITERATIONS ) &&
                              ( live_receiver1.on_count === ( ITERATIONS * 2 ) ) &&
                              ( live_receiver2.on_count === ITERATIONS )
-                        )
-                        {
+                        ) {
                             as.break();
                         }
 
@@ -1115,12 +970,11 @@ module.exports = function( describe, it, vars )
                         setTimeout( () => as.success(), 100 );
                     } );
                 },
-                ( as, err ) =>
-                {
+                ( as, err ) => {
                     console.log( err );
                     console.log( as.state.error_info );
                     done( as.state.last_exception );
-                }
+                },
             );
             as.add( ( as ) => done() );
             as.execute();

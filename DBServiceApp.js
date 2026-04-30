@@ -40,17 +40,15 @@ const {
 /**
  * All-in-one DB EventStream initialization
  */
-class DBServiceApp
-{
+class DBServiceApp {
     /**
      * C-tor
-     *
      * @param {AsyncSteps} as - AsyncSteps interface
-     * @param {object} options={} - options
+     * @param {object} [options] - options
      * @param {AdvancedCCM} [options.ccm] - external CCM instance
      * @param {Executor} [options.executor] - external private executor instance
      * @param {object} [options.ccmOptions] - auto-CCM options
-     * @param {callable} [options.notExpectedHandler] - 'notExpected' error handler
+     * @param {Function} [options.notExpectedHandler] - 'notExpected' error handler
      * @param {object} [options.executorOptions] - private auto-Executor options
      * @param {object} [options.evtOptions] - eventstream options
      * @param {object} [options.discarderOptions] - discarder options
@@ -58,8 +56,7 @@ class DBServiceApp
      * @param {object} [options.archiverOptions] - discarder options
      * @param {boolean} [options.enableArchiver] - enable archiver, if true
      */
-    constructor( as, options = {} )
-    {
+    constructor( as, options = {} ) {
         let {
             ccm,
             executor,
@@ -70,29 +67,23 @@ class DBServiceApp
             evtOptions = {},
         } = options;
 
-        if ( !ccm )
-        {
+        if ( !ccm ) {
             ccm = new AdvancedCCM( options.ccmOptions );
         }
 
-        ccm.once( 'close', () =>
-        {
+        ccm.once( 'close', () => {
             this._ccm = null;
             this.close();
         } );
 
 
-        if ( !notExpectedHandler )
-        {
-            notExpectedHandler = function()
-            {
-                // eslint-disable-next-line no-console
+        if ( !notExpectedHandler ) {
+            notExpectedHandler = function() {
                 console.log( arguments );
             };
         }
 
-        if ( !executor )
-        {
+        if ( !executor ) {
             executor = new Executor( ccm, options.executorOptions );
             executor.on( 'notExpected', notExpectedHandler );
         }
@@ -101,22 +92,19 @@ class DBServiceApp
         this._executor = executor;
 
         // Common database
-        if ( 'DB_EVT_TYPE' in databaseConfig )
-        {
+        if ( 'DB_EVT_TYPE' in databaseConfig ) {
             DBAutoConfig( as, ccm, {
                 evt: {},
             }, databaseConfig );
         }
 
-        if ( 'DB_EVTDWH_TYPE' in databaseConfig )
-        {
+        if ( 'DB_EVTDWH_TYPE' in databaseConfig ) {
             DBAutoConfig( as, ccm, {
                 evtdwh: {},
             }, databaseConfig );
         }
 
-        as.add( ( as ) =>
-        {
+        as.add( ( as ) => {
             DBGenService.register( as, executor, evtOptions );
             DBGenFace.register( as, ccm, GEN_FACE, executor );
             DBPushService.register( as, executor, evtOptions );
@@ -124,8 +112,7 @@ class DBServiceApp
             ccm.alias( PUSH_FACE, POLL_FACE );
         } );
 
-        if ( enableDiscarder )
-        {
+        if ( enableDiscarder ) {
             const discarder = new DBEventDiscarder();
             discarder.on( 'workerError', notExpectedHandler );
 
@@ -134,8 +121,7 @@ class DBServiceApp
             as.add( ( as ) => discarder.start( ccm, options.discarderOptions ) );
         }
 
-        if ( enableArchiver )
-        {
+        if ( enableArchiver ) {
             const archiver = new DBEventArchiver( ccm );
             archiver.on( 'workerError', notExpectedHandler );
 
@@ -150,8 +136,7 @@ class DBServiceApp
      * CCM instance accessor
      * @returns {AdvancedCCM} instance
      */
-    ccm()
-    {
+    ccm() {
         return this._ccm;
     }
 
@@ -159,19 +144,16 @@ class DBServiceApp
      * Executor instance accessor
      * @returns {Executor} instance
      */
-    executor()
-    {
+    executor() {
         return this._executor;
     }
 
     /**
      * Shutdown of app and related instances
-     * @param {callable} [done] - done callback
+     * @param {Function} [done] - done callback
      */
-    close( done=null )
-    {
-        if ( this._ccm )
-        {
+    close( done=null ) {
+        if ( this._ccm ) {
             this._ccm.close();
             this._ccm = null;
 

@@ -30,20 +30,16 @@ const ReceiverService = require( './ReceiverService' );
 /**
  * Reliable Event Receiver helper to minimize boilerplate code in projects.
  */
-class LiveReceiver
-{
-    static get COMPONENT()
-    {
+class LiveReceiver {
+    static get COMPONENT() {
         return 'LIVE';
     }
 
     /**
      * Initialize event archiver.
-     *
      * @param {AdvancedCCM} executor_ccm - CCM for executor
      */
-    constructor( executor_ccm )
-    {
+    constructor( executor_ccm ) {
         $asyncevent( this, [
             'receiverError',
             'workerError',
@@ -59,19 +55,15 @@ class LiveReceiver
 
     /**
      * Start receiving events for archiving
-     *
-     * @param {*} endpoint - see PushFace
-     * @param {*} [credentials=null] - see PushFace
-     * @param {*} [options={}] - see PushFace
+     * @param {any} endpoint - see PushFace
+     * @param {any} [credentials] - see PushFace
+     * @param {any} [options] - see PushFace
      * @param {string} [options.component] - component name
-     * @param {array} [options.want] - "want" parameter for event filtering
-     *
-     * @note options.executor is overridden
+     * @param {Array} [options.want] - "want" parameter for event filtering
+     * `options.executor` is overridden
      */
-    start( endpoint, credentials=null, options={} )
-    {
-        if ( this._worker_as )
-        {
+    start( endpoint, credentials=null, options={} ) {
+        if ( this._worker_as ) {
             throw new Error( 'Already started!' );
         }
 
@@ -86,8 +78,7 @@ class LiveReceiver
         const was = $as();
         this._worker_as = was;
         was.loop( ( as ) => as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 //---
                 const executor = new Executor( executor_ccm );
                 executor.on( 'notExpected', ( ...args ) => this.emit( 'receiverError', ...args ) );
@@ -98,8 +89,7 @@ class LiveReceiver
                 ccm.once( 'close', () => executor.close() );
 
                 //---
-                as.setCancel( ( as ) =>
-                {
+                as.setCancel( ( as ) => {
                     ccm.close();
                     executor.close();
                 } );
@@ -114,20 +104,15 @@ class LiveReceiver
                 //---
                 let wait_as = true;
 
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     const pusher = ccm.iface( 'pusher' );
 
-                    pusher.once( 'disconnect', () =>
-                    {
+                    pusher.once( 'disconnect', () => {
                         this.emit( 'workerError', 'Disconnect', 'Lost connection' );
 
-                        if ( wait_as === true )
-                        {
+                        if ( wait_as === true ) {
                             wait_as = false;
-                        }
-                        else if ( wait_as.state )
-                        {
+                        } else if ( wait_as.state ) {
                             wait_as.success();
                         }
 
@@ -135,29 +120,25 @@ class LiveReceiver
                         executor.close();
                     } );
 
-                    if ( component !== 'LIVE' )
-                    {
+                    if ( component !== 'LIVE' ) {
                         pusher.registerConsumer( as, component );
                     }
 
                     pusher.readyToReceive( as, component, want );
                 } );
-                as.add( ( as ) =>
-                {
+                as.add( ( as ) => {
                     this.emit( 'ready' );
 
-                    if ( wait_as )
-                    {
+                    if ( wait_as ) {
                         wait_as = as;
                         as.waitExternal();
                     }
                 } );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 this._onWorkerError( as, err );
                 as.success();
-            }
+            },
         ) );
         was.execute();
     }
@@ -165,36 +146,28 @@ class LiveReceiver
     /**
      * Stop receiving events
      */
-    stop()
-    {
-        if ( this._worker_as )
-        {
+    stop() {
+        if ( this._worker_as ) {
             this._worker_as.cancel();
             this._worker_as = null;
         }
     }
 
-    _onWorkerError( as, err )
-    {
+    _onWorkerError( as, err ) {
         this.emit( 'workerError', err, as.state.error_info, as.state.last_exception );
     }
 
     /**
      * Override to register custom instance of ReceiverService.
-     *
      * @param {AsyncSteps} as - async steps interface
      * @param {Executor} executor - Internal Executor instance
      * @param {object} options - passed options
-     *
      * @returns {ReceiverService} instance of service
      */
-    _registerReceiver( as, executor, options )
-    {
+    _registerReceiver( as, executor, options ) {
         const receiver = this;
-        const svc_class = class extends ReceiverService
-        {
-            _onEvents( as, _reqinfo, events )
-            {
+        const svc_class = class extends ReceiverService {
+            _onEvents( as, _reqinfo, events ) {
                 receiver._onEvents( as, events );
             }
         };
@@ -205,10 +178,9 @@ class LiveReceiver
     /**
      * Override to catch new events here instead of using `newEvents` event handler.
      * @param {AsyncSteps} as - async steps interface
-     * @param {array} events - array of events
+     * @param {Array} events - array of events
      */
-    _onEvents( as, events )
-    {
+    _onEvents( as, events ) {
         this.emit( 'newEvents', events );
     }
 }

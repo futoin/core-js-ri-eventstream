@@ -27,10 +27,8 @@ const PollFace = require( './PollFace' );
 /**
  * Event Stream - Poll Service Base
  */
-class PollService extends PingService
-{
-    get MAX_EVENTS()
-    {
+class PollService extends PingService {
+    get MAX_EVENTS() {
         return 1000;
     }
 
@@ -39,16 +37,14 @@ class PollService extends PingService
      * @param {AsyncSteps} as - steps interface
      * @param {Executor} executor - executor instance
      * @param {object} options - implementation defined options
-     * @param {boolean} [options.allow_reliable=true] - allow reliable consumers
-     * @param {boolean} [options.allow_polling=true] - allow polling calls
-     * @param {integer} [options.max_chunk_events=100] - maxium events per request
+     * @param {boolean} [options.allow_reliable] - allow reliable consumers
+     * @param {boolean} [options.allow_polling] - allow polling calls
+     * @param {number} [options.max_chunk_events] - maxium events per request
      * @returns {PollService} instance
-     *
-     * @note Chunk event count is lower then protocol permits by default as there is
-     *       a typical amount 64K futoin message limit.
+     * Chunk event count is lower then protocol permits by default as there is
+     *       a typical amount 64K FutoIn message limit.
      */
-    static register( as, executor, options={} )
-    {
+    static register( as, executor, options={} ) {
         const ifacever = 'futoin.evt.poll:' + PollFace.LATEST_VERSION;
         const impl = new this( as, executor, options );
         const spec_dirs = PollFace.spec();
@@ -59,8 +55,7 @@ class PollService extends PingService
         return impl;
     }
 
-    constructor( as, _executor, options )
-    {
+    constructor( as, _executor, options ) {
         super();
         _defaults( options, {
             allow_reliable: true,
@@ -72,32 +67,26 @@ class PollService extends PingService
         this._max_chunk_events = options.max_chunk_events;
     }
 
-    _close()
-    {
+    _close() {
     }
 
-    _maxChunkEvents( channel )
-    {
-        if ( channel.type() === 'INTERNAL' )
-        {
+    _maxChunkEvents( channel ) {
+        if ( channel.type() === 'INTERNAL' ) {
             return this.MAX_EVENTS;
         }
 
         return this._max_chunk_events;
     }
 
-    registerConsumer( as, reqinfo )
-    {
+    registerConsumer( as, reqinfo ) {
         const component = reqinfo.params().component;
 
-        if ( component === 'LIVE' )
-        {
+        if ( component === 'LIVE' ) {
             as.error( 'LiveNotAllowed',
                 'Live consumer should not register' );
         }
 
-        if ( !this._allow_reliable )
-        {
+        if ( !this._allow_reliable ) {
             as.error( 'SecurityError', 'Registration is not allowed' );
         }
 
@@ -108,15 +97,12 @@ class PollService extends PingService
         this._registerConsumer( as, reqinfo.executor(), ident );
     }
 
-    _registerConsumer( as, _executor, _ident )
-    {
+    _registerConsumer( as, _executor, _ident ) {
         as.error( 'NotImplemented', 'Please override PollService#_registerConsumer' );
     }
 
-    pollEvents( as, reqinfo )
-    {
-        if ( !this._allow_polling )
-        {
+    pollEvents( as, reqinfo ) {
+        if ( !this._allow_polling ) {
             as.error( 'SecurityError', 'Only event push is allowed' );
         }
 
@@ -128,8 +114,7 @@ class PollService extends PingService
         const want = params.want;
         const is_reliable = ( component !== 'LIVE' );
 
-        if ( is_reliable && !this._allow_reliable )
-        {
+        if ( is_reliable && !this._allow_reliable ) {
             as.error( 'SecurityError', 'Reliable delivery is disabled' );
         }
 
@@ -144,8 +129,7 @@ class PollService extends PingService
         as.add( ( as, res ) => reqinfo.result( res ) );
     }
 
-    _pollEvents( as, { _executor, _ident, _last_id, _want, _is_reliable, _chunk_size } )
-    {
+    _pollEvents( as, { _executor, _ident, _last_id, _want, _is_reliable, _chunk_size } ) {
         as.error( 'NotImplemented', 'Please override PollService#_pollEvents' );
     }
 }

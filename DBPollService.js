@@ -26,19 +26,16 @@ const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
 /**
  * Database-based Poll Service
  */
-class DBPollService extends PollService
-{
+class DBPollService extends PollService {
     /**
      * Please use DBPollService,register()
-     *
      * @param {AsyncSteps} as - async step interface
      * @param {Executor} executor - related Executor
-     * @param {object} [options={}] - options
-     * @param {string} [options.event_table=default] - events table
-     * @param {string} [options.consumer_table=default] - consumers table
+     * @param {object} [options] - options
+     * @param {string} [options.event_table] - events table
+     * @param {string} [options.consumer_table] - consumers table
      */
-    constructor( as, executor, options )
-    {
+    constructor( as, executor, options ) {
         super( as, executor, options );
 
         _defaults( options, {
@@ -54,11 +51,9 @@ class DBPollService extends PollService
         this._consumer_table = qb.identifier( options.consumer_table );
     }
 
-    _registerConsumer( as, executor, ident )
-    {
+    _registerConsumer( as, executor, ident ) {
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const db = executor.ccm().db( 'evt' );
                 const now = db.helpers().now();
 
@@ -71,25 +66,21 @@ class DBPollService extends PollService
                     } )
                     .execute( as );
             },
-            ( as, err ) =>
-            {
-                if ( err === 'Duplicate' )
-                {
+            ( as, err ) => {
+                if ( err === 'Duplicate' ) {
                     as.success();
                 }
-            }
+            },
         );
     }
 
-    _pollEvents( as, { executor, ident, last_id, want, is_reliable, chunk_size } )
-    {
+    _pollEvents( as, { executor, ident, last_id, want, is_reliable, chunk_size } ) {
         const db = executor.ccm().db( 'evt' );
         const xfer = db.newXfer( db.SERIALIZABLE );
         const helpers = xfer.helpers();
 
         // Update info
-        if ( is_reliable )
-        {
+        if ( is_reliable ) {
             // check, if registered
             xfer.select( this._consumer_table, { selected: 1 } )
                 .get( 'id' )
@@ -110,9 +101,7 @@ class DBPollService extends PollService
             last_id = db.select( this._consumer_table )
                 .get( 'last_evt_id' )
                 .where( { ident } );
-        }
-        else
-        {
+        } else {
             last_id = parseInt( last_id );
         }
 
@@ -122,30 +111,26 @@ class DBPollService extends PollService
             .where( 'id >', last_id )
             .limit( chunk_size );
 
-        if ( want )
-        {
+        if ( want ) {
             s.where( 'type IN', want );
         }
 
         as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 xfer.execute( as );
 
-                as.add( ( as, res ) =>
-                {
+                as.add( ( as, res ) => {
                     const events = this._res2events( res[0].rows, helpers );
 
                     // Make sure we do not run through events again
                     // and again.
-                    if ( !events.length && want )
-                    {
+                    if ( !events.length && want ) {
                         const xfer = db.newXfer( db.SERIALIZABLE );
 
                         const sq = xfer.select(
                             [ db.select( this._evt_table )
                                 .get( 'max_id', 'MAX(id)' ), 'ETM' ],
-                            { selected: 1 }
+                            { selected: 1 },
                         ).where( 'max_id IS NOT NULL' );
 
                         xfer.select(
@@ -163,35 +148,28 @@ class DBPollService extends PollService
 
                         as.add(
                             ( as ) => xfer.execute( as ),
-                            ( as, err ) =>
-                            {
-                                if ( err === 'XferCondition' )
-                                {
+                            ( as, err ) => {
+                                if ( err === 'XferCondition' ) {
                                     as.success();
                                 }
-                            }
+                            },
                         );
                         as.add( ( as ) => as.success( events ) );
-                    }
-                    else
-                    {
+                    } else {
                         as.success( events );
                     }
                 } );
             },
-            ( as, err ) =>
-            {
-                if ( err === 'XferCondition' )
-                {
+            ( as, err ) => {
+                if ( err === 'XferCondition' ) {
                     // it may get triggered on failed update as well...
                     as.error( 'NotRegistered' );
                 }
-            }
+            },
         );
     }
 
-    _res2events( rows, helpers )
-    {
+    _res2events( rows, helpers ) {
         return rows.map( ( v ) => ( {
             id: `${v[0]}`,
             type: v[1],

@@ -28,14 +28,12 @@ const { DB_EVTTABLE } = require( './common' );
  *
  * The only difference to original GenFace is native DB-specific API.
  */
-class DBGenFace extends GenFace
-{
+class DBGenFace extends GenFace {
     /**
      * Easy access to DB event table name
      * @returns {string} raw table name
      */
-    get DB_EVENT_TABLE()
-    {
+    get DB_EVENT_TABLE() {
         return DB_EVTTABLE;
     }
 
@@ -43,15 +41,13 @@ class DBGenFace extends GenFace
      * Helper to add event generation into DB transaction
      * @param {XferBuilder} xb - instance of transaction builder
      * @param {string} type - event type
-     * @param {*} data - any data
-     * @param {string} [table=evt_queue] - event queue
+     * @param {any} data - any data
+     * @param {string} [table] - event queue
      */
-    addXferEvent( xb, type, data, table=DB_EVTTABLE )
-    {
+    addXferEvent( xb, type, data, table=DB_EVTTABLE ) {
         const check = SpecTools.checkCompiledType( null, this._raw_info, 'EventType', type );
 
-        if ( !check )
-        {
+        if ( !check ) {
             throw new Error( `Invalid event type: ${type}` );
         }
 

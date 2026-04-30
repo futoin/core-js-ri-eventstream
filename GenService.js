@@ -26,8 +26,7 @@ const GenFace = require( './GenFace' );
 /**
  * Event Stream - Generator Service Base
  */
-class GenService extends PingService
-{
+class GenService extends PingService {
     /**
      * Register futoin.evt.gen interface with Executor
      * @param {AsyncSteps} as - steps interface
@@ -35,8 +34,7 @@ class GenService extends PingService
      * @param {object} options - implementation defined options
      * @returns {GenService} instance
      */
-    static register( as, executor, options={} )
-    {
+    static register( as, executor, options={} ) {
         const ifacever = 'futoin.evt.gen:' + GenFace.LATEST_VERSION;
         const impl = new this( as, executor, options );
         const spec_dirs = GenFace.spec();
@@ -47,8 +45,7 @@ class GenService extends PingService
         return impl;
     }
 
-    _close()
-    {
+    _close() {
     }
 }
 

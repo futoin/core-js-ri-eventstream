@@ -32,10 +32,8 @@ const { DB_IFACEVER, DB_EVTTABLE, DB_EVTCONSUMERS } = require( './common' );
  * Event are deleted based on limit_at_once to avoid too large transactions which
  * may affect performance of realtime processes and break some DB clusters like Galera.
  */
-class DBEventDiscarder
-{
-    constructor()
-    {
+class DBEventDiscarder {
+    constructor() {
         this._worker_as = null;
         $asyncevent( this, [
             'workerError',
@@ -45,23 +43,20 @@ class DBEventDiscarder
 
     /**
      * Start event discarding
-     *
      * @param {AdvancedCCM} ccm - CCM with registered #db.evt interface
-     * @param {object} [options={}] - options
-     * @param {integer} [options.poll_period_ms=600e3] - poll interval
-     * @param {integer} [options.limit_at_once=1000] - events to delete at once
-     * @param {string} [options.event_table=default] - events table
-     * @param {string} [options.consumer_table=default] - consumers table
+     * @param {object} [options] - options
+     * @param {number} [options.poll_period_ms] - poll interval
+     * @param {number} [options.limit_at_once] - events to delete at once
+     * @param {string} [options.event_table] - events table
+     * @param {string} [options.consumer_table] - consumers table
      */
     start( ccm, {
         poll_period_ms = 600e3,
         limit_at_once = 1e3,
         event_table = DB_EVTTABLE,
         consumer_table = DB_EVTCONSUMERS,
-    }={} )
-    {
-        if ( this._worker_as )
-        {
+    }={} ) {
+        if ( this._worker_as ) {
             throw new Error( 'Already started!' );
         }
 
@@ -71,8 +66,7 @@ class DBEventDiscarder
         const was = $as();
         this._worker_as = was;
         was.loop( ( as ) => as.add(
-            ( as ) =>
-            {
+            ( as ) => {
                 const db = ccm.db( 'evt' );
 
                 // NOTE: if last_id IS NULL then it should not delete anything
@@ -99,14 +93,10 @@ class DBEventDiscarder
                 // console.log(del_events._toQuery());
                 del_events.execute( as );
 
-                as.add( ( as, { affected } ) =>
-                {
-                    if ( affected > 0 )
-                    {
+                as.add( ( as, { affected } ) => {
+                    if ( affected > 0 ) {
                         this.emit( 'eventDiscard', affected );
-                    }
-                    else
-                    {
+                    } else {
                         const timer = setTimeout(
                             () => as.success(),
                             poll_period_ms );
@@ -114,11 +104,10 @@ class DBEventDiscarder
                     }
                 } );
             },
-            ( as, err ) =>
-            {
+            ( as, err ) => {
                 this._onWorkerError( as, err );
                 as.success();
-            }
+            },
         ) );
         was.execute();
     }
@@ -126,17 +115,14 @@ class DBEventDiscarder
     /**
      * Stop event discarding
      */
-    stop()
-    {
-        if ( this._worker_as )
-        {
+    stop() {
+        if ( this._worker_as ) {
             this._worker_as.cancel();
             this._worker_as = null;
         }
     }
 
-    _onWorkerError( as, err )
-    {
+    _onWorkerError( as, err ) {
         this.emit( 'workerError', err, as.state.error_info, as.state.last_exception );
     }
 }

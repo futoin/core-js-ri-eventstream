@@ -25,8 +25,7 @@ const main = require( './main' );
 /**
  * Base implementation for receiver side
  */
-class ReceiverService
-{
+class ReceiverService {
     /**
      * Register futoin.evt.receiver interface with Executor
      * @param {AsyncSteps} as - steps interface
@@ -34,8 +33,7 @@ class ReceiverService
      * @param {object} options - implementation defined options
      * @returns {PushService} instance
      */
-    static register( as, executor, options={} )
-    {
+    static register( as, executor, options={} ) {
         const ifacever = 'futoin.evt.receiver:' + PushFace.LATEST_VERSION;
         const impl = new this( executor, options );
         const spec_dirs = main.specDirs;
@@ -45,8 +43,7 @@ class ReceiverService
         return impl;
     }
 
-    onEvents( as, reqinfo )
-    {
+    onEvents( as, reqinfo ) {
         this._onEvents( as, reqinfo, reqinfo.params().events );
     }
 
@@ -54,10 +51,9 @@ class ReceiverService
      * Member to override to handle vents.
      * @param {AsyncSteps} as - AsyncSteps interface
      * @param {RequestInfo} reqinfo - request info object
-     * @param {array} events - list of events
+     * @param {Array} events - list of events
      */
-    _onEvents( as, reqinfo, events )
-    {
+    _onEvents( as, reqinfo, events ) {
         void reqinfo;
         void events;
         as.error( 'NotImplemented' );
